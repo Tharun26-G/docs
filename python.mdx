@@ -1,0 +1,150 @@
+---
+title: "Python"
+---
+
+---
+
+## 1. Introduction: Python for AI
+
+- Python is widely used in AI because of:
+  - Simple syntax
+  - Strong libraries (NumPy, Pandas, TensorFlow, PyTorch)
+- Focus is on building a **professional setup**
+
+---
+
+## 2. Installing Python
+
+### Windows
+
+- Download from [python.org](http://python.org)
+- Check **“Add Python to PATH”**
+
+### Mac
+
+```text
+python3 --version
+```
+
+- Install if not available
+
+---
+
+## 3. Installing VS Code
+
+- Free and powerful code editor
+- Supports extensions for Python and AI work
+
+---
+
+## 4. VS Code Setup
+
+### Extensions
+
+- Python (Microsoft)
+- Pylance
+- Jupyter
+
+### Setting
+
+- Enable: Run Python in file directory
+
+---
+
+## 5. Project Setup
+
+- Use **kebab-case** naming
+  - Example: `ai-project-demo`
+- Save as `.code-workspace`
+
+---
+
+## 6. First Python File
+
+- Extension: `.py`
+- Example:
+
+```text
+print("Hello World")
+```
+
+---
+
+## 7. Running Python Code
+
+```text
+python file.py
+```
+
+---
+
+## 8. Python Environments
+
+- Use **virtual environments (venv)**
+- Avoid dependency conflicts
+
+```text
+python -m venv .venv
+```
+
+---
+
+## 9. Pip and Packages
+
+- Install libraries using pip
+
+```text
+pip install requests
+```
+
+---
+
+## 10. Using Packages (Your Example)
+
+```text
+import requests
+
+response = requests.get('https://api.github.com')
+print(response.status_code)
+```
+
+- `requests.get()` → sends HTTP request
+- `status_code` → shows response status (200 = success)
+
+---
+
+## 11. Interpreter Selection
+
+- Select correct Python interpreter in VS Code
+- Must match your virtual environment
+
+---
+
+## 12. Jupyter Interactive Mode
+
+```text
+pip install ipykernel
+```
+
+- Run code using **Shift \+ Enter**
+- Helps in debugging and step-by-step execution
+
+---
+
+## 13. Anaconda (Optional)
+
+- Alternative to pip \+ venv
+- Pre-installed data science libraries
+
+---
+
+## 14. Final Recap
+
+- Install Python \+ VS Code
+- Add extensions
+- Create project
+- Setup venv
+- Install packages
+- Run code and use Jupyter
+
+---

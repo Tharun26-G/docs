@@ -1,806 +1,169 @@
-# AI Engineering Roadmap — Mintlify Index.mdx
-
-```mdx
 ---
 title: "AI Engineering Roadmap"
 description: "Complete roadmap to become an AI Engineer"
 icon: "robot"
 ---
 
-# AI Engineering Roadmap 2026
+# AI Engineering Roadmap
 
-A complete roadmap covering:
+Master:
 
 - Python
-- Mathematics
 - Machine Learning
 - Deep Learning
-- Transformers
 - LLM Engineering
 - RAG
-- Agents
-- Fine-tuning
+- AI Agents
 - MLOps
-- AI System Design
-- Reinforcement Learning
-- AI Safety
+- System Design
 
----
+<Card title="Start Learning" icon="rocket" href="#phase-0" horizontal>
+  Follow the complete step-by-step AI Engineering roadmap.
+</Card>
 
-<AccordionGroup>
-
-## Phase 0 — Mindset & Orientation
-
-### Goal
-
-Understand what an AI Engineer does in 2026.
+## Core Learning Phases
 
 <Columns cols={2}>
-<Card title="AI Engineer vs ML Engineer" icon="brain">
-AI Engineers integrate AI models into products.
+
+<Card title="Phase 0 — Orientation" icon="brain" href="#phase-0">
+  Understand AI Engineering, market demand, and roadmap planning.
 </Card>
 
-<Card title="Market Demand 2026" icon="chart-line">
-Learn RAG, Agents, MCP, Multi-LLM systems.
+<Card title="Phase 1 — Python" icon="code" href="#phase-1">
+  Learn Python, async programming, NumPy, Pandas, and OOP.
 </Card>
+
+<Card title="Phase 2 — Mathematics" icon="square-root-variable" href="#phase-2">
+  Linear algebra, calculus, probability, optimization.
+</Card>
+
+<Card title="Phase 3 — Machine Learning" icon="chart-line" href="#phase-3">
+  Regression, trees, clustering, evaluation metrics.
+</Card>
+
+<Card title="Phase 4 — Deep Learning" icon="microchip" href="#phase-4">
+  Neural networks, PyTorch, CNNs, transformers.
+</Card>
+
+<Card title="Phase 5 — NLP & Transformers" icon="language" href="#phase-5">
+  Attention, embeddings, GPT, BERT, tokenization.
+</Card>
+
+<Card title="Phase 6 — LLM Engineering" icon="robot" href="#phase-6">
+  Prompt engineering, APIs, streaming, routing.
+</Card>
+
+<Card title="Phase 7 — Multi LLM Systems" icon="route" href="#phase-7">
+  Build intelligent routing and orchestration systems.
+</Card>
+
+<Card title="Phase 8 — RAG" icon="database" href="#phase-8">
+  Vector databases, embeddings, retrieval systems.
+</Card>
+
+<Card title="Phase 9 — AI Agents" icon="wand-magic-sparkles" href="#phase-9">
+  Autonomous AI agents with tools and memory.
+</Card>
+
+<Card title="Phase 10 — Fine-tuning" icon="sliders" href="#phase-10">
+  LoRA, QLoRA, RLHF, DPO pipelines.
+</Card>
+
+<Card title="Phase 11 — Generative AI" icon="image" href="#phase-11">
+  Diffusion models, multimodal AI, voice AI.
+</Card>
+
+<Card title="Phase 12 — MLOps & LLMOps" icon="server" href="#phase-12">
+  Deployment, observability, Kubernetes, monitoring.
+</Card>
+
+<Card
+  title="Phase 13 — AI System Design"
+  icon="diagram-project"
+  href="#phase-13"
+>
+  Design scalable AI systems and architectures.
+</Card>
+
+<Card title="Phase 14 — SQL + pgvector" icon="table" href="#phase-14">
+  Build vector search systems using Postgres.
+</Card>
+
+<Card title="Phase 15 — Quantization" icon="bolt" href="#phase-15">
+  Optimize models for fast inference.
+</Card>
+
+<Card title="Phase 16 — Reinforcement Learning" icon="gamepad" href="#phase-16">
+  PPO, RLHF, reward models, DPO.
+</Card>
+
+<Card title="Phase 17 — AI Safety" icon="shield" href="#phase-17">
+  Ethics, governance, privacy, AI security.
+</Card>
+
 </Columns>
 
-### Projects
-
-<Steps>
-### Easy — Career Map Notebook
-Document your roadmap and goals.
-
-### Medium — AI Job Market Scraper
-
-Analyze AI job trends using Python.
-
-### Hard — AI Portfolio Site
-
-Build and deploy a portfolio.
-
-</Steps>
-
 ---
 
-## Phase 1 — Programming Foundation (Python)
-
-### Goal
-
-Write production-quality Python for AI systems.
+## Featured Projects
 
 <Columns cols={2}>
-<Card title="Python Fundamentals" icon="python">
-Data types, loops, collections, conditions.
+
+<Card title="Multi-LLM Platform" icon="brain">
+  Build production-grade AI orchestration systems with routing and fallback.
 </Card>
 
-<Card title="Functions & OOP" icon="cube">
-  Functions, classes, inheritance, decorators.
+<Card title="Enterprise RAG" icon="database">
+  Multi-tenant RAG with reranking, HyDE, and vector databases.
 </Card>
 
-<Card title="NumPy & Pandas" icon="table">
-  Arrays, DataFrames, vectorization.
+<Card title="AI Agent Platform" icon="robot">
+  Autonomous research and coding agents with tool usage.
 </Card>
 
-<Card title="Async Python" icon="bolt">
-asyncio, async/await, concurrent API calls.
+<Card title="Production AI Infrastructure" icon="server">
+  Kubernetes + monitoring + observability for AI systems.
 </Card>
+
 </Columns>
 
-### Projects
-
-<Steps>
-### Easy — Python AI Toolkit CLI
-Build summarize and translation tools.
-
-### Medium — Async Multi API Caller
-
-Call OpenAI, Claude, Gemini concurrently.
-
-### Hard — Production Data Pipeline
-
-Chunking, embeddings, batching, checkpointing.
-
-</Steps>
-
 ---
 
-## Phase 2 — Mathematics & Statistics
+## Learning Stack
 
-### Goal
+<CardGroup cols={3}>
 
-Understand vectors, gradients, probability, optimization.
-
-<Columns cols={2}>
-<Card title="Linear Algebra" icon="square-root-variable">
-Vectors, matrices, cosine similarity.
-</Card>
-
-<Card title="Calculus" icon="function">
-  Gradients, derivatives, backpropagation.
-</Card>
-
-<Card title="Probability & Statistics" icon="chart-pie">
-  Bayes theorem, distributions, entropy.
-</Card>
-
-<Card title="Optimization" icon="chart-line">
-Gradient descent, Adam, regularization.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Cosine Similarity Search
-Build semantic search with NumPy.
-
-### Medium — Gradient Descent Visualizer
-
-Visualize optimization convergence.
-
-### Hard — Neural Network from Scratch
-
-Train a neural network using NumPy.
-
-</Steps>
-
----
-
-## Phase 3 — Machine Learning Fundamentals
-
-### Goal
-
-Master classic ML foundations.
-
-<Columns cols={2}>
-<Card title="Core ML Concepts" icon="brain">
-Train/test split, metrics, overfitting.
-</Card>
-
-<Card title="Regression & Trees" icon="tree">
-  Linear regression, Random Forest, XGBoost.
-</Card>
-
-<Card title="Feature Engineering" icon="wand-magic-sparkles">
-  Feature importance, preprocessing.
-</Card>
-
-<Card title="Unsupervised Learning" icon="shapes">
-Clustering, PCA, dimensionality reduction.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Spam Classifier
-TF-IDF + Logistic Regression.
-
-### Medium — Customer Churn Prediction
-
-Build a full ML pipeline.
-
-### Hard — AutoML Mini Framework
-
-Automate training and evaluation.
-
-</Steps>
-
----
-
-## Phase 4 — Deep Learning
-
-### Goal
-
-Understand neural networks and transformers deeply.
-
-<Columns cols={2}>
-<Card title="Neural Networks" icon="network-wired">
-MLP, activations, backpropagation.
-</Card>
-
-<Card title="Training Techniques" icon="bolt">
-  Batch norm, dropout, residuals.
-</Card>
-
-<Card title="CNNs & RNNs" icon="microchip">
-  Convolution, LSTM, GRU, attention.
-</Card>
-
-<Card title="PyTorch" icon="fire">
-Autograd, tensors, DataLoader.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Image Classifier
-Fine-tune ResNet on custom data.
-
-### Medium — Sentiment Analysis
-
-Compare LSTM vs BERT.
-
-### Hard — Mini GPT
-
-Implement GPT from scratch.
-
-</Steps>
-
----
-
-## Phase 5 — NLP & Transformers
-
-### Goal
-
-Master transformer architecture and NLP.
-
-<Columns cols={2}>
-<Card title="Text Preprocessing" icon="file-lines">
-Tokenization, TF-IDF, normalization.
-</Card>
-
-<Card title="Embeddings" icon="vector-square">
-  Word2Vec, BPE, SentencePiece.
-</Card>
-
-<Card title="Transformers" icon="brain">
-  Attention, positional encoding, GPT/BERT.
-</Card>
-
-<Card title="Language Modeling" icon="book-open">
-Sampling, perplexity, evaluation.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — NER Pipeline
-Extract entities from articles.
-
-### Medium — Semantic Search Engine
-
-Build vector search with FAISS.
-
-### Hard — Fine-tune BERT
-
-Deploy multi-label classifier.
-
-</Steps>
-
----
-
-## Phase 6 — LLM Engineering & APIs
-
-### Goal
-
-Master production LLM integration.
-
-<Columns cols={2}>
-<Card title="LLM Internals" icon="cpu">
-KV cache, RoPE, RLHF.
-</Card>
-
-<Card title="Prompt Engineering" icon="wand-magic-sparkles">
-  Few-shot, ReAct, JSON outputs.
-</Card>
-
-<Card title="Major APIs" icon="plug">
-  OpenAI, Claude, Gemini, Ollama.
-</Card>
-
-<Card title="Integration Patterns" icon="server">
-Streaming, retries, cost control.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Multi Provider Chatbot
-Switch between OpenAI and Claude.
-
-### Medium — AI Resume Ranker
-
-Analyze resumes against job descriptions.
-
-### Hard — AI Middleware Platform
-
-Routing, caching, monitoring.
-
-</Steps>
-
----
-
-## Phase 7 — Multi LLM Orchestration
-
-### Goal
-
-Design production-grade multi-model systems.
-
-<Columns cols={2}>
-<Card title="Routing Strategies" icon="route">
-Task-based and cost-based routing.
-</Card>
-
-<Card title="Fallback Systems" icon="shield">
-  Circuit breakers and failover chains.
-</Card>
-
-<Card title="MCP" icon="database">
-  Model Context Protocol integrations.
+<Card title="Languages" icon="code">
+  Python, SQL, TypeScript
 </Card>
 
 <Card title="Frameworks" icon="boxes-stacked">
-LangChain, CrewAI, AutoGen.
+  PyTorch, FastAPI, LangChain
 </Card>
-</Columns>
 
-### Projects
+<Card title="Infrastructure" icon="server">
+  Docker, Kubernetes, Redis
+</Card>
 
-<Steps>
-### Easy — LLM Router Dashboard
-Compare multiple LLMs.
+<Card title="Databases" icon="database">
+  Postgres, Pinecone, Qdrant
+</Card>
 
-### Medium — Intelligent Router
+<Card title="AI APIs" icon="plug">
+  OpenAI, Claude, Gemini
+</Card>
 
-Automatic query routing system.
+<Card title="Deployment" icon="rocket">
+  Vercel, AWS, GCP
+</Card>
 
-### Hard — Production Multi-LLM Platform
-
-Enterprise-grade orchestration platform.
-
-</Steps>
+</CardGroup>
 
 ---
 
-## Phase 8 — RAG & Vector Databases
+## Final Capstone
 
-### Goal
-
-Build retrieval systems for private knowledge.
-
-<Columns cols={2}>
-<Card title="Embeddings" icon="vector-square">
-Embedding models and similarity search.
+<Card title="Production AI Platform" icon="stars">
+  Combine Multi-LLM routing, RAG, Agents, Fine-tuning, Monitoring, and
+  Kubernetes deployment into a single enterprise-grade platform.
 </Card>
-
-<Card title="Chunking" icon="layer-group">
-  Recursive and semantic chunking.
-</Card>
-
-<Card title="Vector Databases" icon="database">
-  FAISS, Pinecone, pgvector, Qdrant.
-</Card>
-
-<Card title="Advanced RAG" icon="sparkles">
-HyDE, reranking, contextual compression.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Chat with PDF
-Upload and query PDFs.
-
-### Medium — Knowledge Base
-
-Hybrid search with reranking.
-
-### Hard — Enterprise RAG Platform
-
-Multi-tenant scalable RAG.
-
-</Steps>
-
----
-
-## Phase 9 — AI Agents & Agentic Systems
-
-### Goal
-
-Build autonomous AI systems.
-
-<Columns cols={2}>
-<Card title="Agent Components" icon="robot">
-Tools, memory, planning.
-</Card>
-
-<Card title="Tool Use" icon="hammer">
-  Function calling and APIs.
-</Card>
-
-<Card title="Multi-Agent Systems" icon="users">
-  Supervisor-worker architectures.
-</Card>
-
-<Card title="Agentic AI" icon="sparkles">
-Autonomous task execution.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — ReAct Search Agent
-Build web search agents.
-
-### Medium — Code Review Agent
-
-Reviewer and tester agents.
-
-### Hard — Autonomous Research Agent
-
-Web + KB + synthesis pipeline.
-
-</Steps>
-
----
-
-## Phase 10 — Fine-tuning & Customization
-
-### Goal
-
-Customize models using LoRA and RLHF.
-
-<Columns cols={2}>
-<Card title="When to Fine-tune" icon="sliders">
-Decide between RAG and fine-tuning.
-</Card>
-
-<Card title="PEFT" icon="microchip">
-  LoRA, QLoRA, Prefix Tuning.
-</Card>
-
-<Card title="TRL & DPO" icon="gear">
-  Preference optimization pipelines.
-</Card>
-
-<Card title="Training Pipelines" icon="server">
-Axolotl and LLaMA Factory.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — GPT Fine-tuning
-Train a Q&A assistant.
-
-### Medium — LoRA Fine-tuning
-
-Fine-tune LLaMA on code.
-
-### Hard — RLHF Pipeline
-
-Build a full preference optimization pipeline.
-
-</Steps>
-
----
-
-## Phase 11 — Generative AI
-
-### Goal
-
-Master multimodal AI systems.
-
-<Columns cols={2}>
-<Card title="Diffusion Models" icon="image">
-Stable Diffusion and ControlNet.
-</Card>
-
-<Card title="Multimodal Models" icon="camera">
-  Vision-language systems.
-</Card>
-
-<Card title="Audio & Video AI" icon="video">
-  Whisper, TTS, video generation.
-</Card>
-
-<Card title="Creative AI" icon="palette">
-Image and voice pipelines.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Image QA System
-Vision question answering.
-
-### Medium — AI Image Pipeline
-
-Generate and edit images.
-
-### Hard — Voice AI Assistant
-
-Speech-to-speech assistant.
-
-</Steps>
-
----
-
-## Phase 12 — MLOps & LLMOps
-
-### Goal
-
-Ship AI systems reliably at scale.
-
-<Columns cols={2}>
-<Card title="Tracking & Versioning" icon="clock-rotate-left">
-MLflow, W&B, DVC.
-</Card>
-
-<Card title="Serving & Inference" icon="server">
-  vLLM, BentoML, Ray Serve.
-</Card>
-
-<Card title="Kubernetes" icon="boxes-packing">
-  Docker, Helm, GPU scheduling.
-</Card>
-
-<Card title="Observability" icon="chart-area">
-Langfuse, Grafana, Prometheus.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Dockerized AI API
-Containerize and deploy.
-
-### Medium — Monitoring Dashboard
-
-Observe latency and token usage.
-
-### Hard — Production AI Platform
-
-Full scalable deployment.
-
-</Steps>
-
----
-
-## Phase 13 — AI System Design
-
-### Goal
-
-Design scalable AI architectures.
-
-<Columns cols={2}>
-<Card title="Design Framework" icon="diagram-project">
-Requirements, scalability, monitoring.
-</Card>
-
-<Card title="Chatbot Systems" icon="comments">
-  Memory and vector databases.
-</Card>
-
-<Card title="RAG at Scale" icon="database">
-  Caching and sharding.
-</Card>
-
-<Card title="Realtime AI" icon="wave-square">
-Streaming voice systems.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Chatbot Design Doc
-Write architecture documentation.
-
-### Medium — RAG Design
-
-Design scalable RAG systems.
-
-### Hard — Multi-LLM Platform Design
-
-Prototype production architecture.
-
-</Steps>
-
----
-
-## Phase 14 — SQL + pgvector
-
-### Goal
-
-Use Postgres for AI workloads.
-
-<Columns cols={2}>
-<Card title="SQL Core" icon="database">
-SELECT, JOIN, indexes, CTEs.
-</Card>
-
-<Card title="pgvector" icon="vector-square">
-  Embedding search inside Postgres.
-</Card>
-
-<Card title="Hybrid Retrieval" icon="layer-group">
-  BM25 + vector search.
-</Card>
-
-<Card title="Optimization" icon="gauge-high">
-Indexes and performance tuning.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — pgvector Setup
-Store embeddings in Postgres.
-
-### Medium — Hybrid Retrieval System
-
-Combine vector and keyword search.
-
-### Hard — Multi-tenant RAG SaaS
-
-Secure scalable retrieval platform.
-
-</Steps>
-
----
-
-## Phase 15 — Quantization & Optimization
-
-### Goal
-
-Run large models efficiently.
-
-<Columns cols={2}>
-<Card title="Quantization" icon="microchip">
-INT4, INT8, GPTQ, AWQ.
-</Card>
-
-<Card title="Fast Inference" icon="bolt">
-  vLLM and speculative decoding.
-</Card>
-
-<Card title="GGUF Models" icon="download">
-  Run local LLMs efficiently.
-</Card>
-
-<Card title="SLMs" icon="brain">
-Small language models.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Run GGUF Locally
-Benchmark inference speed.
-
-### Medium — vLLM Serving
-
-Continuous batching experiments.
-
-### Hard — Quantized 70B Model
-
-Serve optimized large models.
-
-</Steps>
-
----
-
-## Phase 16 — Reinforcement Learning
-
-### Goal
-
-Understand RLHF and DPO.
-
-<Columns cols={2}>
-<Card title="RL Basics" icon="gamepad">
-Agent, reward, policy.
-</Card>
-
-<Card title="Policy Optimization" icon="chart-line">
-  PPO and policy gradients.
-</Card>
-
-<Card title="RLHF" icon="brain">
-  Human feedback optimization.
-</Card>
-
-<Card title="DPO" icon="sliders">
-Direct preference optimization.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — CartPole PPO
-Train RL agents.
-
-### Medium — Reward Model
-
-Preference learning pipeline.
-
-### Hard — DPO Alignment
-
-Align a 7B model.
-
-</Steps>
-
----
-
-## Phase 17 — AI Ethics, Safety & Governance
-
-### Goal
-
-Build safe and responsible AI systems.
-
-<Columns cols={2}>
-<Card title="Bias & Fairness" icon="scale-balanced">
-Dataset bias and evaluation.
-</Card>
-
-<Card title="AI Safety" icon="shield-halved">
-  Prompt injection defense.
-</Card>
-
-<Card title="Privacy & Regulation" icon="lock">
-  GDPR, EU AI Act, PII.
-</Card>
-
-<Card title="Governance" icon="building-shield">
-Audit logs and compliance.
-</Card>
-</Columns>
-
-### Projects
-
-<Steps>
-### Easy — Model Card
-Document model limitations.
-
-### Medium — Red Team Chatbot
-
-Test jailbreak resistance.
-
-### Hard — Compliance Dashboard
-
-Track AI governance metrics.
-
-</Steps>
-
----
-
-## Final Capstone — Multi-LLM AI Platform
-
-### Build a production-grade AI platform featuring:
-
-- Multi-LLM routing
-- Intelligent fallback chains
-- RAG + vector search
-- Agent systems
-- Fine-tuned models
-- Observability dashboards
-- Kubernetes deployment
-- MCP integration
-- Cost optimization
-- Semantic caching
-
-<Cards cols={2}>
-<Card title="Backend Stack" icon="server">
-FastAPI, Redis, PostgreSQL, Docker, Kubernetes.
-</Card>
-
-<Card title="AI Stack" icon="brain">
-OpenAI, Claude, Gemini, LangChain, Pinecone.
-</Card>
-</Cards>
-
-</AccordionGroup>
-```

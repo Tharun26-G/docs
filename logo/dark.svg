@@ -1,35 +1,46 @@
-<svg width="600" height="120" viewBox="0 0 600 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Gradient Definition -->
-  <defs>
-    <linearGradient id="mintGradient" x1="20" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#2DD4BF"/> 
-      <stop offset="100%" stop-color="#0F766E"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Logo Icon (Left Side) -->
-  <g transform="translate(10, 10) scale(0.5)">
-    <path d="M100 20L169.282 60V140L100 180L30.718 140V60L100 20Z" stroke="url(#mintGradient)" stroke-width="12" stroke-linejoin="round"/>
-    <circle cx="100" cy="100" r="18" fill="#2DD4BF" />
-    <g stroke="#14B8A6" stroke-width="4">
-      <line x1="100" y1="100" x2="100" y2="50" />
-      <circle cx="100" cy="45" r="7" fill="#0F766E" />
-      <line x1="100" y1="100" x2="60" y2="130" />
-      <circle cx="56" cy="133" r="7" fill="#0F766E" />
-      <line x1="100" y1="100" x2="140" y2="130" />
-      <circle cx="144" cy="133" r="7" fill="#0F766E" />
+<svg width="600" height="300" viewBox="0 0 600 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Define standard font for better rendering across systems -->
+  <style>
+    .font-sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    .text-green { fill: #16A34A; }
+    .stroke-green { stroke: #16A34A; }
+  </style>
+  
+  <!-- LOGO ICON GROUP (Left Side) -->
+  <g transform="translate(30, 40)">
+    <!-- Main Hexagon Border -->
+    <path class="stroke-green" d="M110.1 8.5L200.7 60.8V165.4L110.1 217.7L19.5 165.4V60.8L110.1 8.5Z" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Inner Structure Group -->
+    <g transform="translate(110.1, 113.1)">
+      <!-- Central Node -->
+      <circle class="text-green" cx="0" cy="0" r="28"/>
+      
+      <!-- Branch Lines -->
+      <line class="stroke-green" x1="0" y1="-28" x2="0" y2="-65" stroke-width="8" stroke-linecap="round"/>
+      <line class="stroke-green" x1="-24.2" y1="14" x2="-56.2" y2="32.5" stroke-width="8" stroke-linecap="round"/>
+      <line class="stroke-green" x1="24.2" y1="14" x2="56.2" y2="32.5" stroke-width="8" stroke-linecap="round"/>
+      
+      <!-- Satellite Nodes -->
+      <circle class="text-green" cx="0" cy="-78.5" r="16.5"/>
+      <circle class="text-green" cx="-68" cy="39.3" r="16.5"/>
+      <circle class="text-green" cx="68" cy="39.3" r="16.5"/>
+      
+      <!-- Inner Chevron/Hex Part -->
+      <path class="stroke-green" d="M-60.6 -18L0 17L60.6 -18M0 17V60" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </g>
   </g>
-
-  <!-- Text Section -->
-  <text x="120" y="55" fill="#0F766E" font-family="Arial, sans-serif" font-weight="bold" font-size="28">
-    AI Engineer Documentation
-  </text>
   
-  <text x="120" y="85" fill="#14B8A6" font-family="Arial, sans-serif" font-weight="500" font-size="22">
-    Tharun
-  </text>
-
-  <!-- Decorative Separator Line -->
-  <rect x="120" y="65" width="300" height="2" rx="1" fill="#CCFBF1"/>
+  <!-- TEXT GROUP (Right Side) -->
+  <g transform="translate(280, 80)" class="font-sans text-green">
+    <!-- Title: AI Engineer Documentation -->
+    <text x="0" y="0" font-size="44" font-weight="bold">AI Engineer</text>
+    <text x="0" y="55" font-size="44" font-weight="bold">Documentation</text>
+    
+    <!-- Separator Line (Lightened version of the green for contrast) -->
+    <line x1="0" y1="80" x2="330" y2="80" stroke="#BBF7D0" stroke-width="4"/>
+    
+    <!-- Subtitle: Tharun -->
+    <text x="0" y="130" font-size="40" font-weight="normal">Tharun</text>
+  </g>
 </svg>

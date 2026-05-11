@@ -49,6 +49,18 @@
               "ai-tools/windsurf"
             ]
           }
+        ],
+        "hidden": true
+      },
+      {
+        "tab": "AI-Engineer",
+        "groups": [
+          {
+            "group": "1. Programming Foundation-",
+            "pages": [
+              "1-python"
+            ]
+          }
         ]
       }
     ]

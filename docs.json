@@ -70,18 +70,18 @@
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "tharun26.g@gmail.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://tharung.in"
+  "links": [
+    {
+      "label": "Support",
+      "href": "mailto:tharun26.g@gmail.com"
     }
-  },
+  ],
+  "primary": {
+    "type": "button",
+    "label": "Dashboard",
+    "href": "https://tharung.in"
+  }
+},
   "contextual": {
     "options": [
      "copy",

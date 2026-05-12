@@ -60,7 +60,8 @@
             "pages": [
               "python",
               "num-py"
-            ]
+            ],
+            "icon": "1"
           }
         ]
       }

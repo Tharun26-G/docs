@@ -58,7 +58,8 @@
           {
             "group": "1. Programming Foundation",
             "pages": [
-              "python"
+              "python",
+              "num-py"
             ]
           }
         ]

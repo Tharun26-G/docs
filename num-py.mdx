@@ -3,95 +3,62 @@ title: "NumPy"
 icon: "input-numeric"
 ---
 
-## What is NumPy?
+## `np.array()`
 
-**NumPy** stands for **Numerical Python**. It is an open-source Python library used for numerical computing and handling arrays efficiently.
-
-### Why NumPy?
-
-- Faster than Python lists
-- Memory efficient
-- Supports mathematical operations directly
-- Widely used in:
-  - Data Science
-  - Machine Learning
-  - AI
-  - Scientific Computing
-
----
-
-# Difference Between Python Lists and NumPy Arrays
-
-| Feature | Python List | NumPy Array |
-| :-- | :-- | :-- |
-| Speed | Slower | Faster |
-| Memory Usage | More | Less |
-| Data Types | Mixed allowed | Same datatype |
-| Mathematical Operations | Requires loops | Vectorized operations |
-| Performance | Python-based | Built on C |
-
----
-
-# Installing and Importing NumPy
-
-## Installation
+Creates a NumPy array from a list or tuple.
 
 ```text
-pip install numpy
-```
-
-## Importing
-
-```text
-import numpy as np
-```
-
-`np` is an alias for NumPy.
-
----
-
-# Dimensions and Shapes in NumPy
-
-## Dimensions
-
-- **0D** → Scalar
-- **1D** → Single row/line
-- **2D** → Rows and columns
-
-## Example
-
-```text
-import numpy as np
-
 arr = np.array([1,2,4])
 print(arr)
 ```
 
-### Checking Dimensions
+Output:
+
+```text
+[1 2 4]
+```
+
+---
+
+## `.ndim`
+
+Returns the number of dimensions of the array.
 
 ```text
 arr.ndim
 ```
 
-### Scalar Array
+Output:
+
+```text
+1
+```
+
+---
+
+## `np.array(34)`
+
+Creates a scalar (0D) NumPy array.
 
 ```text
 arr2 = np.array(34)
 arr2.ndim
 ```
 
-### 2D Array
+Output:
+
+```text
+0
+```
+
+---
+
+## `.shape`
+
+Returns the shape as `(rows, columns)`.
 
 ```text
 arr3 = np.array([[1,3,4],[2,34,5]])
-
-print(arr3)
-arr3.ndim
-```
-
-### Shape
-
-```text
 arr3.shape
 ```
 
@@ -101,374 +68,1027 @@ Output:
 (2, 3)
 ```
 
-Meaning:
-
-- 2 rows
-- 3 columns
-
 ---
 
-# Creating NumPy Arrays
+## `np.arange()`
 
-## Using `arange()`
-
-```text
-range = np.arange(1,10,2)
-print(range)
-```
-
-### Syntax
+Creates numbers within a range using step size.
 
 ```text
-np.arange(start, stop, step)
-```
-
-- Start included
-- Stop excluded
-
----
-
-## Using `linspace()`
-
-```text
-arr4 = np.linspace(0,1,5)
-print(arr4)
-```
-
-Creates evenly spaced numbers.
-
----
-
-## Using `logspace()`
-
-```text
-arr5 = np.logspace(1,3,3)
-print(arr5)
+np.arange(1,10,2)
 ```
 
 Output:
 
 ```text
-[10. 100. 1000.]
+[1 3 5 7 9]
 ```
 
 ---
 
-# Arrays Filled with Values
+## `np.linspace()`
 
-## Zeros
+Creates evenly spaced numbers between two values.
 
 ```text
-arr6 = np.zeros(4)
-print(arr6)
+np.linspace(0,1,5)
 ```
 
-### 2D Zeros
+Output:
 
 ```text
-arr6 = np.zeros([3,2])
-print(arr6)
-```
-
----
-
-## Ones
-
-```text
-arr7 = np.ones([3,2])
-print(arr7)
+[0.   0.25 0.5  0.75 1.  ]
 ```
 
 ---
 
-## Full
+## `np.logspace()`
+
+Creates numbers in logarithmic scale.
 
 ```text
-arr8 = np.full(10,2)
-arr8
+np.logspace(1,3,3)
 ```
 
-### 2D Full Array
+Output:
 
 ```text
-arr9 = np.full([2,4],5)
-arr9
-```
-
----
-
-## Empty Array
-
-```text
-arr11 = np.empty([2,3])
-arr11
-```
-
-- Faster than zeros
-- Contains garbage values
-- Use only if values will be overwritten
-
----
-
-# Random Arrays in NumPy
-
-## Random Uniform Distribution
-
-```text
-np.random.rand(10)
-```
-
-### 2D Random Array
-
-```text
-arr12 = np.random.rand(2,3)
-arr12
-```
-
-Values between:
-
-```text
-0 and 1
+[  10.  100. 1000.]
 ```
 
 ---
 
-## Random Normal Distribution
+## `np.zeros()`
+
+Creates an array filled with zeros.
 
 ```text
-arr13 = np.random.randn(2,3)
-arr13
+np.zeros(4)
 ```
 
-- Mean = 0
-- Standard deviation = 1
-
----
-
-## Random Integers
+Output:
 
 ```text
-arr14 = np.random.randint(10,100, size=10)
-print(arr14)
+[0. 0. 0. 0.]
 ```
 
-### 2D Random Integers
+### 2D Example
 
 ```text
-arr14 = np.random.randint(10,100, size=[2,3])
-print(arr14)
+np.zeros([3,2])
 ```
 
----
-
-# NumPy Data Types and Type Casting
-
-## Integer Array
+Output:
 
 ```text
-arr = np.array([1,3,45,3,4])
-
-print(arr)
-type(arr)
+[[0. 0.]
+ [0. 0.]
+ [0. 0.]]
 ```
 
 ---
 
-## Automatic Type Conversion
+## `np.ones()`
+
+Creates an array filled with ones.
 
 ```text
-arr = np.array([1.1,3,45,3,4])
-
-print(arr)
-type(arr)
+np.ones([3,2])
 ```
 
-If one value is float, entire array becomes float.
+Output:
+
+```text
+[[1. 1.]
+ [1. 1.]
+ [1. 1.]]
+```
 
 ---
 
-## Defining Datatype Manually
+## `np.full()`
+
+Creates an array filled with a custom value.
 
 ```text
-arr = np.array([1.3,3,45,3,4], dtype=int)
+np.full(10,2)
+```
 
+Output:
+
+```text
+[2 2 2 2 2 2 2 2 2 2]
+```
+
+### 2D Example
+
+```text
+np.full([2,4],5)
+```
+
+Output:
+
+```text
+[[5 5 5 5]
+ [5 5 5 5]]
+```
+
+---
+
+## `np.empty()`
+
+Creates an uninitialized array with random garbage values.
+
+```text
+np.empty([2,3])
+```
+
+Output:
+
+```text
+[[6.92029351e-310 6.92029351e-310 0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000]]
+```
+
+(Output varies every time)
+
+---
+
+## `np.random.rand()`
+
+Generates random numbers between 0 and 1.
+
+```text
+np.random.rand(5)
+```
+
+Output:
+
+```text
+[0.12 0.45 0.89 0.34 0.67]
+```
+
+(Random output)
+
+---
+
+## `np.random.randn()`
+
+Generates random numbers from normal distribution.
+
+```text
+np.random.randn(2,3)
+```
+
+Output:
+
+```text
+[[ 0.52 -1.12  0.44]
+ [ 1.32  0.87 -0.29]]
+```
+
+(Random output)
+
+---
+
+## `np.random.randint()`
+
+Generates random integers within a range.
+
+```text
+np.random.randint(10,100,size=5)
+```
+
+Output:
+
+```text
+[23 45 89 12 67]
+```
+
+(Random output)
+
+---
+
+## `.dtype`
+
+Returns datatype of array elements.
+
+```text
+arr = np.array([1,2,3])
 arr.dtype
 ```
 
----
-
-# Checking Datatypes
+Output:
 
 ```text
-arr.dtype
+dtype('int64')
 ```
 
 ---
 
-# Type Casting Using `astype()`
+## `astype()`
+
+Converts array datatype into another datatype.
 
 ```text
-arr = np.array([1,23,4])
-
-new_arr = arr.astype(np.float64)
-
-new_arr
-new_arr.dtype
+arr.astype(np.float64)
 ```
 
-Converts datatype without modifying original array.
+Output:
+
+```text
+array([1., 2., 3.])
+```
 
 ---
 
-# Type Casting Errors
+## `.size`
+
+Returns total number of elements.
 
 ```text
-arr=["1",'2',"hello"]
-
-arr2 = arr.astype(np.int64)
-arr2
+arr.size
 ```
 
-This causes error because:
+Output:
 
 ```text
-"hello"
+6
 ```
-
-cannot be converted to integer.
 
 ---
 
-# Important Array Attributes
-
-```text
-arr  = np.array([[1,2,4],
-                [4,5,6]])
-```
-
-## Datatype
-
-```text
-print(arr.dtype)
-```
-
-## Dimensions
-
-```text
-print(arr.ndim)
-```
-
-## Shape
-
-```text
-print(arr.shape)
-```
-
-## Size
-
-```text
-print(arr.size)
-```
-
-Total elements:
-
-```text
-rows × columns
-```
-
-## Item Size
-
-```text
-print(arr.itemsize)
-```
+## `.itemsize`
 
 Returns memory size of one element in bytes.
 
+```text
+arr.itemsize
+```
+
+Output:
+
+```text
+8
+```
+
 ---
 
-# Array Reshaping
+## `reshape()`
 
-## Using `reshape()`
+Changes array shape without changing data.
 
 ```text
 arr = np.array([1,2,3,4,5,6])
-
-reshaped = arr.reshape(2,3)
-
-print(reshaped)
+arr.reshape(2,3)
 ```
 
-### Reshape Again
+Output:
 
 ```text
-reshape2 = reshaped.reshape(3,2)
-
-print(reshape2)
+[[1 2 3]
+ [4 5 6]]
 ```
-
-Changes layout without changing data.
 
 ---
 
-# Ravel vs Flatten
+## `ravel()`
+
+Converts multi-dimensional array into 1D view.
+
+```text
+arr.reshape(2,3).ravel()
+```
+
+Output:
+
+```text
+[1 2 3 4 5 6]
+```
 
 ---
 
-## Ravel
+## `flatten()`
 
-Converts array into 1D.
+Converts array into independent 1D copy.
 
 ```text
-ravel = reshape2.ravel()
-
-ravel
+arr.reshape(2,3).flatten()
 ```
 
-### Important
+Output:
 
-`ravel()` returns a **view**.
+```text
+[1 2 3 4 5 6]
+```
+
+# Arithmetic Operations on NumPy Arrays
+
+NumPy supports direct arithmetic operations on arrays.
+
+```text
+arr1 = np.array([1,2,3])
+arr2 = np.array([4,5,6])
+
+print(arr1 + arr2)
+print(arr1 - arr2)
+print(arr1 * arr2)
+print(arr1 / arr2)
+```
+
+Output:
+
+```text
+[5 7 9]
+[-3 -3 -3]
+[ 4 10 18]
+[0.25 0.4  0.5 ]
+```
+
+---
+
+# Universal Functions (ufuncs)
+
+Universal functions perform element-wise operations efficiently.
+
+## `np.sin()`
+
+Calculates sine value for each element.
+
+```text
+angles = np.array([0,np.pi,np.pi/2])
+
+print(np.sin(angles))
+```
+
+Output:
+
+```text
+[0.0000000e+00 1.2246468e-16 1.0000000e+00]
+```
+
+---
+
+# Indexing and Slicing
+
+## Access Elements
+
+```text
+arr = np.array([10,20,30,40,50])
+
+print(arr[-1])
+```
+
+Output:
+
+```text
+50
+```
+
+---
+
+## Slicing
+
+```text
+arr[::2]
+```
+
+Output:
+
+```text
+[10 30 50]
+```
+
+---
+
+## Reverse Slicing
+
+```text
+a = np.array([1,2,3,4,5])
+
+a[-1:-3:-1]
+```
+
+Output:
+
+```text
+[5 4]
+```
+
+---
+
+# Multidimensional Slicing
+
+```text
+matrix = np.array([[1,2,3],
+                   [4,5,6],
+                   [7,8,9]])
+
+print(matrix[0:2])
+```
+
+Output:
+
+```text
+[[1 2 3]
+ [4 5 6]]
+```
+
+---
+
+## Specific Rows and Columns
+
+```text
+print(matrix[1:,1:])
+```
+
+Output:
+
+```text
+[[5 6]
+ [8 9]]
+```
+
+---
+
+# Index Array using `np.take()`
+
+Selects elements using index positions.
+
+```text
+arr = np.array([10,20,30,40,50])
+
+ind = [0,2]
+
+print(np.take(arr,ind))
+```
+
+Output:
+
+```text
+[10 30]
+```
+
+---
+
+# Iterating NumPy Arrays
+
+## `np.nditer()`
+
+Iterates element by element.
+
+```text
+arr=np.array([[1,2],[3,4]])
+
+for x in np.nditer(arr):
+  print(x, end=" ")
+```
+
+Output:
+
+```text
+1 2 3 4
+```
+
+---
+
+## `np.ndenumerate()`
+
+Returns index and value while iterating.
+
+```text
+for ind, x in np.ndenumerate(arr):
+  print(ind,x)
+```
+
+Output:
+
+```text
+(0, 0) 1
+(0, 1) 2
+(1, 0) 3
+(1, 1) 4
+```
+
+---
+
+# Views vs Copies
+
+## View
 
 Changes affect original array.
 
 ```text
-ravel[0] = 100
+arr = np.array([1,2,4,5,6])
 
-print(ravel)
-print(reshape2)
+view = arr[1:4]
+
+view[1] = 3
+
+print(arr)
 ```
 
----
-
-## Flatten
+Output:
 
 ```text
-flat = reshape2.flatten()
-
-flat
+[1 2 3 5 6]
 ```
 
-### Important
+---
 
-`flatten()` returns a **copy**.
+## Copy
 
-Original array remains unchanged.
+Changes do not affect original array.
 
 ```text
-flat[0] = 200
+arr1 = np.array([1,2,4,5,6])
 
-print(flat)
-print(reshape2)
+copy = arr1[1:4].copy()
+
+copy[0] = 100
+
+print(arr1)
+print(copy)
+```
+
+Output:
+
+```text
+[1 2 4 5 6]
+[100   4   5]
 ```
 
 ---
 
-# Difference Between Ravel and Flatten
+# Transpose of Matrix
 
-| Feature | Ravel | Flatten |
-| :-- | :-- | :-- |
-| Returns | View | Copy |
-| Memory Efficient | Yes | No |
-| Changes Affect Original | Yes | No |
-| Speed | Faster | Slightly slower |
+## `transpose()`
+
+Converts rows into columns.
+
+```text
+mat = np.array([[1,2],[3,4]])
+
+print(mat.transpose())
+```
+
+Output:
+
+```text
+[[1 3]
+ [2 4]]
+```
 
 ---
+
+# `swapaxes()`
+
+Swaps two specific axes in multidimensional arrays.
+
+```text
+mat = np.array([[[1,2],[3,4]]])
+
+swap = np.swapaxes(mat,0,1)
+
+print(swap.shape)
+```
+
+Output:
+
+```text
+(2, 1, 2)
+```
+
+---
+
+# Concatenation and Stacking
+
+## `np.concatenate()`
+
+Joins arrays into one array.
+
+```text
+arr1 = np.array([1,2,3])
+arr2 = np.array([4,5,6])
+
+combine = np.concatenate((arr1,arr2))
+
+print(combine)
+```
+
+Output:
+
+```text
+[1 2 3 4 5 6]
+```
+
+---
+
+## `np.vstack()`
+
+Stacks arrays vertically.
+
+```text
+vstack = np.vstack((arr1,arr2))
+
+print(vstack)
+```
+
+Output:
+
+```text
+[[1 2 3]
+ [4 5 6]]
+```
+
+---
+
+## `np.hstack()`
+
+Stacks arrays horizontally.
+
+```text
+hstack = np.hstack((arr1,arr2))
+
+print(hstack)
+```
+
+Output:
+
+```text
+[1 2 3 4 5 6]
+```
+
+---
+
+## `np.stack()`
+
+Stacks arrays along a new axis.
+
+```text
+stack = np.stack((arr1,arr2),axis=0)
+
+print(stack)
+```
+
+Output:
+
+```text
+[[1 2 3]
+ [4 5 6]]
+```
+
+---
+
+# Splitting Arrays
+
+## `np.split()`
+
+Splits array into equal parts.
+
+```text
+arr = np.array([1,2,3,4])
+
+print(np.split(arr,2))
+```
+
+Output:
+
+```text
+[array([1, 2]), array([3, 4])]
+```
+
+---
+
+# Repeat vs Tile
+
+## `np.repeat()`
+
+Repeats each element multiple times.
+
+```text
+arr = np.array([1,2,3])
+
+print(np.repeat(arr,3))
+```
+
+Output:
+
+```text
+[1 1 1 2 2 2 3 3 3]
+```
+
+---
+
+## `np.tile()`
+
+Repeats whole array multiple times.
+
+```text
+print(np.tile(arr,3))
+```
+
+Output:
+
+```text
+[1 2 3 1 2 3 1 2 3]
+```
+
+---
+
+# Aggregate Functions
+
+## `np.sum()`
+
+Returns sum of elements.
+
+```text
+print(np.sum(arr))
+```
+
+Output:
+
+```text
+6
+```
+
+---
+
+## `np.std()`
+
+Returns standard deviation.
+
+```text
+np.std(arr)
+```
+
+Output:
+
+```text
+0.816496580927726
+```
+
+---
+
+## `np.min()`
+
+Returns minimum value.
+
+```text
+np.min(arr)
+```
+
+Output:
+
+```text
+1
+```
+
+---
+
+## Sum by Axis
+
+```text
+matrix = np.array([[1,2,3],
+                   [4,5,6],
+                   [7,8,9]])
+
+print(np.sum(matrix,axis=0))
+print(np.sum(matrix,axis=1))
+```
+
+Output:
+
+```text
+[12 15 18]
+[ 6 15 24]
+```
+
+---
+
+## `np.cumsum()`
+
+Returns cumulative sum.
+
+```text
+print(np.cumsum(arr))
+```
+
+Output:
+
+```text
+[1 3 6]
+```
+
+---
+
+## `np.cumprod()`
+
+Returns cumulative product.
+
+```text
+print(np.cumprod(arr))
+```
+
+Output:
+
+```text
+[1 2 6]
+```
+
+---
+
+# Conditional Operations
+
+## `np.where()`
+
+Applies condition and returns values.
+
+```text
+res = np.where(arr<2,"low","high")
+
+print(res)
+```
+
+Output:
+
+```text
+['low' 'high' 'high']
+```
+
+---
+
+## `np.argwhere()`
+
+Returns indexes where condition is true.
+
+```text
+print(np.argwhere(arr>0))
+```
+
+Output:
+
+```text
+[[0]
+ [1]
+ [2]]
+```
+
+---
+
+# Masking in Arrays
+
+## `np.logical_and()`
+
+Checks multiple conditions together.
+
+```text
+array = np.array([100,2,3,4,5,6])
+
+mask = np.logical_and(array>3,array<6)
+
+print(mask)
+```
+
+Output:
+
+```text
+[False False False  True  True False]
+```
+
+---
+
+## `np.logical_or()`
+
+Returns true if any condition is true.
+
+```text
+mask = np.logical_or(array>3,array<6)
+
+print(mask)
+```
+
+Output:
+
+```text
+[ True  True  True  True  True  True]
+```
+
+---
+
+# Broadcasting
+
+Broadcasting automatically applies operations across arrays.
+
+```text
+image = np.array([[200,150],[100,250]])
+
+brightness = image + 50
+
+print(brightness)
+```
+
+Output:
+
+```text
+[[250 200]
+ [150 300]]
+```
+
+---
+
+# Vectorization
+
+Applies functions efficiently without loops.
+
+```text
+def square(x):
+  return x*x
+
+vfunc = np.vectorize(square)
+
+arr = np.array([1,2,3])
+
+print(vfunc(arr))
+```
+
+Output:
+
+```text
+[1 4 9]
+```
+
+---
+
+# Missing Values
+
+## `np.nan`
+
+Represents missing values.
+
+```text
+a = np.array([1,2,3,np.nan,5])
+
+print(a)
+```
+
+Output:
+
+```text
+[ 1.  2.  3. nan  5.]
+```
+
+---
+
+## `np.isnan()`
+
+Checks for NaN values.
+
+```text
+print(np.isnan(a))
+```
+
+Output:
+
+```text
+[False False False  True False]
+```
+
+---
+
+# Infinite Values
+
+## `np.isinf()`
+
+Checks infinite values.
+
+```text
+b = np.array([1,np.nan,np.inf,10.2,40])
+
+print(np.isinf(b))
+```
+
+Output:
+
+```text
+[False False  True False False]
+```
+
+---
+
+# `np.nan_to_num()`
+
+Converts NaN and Inf into numbers.
+
+```text
+new_b = np.nan_to_num(b)
+
+print(new_b)
+```
+
+Output:
+
+```text
+[1.00000000e+000 0.00000000e+000 1.79769313e+308 1.02000000e+001
+ 4.00000000e+001]
+```

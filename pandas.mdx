@@ -1,0 +1,891 @@
+---
+title: "Pandas"
+icon: "teddy-bear"
+---
+
+# What is Pandas?
+
+Pandas is a Python library used for:
+
+- Data analysis
+- Data cleaning
+- Handling tables and CSV files
+- Working with structured data easily
+
+Main data structures:
+
+- **Series** → 1D data
+- **DataFrame** → 2D tabular data
+
+---
+
+# Installation
+
+## Install Pandas
+
+```bash
+pip install pandas
+```
+
+---
+
+# Importing Pandas
+
+```python
+import pandas as pd
+```
+
+`pd` is an alias used for shorter syntax.
+
+---
+
+# Series in Pandas
+
+## `pd.Series()`
+
+Creates a one-dimensional labeled array.
+
+```python
+s = pd.Series([10,20,30,40,50])
+
+s
+```
+
+### Output
+
+```python
+0    10
+1    20
+2    30
+3    40
+4    50
+dtype: int64
+```
+
+### Explanation
+
+- Left side → index
+- Right side → values
+- `dtype` → datatype of values
+
+---
+
+# Series Attributes
+
+## `.dtype`
+
+Returns datatype of Series values.
+
+```python
+s.dtype
+```
+
+### Output
+
+```python
+dtype('int64')
+```
+
+### Explanation
+
+All values are integers, so datatype is `int64`.
+
+---
+
+## `.values`
+
+Returns all values as NumPy array.
+
+```python
+s.values
+```
+
+### Output
+
+```python
+array([10, 20, 30, 40, 50])
+```
+
+### Explanation
+
+Converts Series values into NumPy array format.
+
+---
+
+## `.index`
+
+Returns indexes of the Series.
+
+```python
+s.index
+```
+
+### Output
+
+```python
+RangeIndex(start=0, stop=5, step=1)
+```
+
+### Explanation
+
+Indexes start from 0 and end at 4.
+
+---
+
+## `.name`
+
+Assigns a name to the Series.
+
+```python
+s.name = "number"
+
+s
+```
+
+### Output
+
+```python
+0    10
+1    20
+2    30
+3    40
+4    50
+Name: number, dtype: int64
+```
+
+### Explanation
+
+The Series now has label `"number"`.
+
+---
+
+# Indexing in Pandas Series
+
+## Access Single Value
+
+```python
+s[0]
+```
+
+### Output
+
+```python
+10
+```
+
+### Explanation
+
+Gets value present at index `0`.
+
+---
+
+## Slicing
+
+```python
+s[0:2]
+```
+
+### Output
+
+```python
+0    10
+1    20
+dtype: int64
+```
+
+### Explanation
+
+Returns values from index `0` to `1`.\
+End index is excluded.
+
+---
+
+# `iloc` → Position Based Indexing
+
+Uses numeric positions.
+
+## Single Position
+
+```python
+s.iloc[3]
+```
+
+### Output
+
+```python
+40
+```
+
+### Explanation
+
+Returns value at position `3`.
+
+---
+
+## Multiple Positions
+
+```python
+s.iloc[[1,2,3]]
+```
+
+### Output
+
+```python
+1    20
+2    30
+3    40
+dtype: int64
+```
+
+### Explanation
+
+Fetches multiple positions together.
+
+---
+
+# Custom Index
+
+```python
+index = ["apple","banana","grapes","orange","guava"]
+
+s.index = index
+
+s
+```
+
+### Output
+
+```python
+apple     10
+banana    20
+grapes    30
+orange    40
+guava     50
+Name: number, dtype: int64
+```
+
+### Explanation
+
+Numeric indexes replaced with custom labels.
+
+---
+
+# Label Based Access
+
+```python
+s['apple']
+```
+
+### Output
+
+```python
+10
+```
+
+### Explanation
+
+Returns value associated with label `"apple"`.
+
+---
+
+# `loc` → Label Based Indexing
+
+Includes both start and end labels.
+
+```python
+s['banana':'orange']
+```
+
+### Output
+
+```python
+banana    20
+grapes    30
+orange    40
+Name: calories, dtype: int64
+```
+
+### Explanation
+
+Returns values from `"banana"` to `"orange"` inclusive.
+
+---
+
+# Creating Series from Dictionary
+
+```python
+fruit_protein = {
+    "apple":10,
+    "banana":20,
+    "grapes":30,
+    "orange":40,
+    "guava":50
+}
+
+s2 = pd.Series(fruit_protein)
+
+s2
+```
+
+### Output
+
+```python
+apple     10
+banana    20
+grapes    30
+orange    40
+guava     50
+dtype: int64
+```
+
+### Explanation
+
+Dictionary keys become indexes and values become Series values.
+
+---
+
+# Conditional Indexing
+
+## Filtering Values
+
+```python
+s2[s2 > 20]
+```
+
+### Output
+
+```python
+grapes    30
+orange    40
+guava     50
+dtype: int64
+```
+
+### Explanation
+
+Returns only values greater than `20`.
+
+---
+
+# Logical Operators
+
+## AND `&`
+
+```python
+s2[(s2>30) & (s2<50)]
+```
+
+### Output
+
+```python
+orange    40
+dtype: int64
+```
+
+### Explanation
+
+Both conditions must be true.
+
+---
+
+## OR `|`
+
+```python
+s2[(s2>30) | (s2<50)]
+```
+
+### Output
+
+```python
+apple     10
+banana    20
+grapes    30
+orange    40
+guava     50
+dtype: int64
+```
+
+### Explanation
+
+At least one condition should be true.
+
+---
+
+## NOT `~`
+
+```python
+s2[~(s2>10)]
+```
+
+### Output
+
+```python
+apple    10
+dtype: int64
+```
+
+### Explanation
+
+Reverses the condition.
+
+---
+
+# Modifying Series
+
+```python
+s2['apple'] = 100
+
+s2
+```
+
+### Output
+
+```python
+apple     100
+banana     20
+grapes     30
+orange     40
+guava      50
+dtype: int64
+```
+
+### Explanation
+
+Updates value of `"apple"`.
+
+---
+
+# DataFrame in Pandas
+
+## `pd.DataFrame()`
+
+Creates table-like data.
+
+```python
+df = pd.DataFrame(data)
+
+df
+```
+
+### Output
+
+```python
+   Name  Age  Salary Department
+0  John   25   50000         IT
+1  Jane   30   60000         HR
+2  Jack   35   70000    Finance
+3  Jill   40   80000  Marketing
+```
+
+### Explanation
+
+Rows and columns together form a DataFrame.
+
+---
+
+# `head()`
+
+Returns first rows.
+
+```python
+df.head(2)
+```
+
+### Output
+
+```python
+   Name  Age  Salary Department
+0  John   25   50000         IT
+1  Jane   30   60000         HR
+```
+
+### Explanation
+
+Useful for previewing dataset.
+
+---
+
+# `tail()`
+
+Returns last rows.
+
+```python
+df.tail()
+```
+
+### Explanation
+
+Shows ending rows of dataset.
+
+---
+
+# `iloc` in DataFrame
+
+```python
+df.iloc[1:3]
+```
+
+### Output
+
+```python
+   Name  Age  Salary Department
+1  Jane   30   60000         HR
+2  Jack   35   70000    Finance
+```
+
+### Explanation
+
+Selects rows using positions.
+
+---
+
+# `loc` in DataFrame
+
+```python
+df.loc[1:3, ["Name","Age"]]
+```
+
+### Output
+
+```python
+   Name  Age
+1  Jane   30
+2  Jack   35
+3  Jill   40
+```
+
+### Explanation
+
+Selects rows and specific columns using labels.
+
+---
+
+# `drop()`
+
+Removes rows or columns.
+
+```python
+df.drop("Age", axis=1)
+```
+
+### Explanation
+
+- `axis=1` → column
+- `axis=0` → row
+
+---
+
+# `.shape`
+
+Returns dataset dimensions.
+
+```python
+df.shape
+```
+
+### Output
+
+```python
+(4, 4)
+```
+
+### Explanation
+
+4 rows and 4 columns.
+
+---
+
+# `info()`
+
+Shows dataset summary.
+
+```python
+df.info()
+```
+
+### Explanation
+
+Displays:
+
+- columns
+- datatype
+- null values
+- memory usage
+
+---
+
+# `describe()`
+
+Shows statistical summary.
+
+```python
+df.describe()
+```
+
+### Explanation
+
+Provides:
+
+- mean
+- std
+- min
+- max
+- quartiles
+
+---
+
+# Broadcasting
+
+Applies operation to entire column.
+
+```python
+df["Salary"] = df["Salary"] + 10000
+```
+
+### Explanation
+
+Adds `10000` to every salary value.
+
+---
+
+# `rename()`
+
+Renames column names.
+
+```python
+df.rename(columns={"Name":"Employee Name"}, inplace=True)
+```
+
+### Explanation
+
+Changes `"Name"` column to `"Employee Name"`.
+
+---
+
+# `unique()`
+
+Returns unique values.
+
+```python
+df["Department"].unique()
+```
+
+### Output
+
+```python
+['IT' 'HR' 'Finance' 'Marketing']
+```
+
+### Explanation
+
+Removes duplicates and shows distinct values.
+
+---
+
+# `value_counts()`
+
+Counts occurrences of values.
+
+```python
+df["Department"].value_counts()
+```
+
+### Explanation
+
+Counts frequency of each department.
+
+---
+
+# Missing Values
+
+# `isnull()`
+
+Checks missing values.
+
+```python
+df1.isnull()
+```
+
+---
+
+# `isnull().sum()`
+
+Counts missing values column-wise.
+
+```python
+df1.isnull().sum()
+```
+
+---
+
+# `dropna()`
+
+Removes missing values.
+
+```python
+df1.dropna()
+```
+
+### Explanation
+
+Deletes rows containing null values.
+
+---
+
+# `fillna()`
+
+Fills missing values.
+
+```python
+df1.fillna(0)
+```
+
+### Explanation
+
+Replaces null values with `0`.
+
+---
+
+# Fill Missing Values with Mean
+
+```python
+df1['Age'].fillna(df1['Age'].mean())
+```
+
+### Explanation
+
+Uses average age to replace null.
+
+---
+
+# Forward Fill
+
+```python
+df1['Age'].fillna(method='ffill')
+```
+
+### Explanation
+
+Uses previous row value.
+
+---
+
+# Backward Fill
+
+```python
+df1['Age'].fillna(method='bfill')
+```
+
+### Explanation
+
+Uses next row value.
+
+---
+
+# `replace()`
+
+Replaces specific values.
+
+```python
+df1["Name"].replace('Jack','Tharun')
+```
+
+### Explanation
+
+Changes `"Jack"` to `"Tharun"`.
+
+---
+
+# Duplicates
+
+## `duplicated()`
+
+Finds duplicate rows.
+
+```python
+df[df.duplicated()]
+```
+
+---
+
+# Lambda Functions
+
+## `apply()`
+
+Applies function to every value.
+
+```python
+df["Age"] = df["Age"].apply(lambda x: x/2)
+```
+
+### Explanation
+
+Divides every age by 2.
+
+---
+
+# Concatenation
+
+## `concat()`
+
+Combines DataFrames.
+
+```python
+pd.concat([df,df_department])
+```
+
+### Explanation
+
+Stacks DataFrames vertically.
+
+---
+
+# Merge / Join
+
+## `merge()`
+
+Joins DataFrames using common column.
+
+```python
+pd.merge(df,df_department,on="Department")
+```
+
+### Explanation
+
+Combines matching department rows together.
+
+---
+
+# Reading CSV Files
+
+## `read_csv()`
+
+Reads CSV files into DataFrame.
+
+```python
+data = pd.read_csv("/content/house-prices.csv")
+```
+
+---
+
+# Dataset Summary
+
+## `data.info()`
+
+Shows column information.
+
+```python
+data.info()
+```
+
+---
+
+# Statistical Summary
+
+## `data.describe()`
+
+Shows statistical details.
+
+```python
+data.describe()
+```

@@ -59,7 +59,8 @@
             "group": "1. Programming Foundation",
             "pages": [
               "python",
-              "num-py"
+              "num-py",
+              "pandas"
             ],
             "icon": "1"
           }

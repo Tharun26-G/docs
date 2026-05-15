@@ -60,7 +60,8 @@
             "pages": [
               "python",
               "num-py",
-              "pandas"
+              "pandas",
+              "matplotlib"
             ],
             "icon": "1"
           }

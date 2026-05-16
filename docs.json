@@ -61,7 +61,8 @@
               "python",
               "num-py",
               "pandas",
-              "matplotlib"
+              "matplotlib",
+              "seaborn"
             ],
             "icon": "1"
           }

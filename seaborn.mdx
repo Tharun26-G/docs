@@ -1,0 +1,875 @@
+---
+title: "Seaborn"
+icon: "water"
+---
+
+# Seaborn Complete Notes
+
+# What is Seaborn?
+
+Seaborn is a Python data visualization library built on top of Matplotlib.
+
+It helps to:
+
+- Create beautiful statistical plots
+- Reduce plotting code
+- Improve plot styling automatically
+- Visualize complex datasets easily
+
+Used in:
+
+- Data Science
+- Machine Learning
+- Data Analysis
+
+---
+
+# Installing Seaborn
+
+## Installation
+
+```bash
+pip install seaborn
+```
+
+---
+
+# Importing Libraries
+
+```python
+import seaborn as sns
+import pandas as pd
+import numpy as np
+```
+
+### Explanation
+
+- `sns` → seaborn alias
+- `pd` → pandas
+- `np` → numpy
+
+---
+
+# Loading Dataset in Seaborn
+
+# `sns.get_dataset_names()`
+
+Shows available built-in datasets.
+
+```python
+sns.get_dataset_names()
+```
+
+### Output
+
+List of datasets like:
+
+```python
+['penguins', 'tips', 'iris', 'diamonds', ...]
+```
+
+---
+
+# `sns.load_dataset()`
+
+Loads built-in dataset.
+
+```python
+penguins = sns.load_dataset('penguins')
+
+penguins.head()
+```
+
+### Output
+
+```python
+species island bill_length_mm ...
+```
+
+### Explanation
+
+Loads penguins dataset into DataFrame.
+
+---
+
+# `value_counts()`
+
+Counts category occurrences.
+
+```python
+penguins['species'].value_counts()
+```
+
+### Output
+
+```python
+Adelie       152
+Gentoo       124
+Chinstrap     68
+```
+
+### Explanation
+
+Counts penguins species frequency.
+
+---
+
+# Scatter Plot
+
+# `sns.scatterplot()`
+
+Used to visualize relationship between two numerical variables.
+
+```python
+sns.scatterplot(
+    data=penguins,
+    x='flipper_length_mm',
+    y='body_mass_g',
+    hue='island'
+)
+```
+
+### Explanation
+
+- `x` → x-axis variable
+- `y` → y-axis variable
+- `hue` → color grouping
+
+### Output
+
+Scatter plot grouped by island colors.
+
+<Frame>
+  ![Scatter](/images/scatter.png)
+</Frame>
+
+---
+
+# Styling in Seaborn
+
+# `sns.set_style()`
+
+Changes plot background style.
+
+```python
+sns.set_style('whitegrid')
+```
+
+### Available Styles
+
+- white
+- dark
+- whitegrid
+- darkgrid
+- ticks
+
+---
+
+# `sns.despine()`
+
+Removes plot borders/spines.
+
+```python
+sns.despine(left=True)
+```
+
+### Explanation
+
+Removes left spine.
+
+<Frame>
+  ![Despine](/images/despine.png)
+</Frame>
+
+---
+
+# `sns.set_context()`
+
+Controls scaling of plot elements.
+
+```python
+sns.set_context('talk')
+```
+
+<Frame>
+  ![Talk](/images/talk.png)
+</Frame>
+
+### Context Types
+
+| Context | Usage |
+| :-- | :-- |
+| paper | Small plots |
+| notebook | Default |
+| talk | Presentation |
+| poster | Large displays |
+
+---
+
+# Palette
+
+# `palette`
+
+Controls color theme.
+
+```python
+sns.scatterplot(
+    data=penguins,
+    x='flipper_length_mm',
+    y='body_mass_g',
+    hue='island',
+    palette='Dark2'
+)
+```
+
+### Explanation
+
+Uses Dark2 color palette.
+
+<Frame>
+  ![Palette](/images/palette.png)
+</Frame>
+
+---
+
+# Scatter Plot with Style and Alpha
+
+```python
+sns.scatterplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='island',
+    style='sex',
+    alpha=0.5
+)
+```
+
+### Explanation
+
+- `style` → marker style changes
+- `alpha` → transparency
+  <Frame>
+    ![Styleandaplpha](/images/styleandaplpha.png)
+  </Frame>
+
+---
+
+# Strip Plot
+
+# `sns.stripplot()`
+
+Shows distribution of categorical data.
+
+```python
+sns.stripplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='island'
+)
+```
+
+### Output
+
+Categorical scatter-like plot.
+
+<Frame>
+  ![Stripplot](/images/stripplot.png)
+</Frame>
+
+---
+
+# `dodge=True`
+
+Separates hue categories.
+
+```python
+sns.stripplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='island',
+    dodge=True
+)
+```
+
+<Frame>
+  ![Dodge](/images/dodge.png)
+</Frame>
+
+---
+
+# `jitter=True`
+
+Adds random spacing.
+
+```python
+sns.stripplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='island',
+    dodge=True,
+    jitter=True
+)
+```
+
+### Explanation
+
+Avoids overlapping points.
+
+<Frame>
+  ![Jitter](/images/jitter.png)
+</Frame>
+
+---
+
+# Swarm Plot
+
+# `sns.swarmplot()`
+
+Automatically prevents overlap.
+
+```python
+sns.swarmplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='island'
+)
+```
+
+### Output
+
+Bee swarm arrangement of points.
+
+<Frame>
+  ![Swarmplot](/images/swarmplot.png)
+</Frame>
+
+---
+
+# Histogram
+
+# `sns.histplot()`
+
+Shows data distribution.
+
+```python
+sns.histplot(
+    data=penguins,
+    x='body_mass_g',
+    hue='sex',
+    multiple='stack'
+)
+```
+
+### Explanation
+
+- `multiple='stack'` → stacked histogram
+  <Frame>
+    ![Histogram1](/images/histogram1.png)
+  </Frame>
+
+---
+
+# Regression Plot
+
+# `sns.regplot()`
+
+Adds regression trend line.
+
+```python
+sns.regplot(
+    data=penguins,
+    x='body_mass_g',
+    y='flipper_length_mm',
+    color='green'
+)
+```
+
+### Explanation
+
+Shows linear relationship between variables.
+
+<Frame>
+  ![Regressionplo](/images/regressionplo.png)
+</Frame>
+
+---
+
+# Line Plot
+
+# `sns.lineplot()`
+
+Shows continuous trends.
+
+```python
+sns.lineplot(
+    data=penguins,
+    x='body_mass_g',
+    y='flipper_length_mm',
+    hue='island',
+    style='sex'
+)
+```
+
+### Explanation
+
+- Different colors → islands
+- Different styles → sex
+  <Frame>
+    ![Linelot12](/images/linelot12.png)
+  </Frame>
+
+---
+
+# Joint Plot
+
+# `sns.jointplot()`
+
+Combines scatter plot \+ distributions.
+
+```python
+sns.jointplot(
+    data=penguins,
+    x='body_mass_g',
+    y='flipper_length_mm',
+    kind='scatter'
+)
+```
+
+### Output
+
+Central scatter plot with side histograms.
+
+<Frame>
+  ![Joiin](/images/joiin.png)
+</Frame>
+
+---
+
+# KDE Joint Plot
+
+```python
+sns.jointplot(
+    data=penguins,
+    x='body_mass_g',
+    y='flipper_length_mm',
+    hue='sex',
+    kind='kde'
+)
+```
+
+### Explanation
+
+Uses density estimation instead of scatter points.
+
+<Frame>
+  ![Kdeplot](/images/kdeplot.png)
+</Frame>
+
+---
+
+# Bar Plot
+
+# `sns.barplot()`
+
+Shows average values by category.
+
+```python
+sns.barplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='sex',
+    palette=['red','blue']
+)
+```
+
+### Explanation
+
+Compares mean body mass.
+
+<Frame>
+  ![Barplot](/images/barplot.png)
+</Frame>
+
+---
+
+# Count Plot
+
+# `sns.countplot()`
+
+Counts categorical occurrences.
+
+```python
+sns.countplot(
+    data=penguins,
+    x='species'
+)
+```
+
+### Output
+
+Bar chart of species counts.
+
+<Frame>
+  ![Countplot](/images/countplot.png)
+</Frame>
+
+---
+
+# Box Plot
+
+# `sns.boxplot()`
+
+Shows:
+
+- median
+- quartiles
+- outliers
+
+```python
+sns.boxplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='sex'
+)
+```
+
+### Output
+
+Distribution comparison across species.
+
+<Frame>
+  ![Boxplot2](/images/boxplot2.png)
+</Frame>
+
+---
+
+# Violin Plot
+
+# `sns.violinplot()`
+
+Combines boxplot \+ density plot.
+
+```python
+sns.violinplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='sex'
+)
+```
+
+### Explanation
+
+Width shows density of values.
+
+<Frame>
+  ![Violin](/images/violin.png)
+</Frame>
+
+---
+
+# Split Violin Plot
+
+```python
+sns.violinplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='sex',
+    split=True
+)
+```
+
+### Explanation
+
+Male and female shown in one violin.
+
+<Frame>
+  ![Violinsplit](/images/violinsplit.png)
+</Frame>
+
+---
+
+# Inner Quartiles
+
+```python
+sns.violinplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    hue='sex',
+    split=True,
+    inner='quartile'
+)
+```
+
+### Explanation
+
+Shows quartile lines inside violin.
+
+<Frame>
+  ![Violinquat](/images/violinquat.png)
+</Frame>
+
+---
+
+# Swarm \+ Violin Combined
+
+```python
+sns.violinplot(data=penguins,
+               x='species',
+               y='body_mass_g')
+
+sns.swarmplot(
+    data=penguins,
+    x='species',
+    y='body_mass_g',
+    color='black',
+    size=3
+)
+```
+
+### Explanation
+
+Combines density \+ individual points.
+
+<Frame>
+  ![Violin Swarm](/images/violin_swarm.png)
+</Frame>
+
+---
+
+# KDE Plot
+
+# `sns.kdeplot()`
+
+Smooth probability density curve.
+
+```python
+sns.kdeplot(
+    data=penguins,
+    x='body_mass_g',
+    hue='species',
+    fill=True
+)
+```
+
+### Explanation
+
+- Smooth histogram alternative
+- `fill=True` fills area
+  <Frame>
+    ![Kdeplot1](/images/kdeplot1.png)
+  </Frame>
+
+---
+
+# Heatmap
+
+# `sns.heatmap()`
+
+Displays matrix with colors.
+
+```python
+columns = [
+    "bill_length_mm",
+    "bill_depth_mm",
+    "flipper_length_mm",
+    "body_mass_g"
+]
+
+penguins_corr = penguins[columns].corr()
+
+sns.heatmap(
+    data=penguins_corr,
+    annot=True,
+    vmin=-0.2
+)
+```
+
+### Explanation
+
+- `corr()` → correlation matrix
+- `annot=True` → show values
+- `vmin` → minimum color scale
+
+### Output
+
+Correlation heatmap.
+
+<Frame>
+  ![Heatmap](/images/heatmap.png)
+</Frame>
+
+---
+
+# Rug Plot
+
+# `sns.rugplot()`
+
+Shows individual data points as ticks.
+
+```python
+sns.rugplot(
+    data=penguins,
+    x='body_mass_g',
+    hue='species',
+    palette='Set2'
+)
+```
+
+### Output
+
+Small tick marks along axis.
+
+<Frame>
+  ![Rugplot](/images/rugplot.png)
+</Frame>
+
+---
+
+# Pair Plot
+
+# `sns.pairplot()`
+
+Creates pairwise plots automatically.
+
+```python
+sns.pairplot(
+    data=penguins,
+    hue='species'
+)
+```
+
+### Output
+
+Grid of scatter plots and histograms.
+
+<Frame>
+  ![Pairplot1](/images/pairplot1.png)
+</Frame>
+
+---
+
+# Pair Plot with Histogram
+
+```python
+sns.pairplot(
+    data=penguins,
+    hue='species',
+    diag_kind='hist'
+)
+```
+
+### Explanation
+
+Diagonal uses histograms instead of KDE.
+
+<Frame>
+  ![Pairhisto](/images/pairhisto.png)
+</Frame>
+
+---
+
+# Pair Grid
+
+# `sns.PairGrid()`
+
+Custom subplot grid.
+
+```python
+g = sns.PairGrid(
+    data=penguins,
+    hue='sex',
+    palette='Set2'
+)
+
+g.map_upper(sns.scatterplot)
+g.map_lower(sns.kdeplot)
+g.map_diag(sns.histplot)
+
+g.add_legend()
+```
+
+### Explanation
+
+- `map_upper()` → upper triangle plots
+- `map_lower()` → lower triangle plots
+- `map_diag()` → diagonal plots
+
+### Output
+
+Fully customized pairwise visualization grid.
+
+<Frame>
+  ![Pair Subplot](/images/pair_subplot.png)
+</Frame>
+
+---
+
+# Seaborn Plot Summary
+
+| Plot | Purpose |
+| :-- | :-- |
+| scatterplot | Relationship between variables |
+| stripplot | Categorical spread |
+| swarmplot | Non-overlapping stripplot |
+| histplot | Distribution |
+| regplot | Regression trend |
+| lineplot | Continuous trends |
+| jointplot | Combined distributions |
+| barplot | Average comparison |
+| countplot | Frequency count |
+| boxplot | Outlier detection |
+| violinplot | Density \+ boxplot |
+| kdeplot | Smooth distribution |
+| heatmap | Correlation matrix |
+| rugplot | Individual data ticks |
+| pairplot | Automatic pair relationships |
+| PairGrid | Custom pairwise plots |
+
+---
+
+# Important Seaborn Functions
+
+| Function | Purpose |
+| :-- | :-- |
+| `set_style()` | Plot style |
+| `set_context()` | Scaling |
+| `despine()` | Remove borders |
+| `scatterplot()` | Scatter plot |
+| `histplot()` | Histogram |
+| `regplot()` | Regression line |
+| `lineplot()` | Line graph |
+| `barplot()` | Bar chart |
+| `countplot()` | Count categories |
+| `boxplot()` | Quartiles & outliers |
+| `violinplot()` | Density visualization |
+| `heatmap()` | Matrix heatmap |
+| `pairplot()` | Pairwise analysis |
+
+---
+
+# Seaborn Helps
+
+Seaborn helps to:
+
+- Create attractive statistical plots
+- Analyze distributions
+- Detect patterns
+- Understand correlations
+- Visualize categorical and numerical data easily
+
+Advantages:
+
+- Less code
+- Better styling
+- Easy integration with Pandas
+- Built on Matplotlib

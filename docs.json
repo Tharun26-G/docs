@@ -65,6 +65,13 @@
               "seaborn"
             ],
             "icon": "1"
+          },
+          {
+            "group": "2. Mathematics & Statistics for AI",
+            "icon": "2",
+            "pages": [
+              "linear-algebra"
+            ]
           }
         ]
       }

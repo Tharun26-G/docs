@@ -1,0 +1,781 @@
+---
+title: "Linear Algebra"
+icon: "corner"
+---
+
+Linear Algebra is one of the foundations of Artificial Intelligence and Machine Learning because datasets, images, embeddings, and neural network calculations are represented using vectors and matrices.
+
+---
+
+# Why Linear Algebra in AI/ML?
+
+Linear Algebra is used in:
+
+- Linear Regression
+- Neural Networks
+- Deep Learning
+- Computer Vision
+- Recommendation Systems
+- NLP Embeddings
+- PCA (Principal Component Analysis)
+- Clustering
+- Search and Similarity Systems
+
+Example:
+
+House prediction dataset:
+
+| Area | Bedrooms | Roof Age |
+| :-- | :-- | :-- |
+| 1200 | 3 | 5 |
+| 1500 | 4 | 2 |
+
+Represented as:
+
+```python
+X = [
+    [1200,3,5],
+    [1500,4,2]
+]
+```
+
+Rows → data points\
+Columns → features
+
+---
+
+# 1. Vectors
+
+## What is a Vector?
+
+A vector is a one-dimensional array representing a data point.
+
+Example:
+
+```python
+import numpy as np
+
+v = np.array([1,2,3])
+
+print(v)
+```
+
+Output:
+
+```python
+[1 2 3]
+```
+
+### AI/ML Usage
+
+Vectors represent:
+
+- User embeddings
+- Text embeddings
+- Image pixels
+- Features
+
+Example:
+
+House features:
+
+```python
+[Area, Bedrooms, RoofAge]
+
+[1200,3,5]
+```
+
+---
+
+# Dot Product
+
+## What it does
+
+Multiplies corresponding elements and sums them.
+
+Formula:
+
+```python
+v1·v2 = (x1×x2)+(y1×y2)+(z1×z2)
+```
+
+Code:
+
+```python
+v1=np.array([1,2,3])
+v2=np.array([4,5,6])
+
+dot=np.dot(v1,v2)
+
+print(dot)
+```
+
+Output:
+
+```python
+32
+```
+
+Calculation:
+
+```python
+(1×4)+(2×5)+(3×6)
+
+4+10+18
+
+32
+```
+
+### AI/ML Usage
+
+Used in:
+
+- Neural networks
+- Linear regression
+- Recommendation systems
+- Similarity search
+
+Prediction equation:
+
+```python
+y = wx + b
+```
+
+---
+
+# Vector Norms
+
+## What it does
+
+Measures vector magnitude (length).
+
+---
+
+## L2 Norm (Euclidean Distance)
+
+Formula:
+
+```python
+||v||₂ = √(x₁²+x₂²+x₃²)
+```
+
+Code:
+
+```python
+v=np.array([1,2,3])
+
+norm=np.linalg.norm(v)
+
+print(norm)
+```
+
+Output:
+
+```python
+3.741657
+```
+
+Calculation:
+
+```python
+√(1²+2²+3²)
+
+√14
+
+3.74
+```
+
+---
+
+## L1 Norm (Manhattan Distance)
+
+Formula:
+
+```python
+||v||₁ = |x₁|+|x₂|+|x₃|
+```
+
+Code:
+
+```python
+np.linalg.norm(v,ord=1)
+```
+
+Output:
+
+```python
+6
+```
+
+Calculation:
+
+```python
+1+2+3
+
+6
+```
+
+---
+
+### AI/ML Usage
+
+Used in:
+
+- Regularization
+- Clustering
+- Similarity measurement
+- Feature selection
+
+---
+
+# Cosine Similarity
+
+## What it does
+
+Measures similarity between vectors using angle instead of distance.
+
+Formula:
+
+```python
+Cosine Similarity =
+
+(v1·v2)/(||v1|| × ||v2||)
+```
+
+Code:
+
+```python
+v1=np.array([1,2,3])
+
+v2=np.array([4,5,6])
+
+similarity=np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2))
+
+print(similarity)
+```
+
+Output:
+
+```python
+0.9746
+```
+
+Interpretation:
+
+```python
+1 → exactly similar
+
+0 → unrelated
+
+−1 → opposite
+```
+
+### AI/ML Usage
+
+Used heavily in:
+
+- ChatGPT embeddings
+- Semantic search
+- Recommendation systems
+- NLP
+
+Example:
+
+```python
+"cat"
+
+"kitten"
+```
+
+Embeddings close together → high cosine similarity
+
+---
+
+# 2. Matrices
+
+## What is Matrix?
+
+Collection of vectors arranged in rows and columns.
+
+Example:
+
+```python
+A=np.array([
+[1,2],
+[3,4]
+])
+
+print(A)
+```
+
+Output:
+
+```python
+[[1 2]
+ [3 4]]
+```
+
+### AI/ML Usage
+
+Represents:
+
+- Datasets
+- Images
+- Neural network weights
+
+---
+
+# Matrix Multiplication
+
+## What it does
+
+Rows multiply columns.
+
+Condition:
+
+```python
+(A rows × columns)
+
+(B rows × columns)
+
+Columns of A = Rows of B
+```
+
+Code:
+
+```python
+A=np.array([
+[1,2],
+[3,4]
+])
+
+B=np.array([
+[5,6],
+[7,8]
+])
+
+print(np.dot(A,B))
+```
+
+Output:
+
+```python
+[[19 22]
+ [43 50]]
+```
+
+Calculation:
+
+```python
+1×5 + 2×7 =19
+
+1×6 + 2×8 =22
+
+3×5 + 4×7 =43
+
+3×6 + 4×8 =50
+```
+
+### AI/ML Usage
+
+Used in:
+
+- Neural networks
+- Attention mechanisms
+- Transformations
+
+---
+
+# Matrix Transpose
+
+## What it does
+
+Converts rows into columns.
+
+Code:
+
+```python
+A.T
+```
+
+Output:
+
+```python
+[[1 3]
+ [2 4]]
+```
+
+### AI/ML Usage
+
+Used in:
+
+- Linear regression
+- PCA
+- Matrix multiplication
+
+---
+
+# Matrix Inverse
+
+## What it does
+
+Finds matrix that reverses transformation.
+
+Condition:
+
+```python
+determinant ≠ 0
+```
+
+Code:
+
+```python
+inv=np.linalg.inv(A)
+
+print(inv)
+```
+
+Output:
+
+```python
+[[-2.0 1.0]
+ [1.5 -0.5]]
+```
+
+Verification:
+
+```python
+A × A⁻¹
+
+=
+
+Identity Matrix
+```
+
+Output:
+
+```python
+[[1 0]
+ [0 1]]
+```
+
+### AI/ML Usage
+
+Used in:
+
+- Solving equations
+- Linear Regression
+
+---
+
+# Matrix Rank
+
+## What it does
+
+Determines how many independent rows or columns exist.
+
+Code:
+
+```python
+rank=np.linalg.matrix_rank(A)
+
+print(rank)
+```
+
+Output:
+
+```python
+2
+```
+
+Interpretation:
+
+```python
+Rank = number of independent features
+```
+
+### AI/ML Usage
+
+Used in:
+
+- Removing redundant features
+- Detecting multicollinearity
+
+---
+
+# Eigenvalues and Eigenvectors
+
+## What it does
+
+Finds:
+
+- Stretch amount → Eigenvalue
+- Stretch direction → Eigenvector
+
+Formula:
+
+```python
+Av = λv
+```
+
+Code:
+
+```python
+values,vectors=np.linalg.eig(A)
+
+print(values)
+
+print(vectors)
+```
+
+Output:
+
+```python
+Eigenvalues:
+
+[-0.372 5.372]
+
+Eigenvectors:
+
+[[-0.824 -0.416]
+ [0.565 -0.909]]
+```
+
+### AI/ML Usage
+
+Used in:
+
+- PCA
+- Face recognition
+- Dimensionality reduction
+
+Intuition:
+
+Imagine stretching a rubber sheet:
+
+- Eigenvector → direction
+- Eigenvalue → stretch amount
+
+---
+
+# Singular Value Decomposition (SVD)
+
+## What it does
+
+Breaks matrix into three matrices.
+
+Formula:
+
+```python
+A = U S Vᵀ
+```
+
+Where:
+
+```python
+U → left singular vectors
+
+S → singular values
+
+Vᵀ → right singular vectors
+```
+
+Code:
+
+```python
+U,S,VT=np.linalg.svd(A)
+
+print(U)
+
+print(S)
+
+print(VT)
+```
+
+Output:
+
+```python
+U:
+
+[[-0.404 -0.915]
+ [-0.915 0.404]]
+
+S:
+
+[5.46 0.36]
+
+VT:
+
+[[-0.576 -0.817]
+ [0.817 -0.576]]
+```
+
+### AI/ML Usage
+
+Used in:
+
+- Recommendation systems
+- Image compression
+- NLP
+- PCA
+
+---
+
+# PCA (Principal Component Analysis) Intuition
+
+## What it does
+
+Reduces dimensions while keeping maximum information.
+
+Example:
+
+Dataset:
+
+```python
+Height
+
+Weight
+
+Age
+```
+
+Maybe:
+
+```python
+Height and Weight
+```
+
+contain similar information.
+
+PCA converts:
+
+```python
+3 features
+```
+
+into:
+
+```python
+2 important features
+```
+
+using eigenvectors.
+
+Steps:
+
+```python
+1. Standardize data
+
+2. Compute covariance matrix
+
+3. Find eigenvalues/eigenvectors
+
+4. Sort by largest eigenvalues
+
+5. Select top components
+```
+
+### AI/ML Usage
+
+Used in:
+
+- Data compression
+- Noise reduction
+- Visualization
+- Faster training
+
+---
+
+# Quick Revision Notes
+
+### Vector
+
+```python
+One-dimensional data
+```
+
+### Dot Product
+
+```python
+Multiply + Sum
+```
+
+### Norm
+
+```python
+Magnitude of vector
+```
+
+### Cosine Similarity
+
+```python
+Angle-based similarity
+```
+
+### Matrix
+
+```python
+Collection of vectors
+```
+
+### Transpose
+
+```python
+Rows → Columns
+```
+
+### Inverse
+
+```python
+Reverse matrix operation
+```
+
+### Rank
+
+```python
+Independent rows/columns
+```
+
+### Eigenvalues
+
+```python
+Stretch amount
+```
+
+### Eigenvectors
+
+```python
+Stretch direction
+```
+
+### SVD
+
+```python
+Matrix decomposition
+```
+
+### PCA
+
+```python
+Reduce dimensions while preserving information
+```
+
+---
+
+# Applications
+
+| Concept | AI/ML Application |
+| :-- | :-- |
+| Vectors | Features, embeddings |
+| Dot Product | Neural networks |
+| Norms | Similarity |
+| Cosine Similarity | Semantic search |
+| Matrices | Datasets |
+| Matrix Multiplication | Neural networks |
+| Transpose | Regression |
+| Rank | Feature selection |
+| Inverse | Solving equations |
+| Eigenvalues | PCA |
+| Eigenvectors | Dimensionality reduction |
+| SVD | Recommendation systems |
+| PCA | Compression & visualization |

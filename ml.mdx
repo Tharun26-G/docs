@@ -1,0 +1,723 @@
+---
+title: "Core ML"
+icon: "gear-code"
+---
+
+Machine Learning (ML) is a branch of Artificial Intelligence where systems learn patterns from data and improve predictions or decisions without being explicitly programmed for every rule.
+
+---
+
+# What is Machine Learning?
+
+Traditional programming:
+
+```text
+Input + Rules → Output
+```
+
+Machine Learning:
+
+```text
+Input + Output Data → Model learns Rules
+```
+
+Example:
+
+Spam Email Detection
+
+Traditional approach:
+
+```text
+if email contains "lottery":
+    spam=True
+```
+
+Machine Learning approach:
+
+```text
+Provide thousands of spam and non-spam emails
+
+Model learns patterns automatically
+```
+
+---
+
+# Why Machine Learning?
+
+Machine learning is useful when:
+
+- Rules are too complex
+- Huge amounts of data exist
+- Patterns continuously change
+- Manual programming becomes difficult
+
+Examples:
+
+- Netflix recommendations
+- Self-driving cars
+- Fraud detection
+- Face recognition
+- ChatGPT
+- YouTube recommendations
+
+---
+
+# Machine Learning Pipeline
+
+Typical workflow:
+
+```text
+Collect Data
+      ↓
+Clean Data
+      ↓
+Feature Engineering
+      ↓
+Split Data
+      ↓
+Train Model
+      ↓
+Evaluate Model
+      ↓
+Tune Model
+      ↓
+Deploy Model
+```
+
+---
+
+# Types of Machine Learning
+
+Machine Learning mainly has three types:
+
+```text
+1. Supervised Learning
+
+2. Unsupervised Learning
+
+3. Reinforcement Learning
+```
+
+---
+
+# 1. Supervised Learning
+
+## What is Supervised Learning?
+
+The model learns from labeled data.
+
+Labeled data:
+
+```text
+Input → Output
+```
+
+Example:
+
+```text
+House Area → House Price
+
+1000 sqft → ₹20 lakh
+1200 sqft → ₹25 lakh
+1500 sqft → ₹30 lakh
+```
+
+The model learns:
+
+```text
+Area → Price relationship
+```
+
+After learning:
+
+```text
+1700 sqft → ?
+```
+
+Model predicts answer.
+
+---
+
+## Types of Supervised Learning
+
+Two major types:
+
+```text
+1. Regression
+
+2. Classification
+```
+
+---
+
+## Regression
+
+Predicts continuous numerical values.
+
+Examples:
+
+- House price prediction
+- Stock price prediction
+- Temperature prediction
+- Sales forecasting
+
+Output:
+
+```text
+₹25,43,000
+
+72.5°C
+
+50.8
+```
+
+Algorithms:
+
+- Linear Regression
+- Random Forest Regressor
+- XGBoost
+- Decision Tree Regressor
+
+---
+
+## Classification
+
+Predicts categories/classes.
+
+Examples:
+
+- Spam or Not Spam
+- Disease Detection
+- Fraud Detection
+- Cat vs Dog
+
+Output:
+
+```text
+Spam
+
+Fraud
+
+Cat
+```
+
+Algorithms:
+
+- Logistic Regression
+- Decision Trees
+- Random Forest
+- SVM
+- Neural Networks
+
+---
+
+## Supervised Learning Flow
+
+```text
+Input Data
+
+↓
+
+Learn patterns
+
+↓
+
+Predict outputs
+```
+
+Example:
+
+Student marks prediction:
+
+| Hours Studied | Marks |
+| :-- | :-- |
+| 2 | 40 |
+| 4 | 60 |
+| 6 | 75 |
+
+Predict:
+
+```text
+8 hours → ?
+```
+
+---
+
+## Advantages
+
+- Easy to evaluate
+- High accuracy with enough labeled data
+- Clear target output
+
+## Disadvantages
+
+- Requires large labeled datasets
+- Labeling data is expensive
+- Can overfit
+
+---
+
+# 2. Unsupervised Learning
+
+## What is Unsupervised Learning?
+
+Learns from unlabeled data.
+
+No correct outputs exist.
+
+Input:
+
+```text
+Only data
+```
+
+Example:
+
+Customer purchase data:
+
+```text
+Age
+Salary
+Products Bought
+```
+
+Model discovers hidden patterns.
+
+---
+
+## Types of Unsupervised Learning
+
+Main categories:
+
+```text
+1. Clustering
+
+2. Dimensionality Reduction
+
+3. Association Rule Learning
+```
+
+---
+
+## Clustering
+
+Groups similar data points.
+
+Example:
+
+Customer segmentation:
+
+```text
+Group 1 → Students
+
+Group 2 → Working professionals
+
+Group 3 → Senior citizens
+```
+
+Algorithms:
+
+- K-Means
+- DBSCAN
+- Hierarchical Clustering
+
+Applications:
+
+- Customer segmentation
+- Fraud detection
+- Image segmentation
+
+---
+
+## Dimensionality Reduction
+
+Reduces features while preserving information.
+
+Example:
+
+Dataset:
+
+```text
+Height
+Weight
+Age
+BMI
+```
+
+Some columns may be highly related.
+
+Reduce:
+
+```text
+4 features → 2 features
+```
+
+Algorithms:
+
+- PCA
+- t-SNE
+
+Applications:
+
+- Faster training
+- Visualization
+- Noise reduction
+
+---
+
+## Association Rule Learning
+
+Finds relationships among items.
+
+Example:
+
+```text
+People buying bread also buy milk
+```
+
+Applications:
+
+- Product recommendation
+- Market basket analysis
+
+Algorithms:
+
+- Apriori
+- FP Growth
+
+---
+
+## Advantages
+
+- No labeled data needed
+- Finds hidden patterns
+
+## Disadvantages
+
+- Hard to evaluate
+- Interpretation may be difficult
+
+---
+
+# 3. Reinforcement Learning (RL)
+
+## What is Reinforcement Learning?
+
+Learning by interacting with an environment.
+
+Agent learns through:
+
+```text
+Actions → Rewards → Learning
+```
+
+---
+
+## RL Components
+
+### Agent
+
+The learner
+
+Examples:
+
+```text
+Robot
+Game AI
+Self-driving car
+```
+
+---
+
+### Environment
+
+Where agent acts.
+
+Examples:
+
+```text
+Chess board
+
+Road
+
+Game world
+```
+
+---
+
+### State
+
+Current situation.
+
+Example:
+
+```text
+Robot location
+```
+
+---
+
+### Action
+
+What agent can do.
+
+Example:
+
+```text
+Move left
+
+Move right
+
+Jump
+```
+
+---
+
+### Reward
+
+Feedback after action.
+
+Example:
+
+```text
++10 → good move
+
+−5 → bad move
+```
+
+---
+
+## Reinforcement Learning Flow
+
+```text
+Agent
+
+↓
+
+Take Action
+
+↓
+
+Environment changes
+
+↓
+
+Reward received
+
+↓
+
+Learn from reward
+
+↓
+
+Repeat
+```
+
+---
+
+## Example: Self-driving Car
+
+State:
+
+```text
+Traffic signal = Red
+```
+
+Action:
+
+```text
+Stop
+```
+
+Reward:
+
+```text
++10
+```
+
+Wrong action:
+
+```text
+Move forward
+```
+
+Reward:
+
+```text
+−100
+```
+
+---
+
+## Algorithms
+
+- Q-Learning
+- Deep Q Network (DQN)
+- SARSA
+- PPO
+- Policy Gradient
+
+---
+
+## Applications
+
+- Robotics
+- Self-driving vehicles
+- Game AI
+- Trading systems
+- Recommendation systems
+
+---
+
+## Advantages
+
+- Learns automatically
+- Handles complex environments
+
+## Disadvantages
+
+- Requires large training time
+- High computational cost
+
+---
+
+# Comparison of ML Types
+
+| Feature | Supervised | Unsupervised | Reinforcement |
+| :-- | :-- | :-- | :-- |
+| Labeled Data | Yes | No | Reward Signal |
+| Goal | Predict output | Find patterns | Maximize reward |
+| Example | Spam detection | Customer grouping | Self-driving cars |
+| Output | Prediction | Groups/patterns | Actions |
+
+---
+
+# Important ML Terms
+
+## Features
+
+Input variables used for prediction.
+
+Example:
+
+```text
+Area
+Bedrooms
+Age
+```
+
+---
+
+## Labels
+
+Expected output.
+
+Example:
+
+```text
+House price
+```
+
+---
+
+## Dataset
+
+Collection of records.
+
+Example:
+
+| Area | Bedrooms | Price |
+| :-- | :-- | :-- |
+| 1200 | 3 | 25L |
+| 1500 | 4 | 35L |
+
+---
+
+## Training Data
+
+Data used to train model.
+
+---
+
+## Test Data
+
+Data used to evaluate model.
+
+---
+
+## Model
+
+Mathematical representation learned from data.
+
+---
+
+## Prediction
+
+Output produced by model.
+
+---
+
+## Overfitting
+
+Model memorizes training data.
+
+Problem:
+
+```text
+High training accuracy
+
+Low testing accuracy
+```
+
+---
+
+## Underfitting
+
+Model fails to learn patterns.
+
+Problem:
+
+```text
+Low training accuracy
+
+Low testing accuracy
+```
+
+---
+
+# Quick Revision Notes
+
+```text
+Supervised:
+Input + Correct Output
+
+Regression:
+Predict numbers
+
+Classification:
+Predict categories
+
+Unsupervised:
+Find hidden patterns
+
+Clustering:
+Group similar data
+
+PCA:
+Reduce dimensions
+
+Reinforcement:
+Learn using rewards
+
+Features:
+Inputs
+
+Labels:
+Outputs
+
+Overfitting:
+Memorization
+
+Underfitting:
+Poor learning
+```

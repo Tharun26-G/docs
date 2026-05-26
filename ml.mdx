@@ -683,9 +683,806 @@ Low training accuracy
 Low testing accuracy
 ```
 
+# Train / Validation / Test, Overfitting, Bias–Variance Tradeoff
+
 ---
 
-# Quick Revision Notes
+# Why Do We Split Data?
+
+Suppose we train a model using all available data:
+
+```text
+Entire Data
+
+↓
+
+Train Model
+
+↓
+
+Evaluate on same data
+```
+
+Problem:
+
+```text
+Model may memorize data
+```
+
+The model can show:
+
+```text
+Training Accuracy = 99%
+```
+
+but for new unseen data:
+
+```text
+Real-world Accuracy = 50%
+```
+
+To avoid this problem, data is split.
+
+---
+
+# Dataset Split
+
+Usually:
+
+```text
+Dataset
+
+↓
+
+Train Data
+Validation Data
+Test Data
+```
+
+Common split:
+
+```text
+Training → 70%
+
+Validation → 15%
+
+Testing → 15%
+```
+
+or
+
+```text
+Training → 80%
+
+Validation → 10%
+
+Testing → 10%
+```
+
+---
+
+# Train Dataset
+
+## What is it?
+
+Training data is used to teach the model patterns.
+
+Example:
+
+House Price Dataset:
+
+| Area | Bedrooms | Price |
+| :-- | :-- | :-- |
+| 1200 | 3 | 25L |
+| 1500 | 4 | 35L |
+| 1800 | 4 | 40L |
+
+The model learns:
+
+```text
+Area + Bedrooms
+
+↓
+
+Price
+```
+
+---
+
+## Purpose
+
+- Learn relationships
+- Update model weights
+- Fit the model
+
+---
+
+## Example
+
+```python
+X_train=[
+    [1200,3],
+    [1500,4],
+    [1800,4]
+]
+
+y_train=[
+    25,
+    35,
+    40
+]
+```
+
+---
+
+# Validation Dataset
+
+## What is it?
+
+Validation data is used during training to check model performance and tune settings.
+
+Model does **not** learn from this data.
+
+---
+
+## Purpose
+
+Used for:
+
+- Hyperparameter tuning
+- Model selection
+- Detecting overfitting
+
+Examples of hyperparameters:
+
+```text
+Learning rate
+
+Epochs
+
+Tree depth
+
+Batch size
+```
+
+---
+
+## Example
+
+Try different values:
+
+```python
+learning_rate=0.001
+
+learning_rate=0.01
+
+learning_rate=0.1
+```
+
+Choose the best validation performance.
+
+---
+
+# Test Dataset
+
+## What is it?
+
+Test data evaluates final performance.
+
+The model should never see test data during training.
+
+---
+
+## Purpose
+
+Measures:
+
+```text
+Real-world performance
+```
+
+---
+
+Example:
+
+```python
+X_test=[
+    [2000,5],
+    [2500,6]
+]
+
+y_test=[
+    50,
+    65
+]
+```
+
+Prediction:
+
+```python
+Predicted:
+
+48
+
+63
+```
+
+---
+
+# Complete Flow
+
+```text
+Raw Data
+
+↓
+
+Train Data
+
+↓
+
+Train Model
+
+↓
+
+Validation Data
+
+↓
+
+Tune Hyperparameters
+
+↓
+
+Final Model
+
+↓
+
+Test Data
+
+↓
+
+Final Accuracy
+```
+
+---
+
+# Train-Test Split Using Scikit-Learn
+
+Code:
+
+```python
+from sklearn.model_selection import train_test_split
+
+X=[1,2,3,4,5,6,7,8,9,10]
+
+y=[0,1,0,1,0,1,0,1,0,1]
+
+X_train,X_test,y_train,y_test= train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+print(X_train)
+
+print(X_test)
+```
+
+Possible Output:
+
+```python
+X_train:
+
+[6,1,8,3,10,5,4,7]
+
+X_test:
+
+[9,2]
+```
+
+---
+
+# Train / Validation / Test Split
+
+Code:
+
+```python
+from sklearn.model_selection import train_test_split
+
+X_train,X_temp,y_train,y_temp = train_test_split(
+        X,
+        y,
+        test_size=0.3,
+        random_state=42
+)
+
+X_val,X_test,y_val,y_test = train_test_split(
+        X_temp,
+        y_temp,
+        test_size=0.5,
+        random_state=42
+)
+
+print(len(X_train))
+print(len(X_val))
+print(len(X_test))
+```
+
+Output:
+
+```python
+7
+1
+2
+```
+
+---
+
+# Overfitting
+
+## What is Overfitting?
+
+The model memorizes training data instead of learning general patterns.
+
+---
+
+Example:
+
+Training accuracy:
+
+```text
+99%
+```
+
+Testing accuracy:
+
+```text
+55%
+```
+
+---
+
+Graph intuition:
+
+```text
+Training Error
+
+\
+ \
+  \
+   \
+
+Validation Error
+
+\
+ \
+  \
+   \__
+       \
+        \
+```
+
+Model becomes too complex and starts fitting noise.
+
+---
+
+## Causes
+
+- Very complex model
+- Small dataset
+- Too many epochs
+- Too many features
+
+---
+
+## Symptoms
+
+```text
+High training accuracy
+
+Low testing accuracy
+```
+
+---
+
+## Example
+
+Training data:
+
+| Hours | Marks |
+| :-- | :-- |
+| 1 | 30 |
+| 2 | 40 |
+| 3 | 50 |
+| 4 | 60 |
+
+Model learns:
+
+```text
+Perfect curve passing every point
+```
+
+Instead of:
+
+```text
+General trend
+```
+
+---
+
+## Reduce Overfitting
+
+### 1. More data
+
+```text
+Increase training examples
+```
+
+---
+
+### 2. Regularization
+
+Adds penalty.
+
+Examples:
+
+```text
+L1 Regularization
+
+L2 Regularization
+```
+
+---
+
+### 3. Dropout
+
+Randomly removes neurons.
+
+Used in:
+
+```text
+Neural Networks
+```
+
+---
+
+### 4. Reduce complexity
+
+Example:
+
+```text
+Reduce tree depth
+```
+
+---
+
+### 5. Early stopping
+
+Stop training when validation performance stops improving.
+
+---
+
+Example code:
+
+```python
+from tensorflow.keras.callbacks import EarlyStopping
+
+early=EarlyStopping(
+        monitor='val_loss',
+        patience=3
+)
+```
+
+---
+
+# Underfitting
+
+## What is Underfitting?
+
+Model fails to learn patterns.
+
+---
+
+Example:
+
+Training accuracy:
+
+```text
+50%
+```
+
+Testing accuracy:
+
+```text
+48%
+```
+
+---
+
+Symptoms:
+
+```text
+Low training accuracy
+
+Low testing accuracy
+```
+
+---
+
+Causes:
+
+- Model too simple
+- Too few features
+- Insufficient training
+
+---
+
+Solutions:
+
+```text
+Increase complexity
+
+Train longer
+
+Add features
+```
+
+---
+
+# Bias–Variance Tradeoff
+
+This is one of the most important concepts in ML.
+
+---
+
+# What is Bias?
+
+Bias measures error due to overly simple assumptions.
+
+High bias:
+
+```text
+Model oversimplifies
+```
+
+Example:
+
+Trying to fit:
+
+```text
+Curved data
+```
+
+using:
+
+```text
+Straight line
+```
+
+---
+
+Characteristics:
+
+```text
+Low variance
+
+High error
+```
+
+---
+
+# What is Variance?
+
+Variance measures sensitivity to small data changes.
+
+High variance:
+
+```text
+Model memorizes noise
+```
+
+Characteristics:
+
+```text
+Low bias
+
+High error on new data
+```
+
+---
+
+# Relationship
+
+```text
+High Bias
+
+↓
+
+Underfitting
+
+
+
+Balanced Bias + Variance
+
+↓
+
+Good model
+
+
+
+High Variance
+
+↓
+
+Overfitting
+```
+
+---
+
+# Bias–Variance Curve
+
+```text
+Error
+
+^
+|
+|\
+| \
+|  \
+|   \____
+|        \__
+|
++-----------------> Model Complexity
+```
+
+Explanation:
+
+Left side:
+
+```text
+High bias
+
+Underfitting 
+```
+
+Middle:
+
+```text
+Optimal point
+```
+
+Right side:
+
+```text
+High variance
+
+Overfitting
+```
+
+---
+
+# Example
+
+Suppose actual data:
+
+```text
+Hours Studied → Marks
+```
+
+### High Bias
+
+Model:
+
+```text
+Marks = Hours
+```
+
+Too simple.
+
+---
+
+### Balanced
+
+Model:
+
+```text
+Learns trend
+```
+
+---
+
+### High Variance
+
+Model:
+
+```text
+Fits every tiny fluctuation
+```
+
+---
+
+# Visual Example with Polynomial Regression
+
+Code:
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+
+x=np.array([1,2,3,4,5]).reshape(-1,1)
+
+y=np.array([1,4,9,16,25])
+
+poly=PolynomialFeatures(degree=4)
+
+x_poly=poly.fit_transform(x)
+
+model=LinearRegression()
+
+model.fit(x_poly,y)
+
+pred=model.predict(x_poly)
+
+plt.scatter(x,y)
+
+plt.plot(x,pred)
+
+plt.show()
+```
+
+Output:
+
+```text
+Shows fitted curve
+```
+
+<Frame>
+  ![Image](/images/image-1.png)
+</Frame>
+
+If degree becomes very high:
+
+```text
+degree=20
+```
+
+Model starts overfitting.
+
+---
+
+# Training vs Validation Loss
+
+Good model:
+
+```text
+Epoch      Train Loss      Val Loss
+
+1              0.8            0.9
+2              0.6            0.7
+3              0.4            0.5
+4              0.3            0.35
+```
+
+---
+
+Overfitting:
+
+```text
+Epoch      Train Loss      Val Loss
+
+1              0.8            0.9
+2              0.5            0.6
+3              0.2            0.8
+4              0.1            1.4
+```
+
+Training improves but validation worsens.
+
+---
+
+# Quick Notes
 
 ```text
 Supervised:
@@ -715,9 +1512,72 @@ Inputs
 Labels:
 Outputs
 
+Training Data:
+Learn patterns
+
+Validation Data:
+Tune hyperparameters
+
+Testing Data:
+Final evaluation
+
 Overfitting:
-Memorization
+High train accuracy
+Low test accuracy
 
 Underfitting:
-Poor learning
+Low train accuracy
+Low test accuracy
+
+Bias:
+Model too simple
+
+Variance:
+Model too sensitive
+
+Bias + Variance:
+Need balance
 ```
+
+---
+
+# PTR
+
+**Why validation set?**
+
+```text
+To tune hyperparameters without touching test data
+```
+
+**Why not use test data for training?**
+
+```text
+Causes data leakage and unrealistic performance
+```
+
+**Signs of overfitting?**
+
+```text
+High training accuracy
+Low testing accuracy
+```
+
+**How to reduce overfitting?**
+
+```text
+Regularization
+Dropout
+More data
+Early stopping
+Reduce complexity
+```
+
+**Bias vs Variance**
+
+```text
+Bias → Underfitting
+
+Variance → Overfitting
+```
+
+---

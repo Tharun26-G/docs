@@ -1,0 +1,2023 @@
+---
+title: "Day 1 - Python Basics"
+---
+
+# Python Basics Notes 
+
+---
+
+# 1. Variables
+
+### Definition
+
+A variable is used to store a value.
+
+### Example
+
+```python
+name = "John"
+age = 20
+```
+
+### Output
+
+```text
+(No output)
+```
+
+### Explanation
+
+Variables store data that can be used later in the program.
+
+---
+
+# 2. Variable Naming Rules (snake\_case)
+
+### Rules
+
+- Use letters, numbers, and underscores.
+- Cannot start with a number.
+- Case-sensitive.
+- Use `snake_case` for readability.
+
+### Good Examples
+
+```python
+student_name = "Alice"
+total_marks = 95
+```
+
+### Bad Examples
+
+```python
+2name = "Alice"
+student-name = "Alice"
+```
+
+### Output
+
+```text
+SyntaxError
+```
+
+### Explanation
+
+Use meaningful names written in lowercase with underscores.
+
+---
+
+# 3. Assign Multiple Values
+
+## Multiple Variables
+
+```python
+x, y, z = 10, 20, 30
+
+print(x)
+print(y)
+print(z)
+```
+
+### Output
+
+```text
+10
+20
+30
+```
+
+### Explanation
+
+Assign multiple values in one line.
+
+---
+
+## Same Value
+
+```python
+a = b = c = 100
+
+print(a)
+print(b)
+print(c)
+```
+
+### Output
+
+```text
+100
+100
+100
+```
+
+### Explanation
+
+Assign the same value to multiple variables.
+
+---
+
+# 4. Output Variables
+
+```python
+name = "John"
+
+print(name)
+```
+
+### Output
+
+```text
+John
+```
+
+### Explanation
+
+`print()` displays values on the screen.
+
+---
+
+## Printing Multiple Variables
+
+```python
+name = "John"
+age = 20
+
+print(name, age)
+```
+
+### Output
+
+```text
+John 20
+```
+
+### Explanation
+
+Separate multiple values with commas.
+
+---
+
+# 5. Global Variables
+
+```python
+name = "John"
+
+def show():
+    print(name)
+
+show()
+```
+
+### Output
+
+```text
+John
+```
+
+### Explanation
+
+Global variables can be accessed inside functions.
+
+---
+
+# 6. Python Comments
+
+## Single Line
+
+```python
+# This is a comment
+
+print("Hello")
+```
+
+### Output
+
+```text
+Hello
+```
+
+### Explanation
+
+Comments are ignored by Python.
+
+---
+
+## Multi-line
+
+```python
+"""
+This
+is
+a comment
+"""
+
+print("Python")
+```
+
+### Output
+
+```text
+Python
+```
+
+### Explanation
+
+Triple quotes are commonly used for multi-line comments/docstrings.
+
+---
+
+# 7. Indentation
+
+```python
+if True:
+    print("Correct")
+```
+
+### Output
+
+```text
+Correct
+```
+
+### Explanation
+
+Indentation defines code blocks in Python.
+
+---
+
+# 8. Basic Input
+
+```python
+name = input("Enter your name: ")
+
+print(name)
+```
+
+### Sample Input
+
+```text
+Alice
+```
+
+### Output
+
+```text
+Enter your name: Alice
+Alice
+```
+
+### Explanation
+
+`input()` reads user input as a string.
+
+---
+
+# 9. Basic Output
+
+```python
+print("Welcome")
+```
+
+### Output
+
+```text
+Welcome
+```
+
+### Explanation
+
+`print()` displays text or values.
+
+---
+
+# 10. Python Data Types
+
+## int
+
+```python
+x = 25
+
+print(type(x))
+```
+
+### Output
+
+```text
+<class 'int'>
+```
+
+### Explanation
+
+Stores whole numbers.
+
+---
+
+## float
+
+```python
+x = 3.14
+
+print(type(x))
+```
+
+### Output
+
+```text
+<class 'float'>
+```
+
+### Explanation
+
+Stores decimal numbers.
+
+---
+
+## str
+
+```python
+name = "Python"
+
+print(type(name))
+```
+
+### Output
+
+```text
+<class 'str'>
+```
+
+### Explanation
+
+Stores text.
+
+---
+
+## bool
+
+```python
+x = True
+
+print(type(x))
+```
+
+### Output
+
+```text
+<class 'bool'>
+```
+
+### Explanation
+
+Stores `True` or `False`.
+
+---
+
+# 11. Python Numbers
+
+```python
+x = 10
+y = 5.5
+z = 2 + 3j
+
+print(type(x))
+print(type(y))
+print(type(z))
+```
+
+### Output
+
+```text
+<class 'int'>
+<class 'float'>
+<class 'complex'>
+```
+
+### Explanation
+
+Python supports integer, float, and complex numbers.
+
+---
+
+# 12. Python Casting
+
+```python
+x = int(4.9)
+y = float(5)
+z = str(100)
+
+print(x)
+print(y)
+print(z)
+```
+
+### Output
+
+```text
+4
+5.0
+100
+```
+
+### Explanation
+
+Casting converts one data type into another.
+
+---
+
+# 13. Python Strings
+
+```python
+text = "Hello"
+
+print(text)
+```
+
+### Output
+
+```text
+Hello
+```
+
+### Explanation
+
+Strings store sequences of characters.
+
+---
+
+# 14. Python Booleans
+
+```python
+print(10 > 5)
+```
+
+### Output
+
+```text
+True
+```
+
+### Explanation
+
+Boolean values represent true or false.
+
+---
+
+# 15. Python Operators
+
+## Arithmetic Operators
+
+### Addition (\+)
+
+```python
+print(5 + 3)
+```
+
+Output
+
+```text
+8
+```
+
+Explanation
+
+Adds two values.
+
+---
+
+### Subtraction (-)
+
+```python
+print(10 - 4)
+```
+
+Output
+
+```text
+6
+```
+
+Explanation
+
+Subtracts one value from another.
+
+---
+
+### Multiplication (\*)
+
+```python
+print(6 * 4)
+```
+
+Output
+
+```text
+24
+```
+
+Explanation
+
+Multiplies two numbers.
+
+---
+
+### Division (/)
+
+```python
+print(10 / 2)
+```
+
+Output
+
+```text
+5.0
+```
+
+Explanation
+
+Returns decimal division.
+
+---
+
+### Floor Division (//)
+
+```python
+print(10 // 3)
+```
+
+Output
+
+```text
+3
+```
+
+Explanation
+
+Returns quotient without decimal.
+
+---
+
+### Modulus (%)
+
+```python
+print(10 % 3)
+```
+
+Output
+
+```text
+1
+```
+
+Explanation
+
+Returns the remainder.
+
+---
+
+### Exponent (\*\*)
+
+```python
+print(2 ** 3)
+```
+
+Output
+
+```text
+8
+```
+
+Explanation
+
+Raises a number to a power.
+
+---
+
+# 16. Order of Operations
+
+```python
+print(2 + 3 * 4)
+print((2 + 3) * 4)
+```
+
+### Output
+
+```text
+14
+20
+```
+
+### Explanation
+
+Parentheses are evaluated before multiplication and addition.
+
+---
+
+# 17. Comparison Operators
+
+```python
+print(5 > 3)
+print(5 == 5)
+print(5 != 3)
+```
+
+### Output
+
+```text
+True
+True
+True
+```
+
+### Explanation
+
+Compare two values and return `True` or `False`.
+
+---
+
+# 18. Assignment Operators
+
+```python
+x = 5
+x += 2
+
+print(x)
+```
+
+### Output
+
+```text
+7
+```
+
+### Explanation
+
+Assignment operators update variable values.
+
+---
+
+# 19. Logical Operators
+
+```python
+print(True and False)
+print(True or False)
+print(not True)
+```
+
+### Output
+
+```text
+False
+True
+False
+```
+
+### Explanation
+
+Combine or invert Boolean values.
+
+---
+
+# 20. Identity Operators
+
+```python
+x = [1, 2]
+y = x
+
+print(x is y)
+```
+
+### Output
+
+```text
+True
+```
+
+### Explanation
+
+Check whether two variables refer to the same object.
+
+---
+
+# 21. Membership Operators
+
+```python
+numbers = [1, 2, 3]
+
+print(2 in numbers)
+```
+
+### Output
+
+```text
+True
+```
+
+### Explanation
+
+Check whether a value exists in a collection.
+
+---
+
+# 22. Bitwise Operators
+
+```python
+print(5 & 3)
+```
+
+### Output
+
+```text
+1
+```
+
+### Explanation
+
+Perform operations on binary representations of numbers.
+
+---
+
+# 23. Python Lists
+
+## Create List
+
+```python
+fruits = ["apple", "banana", "mango"]
+
+print(fruits)
+```
+
+Output
+
+```text
+['apple', 'banana', 'mango']
+```
+
+Explanation
+
+Lists store ordered, mutable collections.
+
+---
+
+## Access List Items
+
+```python
+print(fruits[0])
+```
+
+Output
+
+```text
+apple
+```
+
+Explanation
+
+Access items using indexes.
+
+---
+
+## Change List Items
+
+```python
+fruits[1] = "orange"
+
+print(fruits)
+```
+
+Output
+
+```text
+['apple', 'orange', 'mango']
+```
+
+Explanation
+
+Modify items using indexes.
+
+---
+
+## Add List Items
+
+```python
+fruits.append("grapes")
+
+print(fruits)
+```
+
+Output
+
+```text
+['apple', 'banana', 'mango', 'grapes']
+```
+
+Explanation
+
+`append()` adds an item to the end.
+
+---
+
+## Remove List Items
+
+```python
+fruits.remove("banana")
+
+print(fruits)
+```
+
+Output
+
+```text
+['apple', 'mango']
+```
+
+Explanation
+
+`remove()` deletes a specified item.
+
+---
+
+## Loop Lists
+
+```python
+for fruit in fruits:
+    print(fruit)
+```
+
+Output
+
+```text
+apple
+banana
+mango
+```
+
+Explanation
+
+Iterate through each item in the list.
+
+---
+
+## List Comprehension
+
+```python
+numbers = [x * 2 for x in range(5)]
+
+print(numbers)
+```
+
+Output
+
+```text
+[0, 2, 4, 6, 8]
+```
+
+Explanation
+
+Create lists using a concise syntax.
+
+---
+
+## Sort Lists
+
+```python
+numbers = [5, 2, 4]
+
+numbers.sort()
+
+print(numbers)
+```
+
+Output
+
+```text
+[2, 4, 5]
+```
+
+Explanation
+
+Sort items in ascending order.
+
+---
+
+## Copy Lists
+
+```python
+list1 = [1, 2, 3]
+list2 = list1.copy()
+
+print(list2)
+```
+
+Output
+
+```text
+[1, 2, 3]
+```
+
+Explanation
+
+Create a separate copy of a list.
+
+---
+
+## Join Lists
+
+```python
+a = [1, 2]
+b = [3, 4]
+
+print(a + b)
+```
+
+Output
+
+```text
+[1, 2, 3, 4]
+```
+
+Explanation
+
+Combine two lists.
+
+---
+
+## Common List Methods
+
+| Method | Purpose |
+| :-- | :-- |
+| `append()` | Add item at end |
+| `insert()` | Insert at position |
+| `extend()` | Add another iterable |
+| `remove()` | Remove specific item |
+| `pop()` | Remove by index |
+| `clear()` | Remove all items |
+| `copy()` | Copy list |
+| `sort()` | Sort list |
+| `reverse()` | Reverse list |
+| `count()` | Count occurrences |
+| `index()` | Find position |
+
+---
+
+# 24. Python Tuples
+
+## 24.1 Create Tuple
+
+```python
+colors = ("red", "green", "blue")
+
+print(colors)
+```
+
+### Output
+
+```text
+('red', 'green', 'blue')
+```
+
+**Explanation:** A tuple stores multiple ordered items.
+
+---
+
+## 24.2 Tuple Length
+
+```python
+colors = ("red", "green", "blue")
+
+print(len(colors))
+```
+
+### Output
+
+```text
+3
+```
+
+**Explanation:** `len()` returns the number of items in a tuple.
+
+---
+
+## 24.3 Create Tuple With One Item
+
+```python
+fruit = ("apple",)
+
+print(type(fruit))
+```
+
+### Output
+
+```text
+<class 'tuple'>
+```
+
+**Explanation:** A single-item tuple must end with a comma.
+
+---
+
+## 24.4 Tuple Data Types
+
+```python
+numbers = (1, 2, 3)
+names = ("John", "Sam")
+mixed = (1, "Python", True)
+
+print(numbers)
+print(names)
+print(mixed)
+```
+
+### Output
+
+```text
+(1, 2, 3)
+('John', 'Sam')
+(1, 'Python', True)
+```
+
+**Explanation:** Tuples can store different data types.
+
+---
+
+## 24.5 Access Tuple Items
+
+```python
+colors = ("red", "green", "blue")
+
+print(colors[1])
+```
+
+### Output
+
+```text
+green
+```
+
+**Explanation:** Access tuple items using indexes.
+
+---
+
+## 24.6 Negative Indexing
+
+```python
+colors = ("red", "green", "blue")
+
+print(colors[-1])
+```
+
+### Output
+
+```text
+blue
+```
+
+**Explanation:** Negative indexes start from the end.
+
+---
+
+## 24.7 Range of Indexes
+
+```python
+colors = ("red", "green", "blue", "yellow")
+
+print(colors[1:3])
+```
+
+### Output
+
+```text
+('green', 'blue')
+```
+
+**Explanation:** Slice returns a portion of the tuple.
+
+---
+
+## 24.8 Check if Item Exists
+
+```python
+colors = ("red", "green", "blue")
+
+print("green" in colors)
+```
+
+### Output
+
+```text
+True
+```
+
+**Explanation:** `in` checks whether an item exists.
+
+---
+
+## 24.9 Change Tuple Items
+
+```python
+colors = ("red", "green", "blue")
+
+temp = list(colors)
+temp[1] = "black"
+colors = tuple(temp)
+
+print(colors)
+```
+
+### Output
+
+```text
+('red', 'black', 'blue')
+```
+
+**Explanation:** Convert to a list to modify tuple items.
+
+---
+
+## 24.10 Add Items
+
+```python
+colors = ("red", "green")
+
+colors += ("blue",)
+
+print(colors)
+```
+
+### Output
+
+```text
+('red', 'green', 'blue')
+```
+
+**Explanation:** Tuples are immutable, so create a new tuple.
+
+---
+
+## 24.11 Remove Items
+
+```python
+colors = ("red", "green", "blue")
+
+temp = list(colors)
+temp.remove("green")
+colors = tuple(temp)
+
+print(colors)
+```
+
+### Output
+
+```text
+('red', 'blue')
+```
+
+**Explanation:** Convert to a list to remove items.
+
+---
+
+## 24.12 Unpack Tuples
+
+```python
+colors = ("red", "green", "blue")
+
+a, b, c = colors
+
+print(a)
+print(b)
+print(c)
+```
+
+### Output
+
+```text
+red
+green
+blue
+```
+
+**Explanation:** Assign tuple values to separate variables.
+
+---
+
+## 24.13 Using Asterisk (\*)
+
+```python
+colors = ("red", "green", "blue", "yellow")
+
+a, *b = colors
+
+print(a)
+print(b)
+```
+
+### Output
+
+```text
+red
+['green', 'blue', 'yellow']
+```
+
+**Explanation:** `*` collects remaining values into a list.
+
+---
+
+## 24.14 Loop Through Tuple
+
+```python
+colors = ("red", "green", "blue")
+
+for color in colors:
+    print(color)
+```
+
+### Output
+
+```text
+red
+green
+blue
+```
+
+**Explanation:** Loop through tuple items using `for`.
+
+---
+
+## 24.15 Join Tuples
+
+```python
+tuple1 = (1, 2)
+tuple2 = (3, 4)
+
+print(tuple1 + tuple2)
+```
+
+### Output
+
+```text
+(1, 2, 3, 4)
+```
+
+**Explanation:** `+` joins two tuples.
+
+---
+
+## 24.16 Multiply Tuples
+
+```python
+numbers = (1, 2)
+
+print(numbers * 3)
+```
+
+### Output
+
+```text
+(1, 2, 1, 2, 1, 2)
+```
+
+**Explanation:** `*` repeats tuple elements.
+
+---
+
+## 24.17 Tuple Methods
+
+### count()
+
+```python
+numbers = (1, 2, 2, 3)
+
+print(numbers.count(2))
+```
+
+Output
+
+```text
+2
+```
+
+**Explanation:** Counts occurrences of an item.
+
+---
+
+### index()
+
+```python
+numbers = (1, 2, 3)
+
+print(numbers.index(2))
+```
+
+Output
+
+```text
+1
+```
+
+**Explanation:** Returns the index of the first occurrence.
+
+---
+
+# 25. Python Sets
+
+## 25.1 Create Set
+
+```python
+fruits = {"apple", "banana", "mango"}
+
+print(fruits)
+```
+
+### Output
+
+```text
+{'apple', 'banana', 'mango'}
+```
+
+**Explanation:** Sets store unordered unique items.
+
+---
+
+## 25.2 Set Length
+
+```python
+fruits = {"apple", "banana", "mango"}
+
+print(len(fruits))
+```
+
+### Output
+
+```text
+3
+```
+
+**Explanation:** Returns the number of items.
+
+---
+
+## 25.3 Duplicate Values
+
+```python
+numbers = {1, 2, 2, 3}
+
+print(numbers)
+```
+
+### Output
+
+```text
+{1, 2, 3}
+```
+
+**Explanation:** Duplicate values are removed automatically.
+
+---
+
+## 25.4 Access Set Items
+
+```python
+fruits = {"apple", "banana", "mango"}
+
+for item in fruits:
+    print(item)
+```
+
+### Output
+
+```text
+apple
+banana
+mango
+```
+
+**Explanation:** Sets do not support indexing.
+
+---
+
+## 25.5 Check Item Exists
+
+```python
+fruits = {"apple", "banana"}
+
+print("banana" in fruits)
+```
+
+### Output
+
+```text
+True
+```
+
+**Explanation:** `in` checks item existence.
+
+---
+
+## 25.6 Add Items
+
+```python
+fruits = {"apple"}
+
+fruits.add("banana")
+
+print(fruits)
+```
+
+### Output
+
+```text
+{'apple', 'banana'}
+```
+
+**Explanation:** `add()` inserts one item.
+
+---
+
+## 25.7 Add Multiple Items
+
+```python
+fruits = {"apple"}
+
+fruits.update(["banana", "mango"])
+
+print(fruits)
+```
+
+### Output
+
+```text
+{'apple', 'banana', 'mango'}
+```
+
+**Explanation:** `update()` adds multiple items.
+
+---
+
+## 25.8 Remove Item
+
+```python
+fruits = {"apple", "banana"}
+
+fruits.remove("banana")
+
+print(fruits)
+```
+
+### Output
+
+```text
+{'apple'}
+```
+
+**Explanation:** `remove()` deletes an item.
+
+---
+
+## 25.9 discard()
+
+```python
+fruits = {"apple", "banana"}
+
+fruits.discard("orange")
+
+print(fruits)
+```
+
+### Output
+
+```text
+{'apple', 'banana'}
+```
+
+**Explanation:** `discard()` doesn't raise an error if the item doesn't exist.
+
+---
+
+## 25.10 pop()
+
+```python
+fruits = {"apple", "banana"}
+
+fruits.pop()
+
+print(fruits)
+```
+
+### Output
+
+```text
+{'banana'}
+```
+
+**Explanation:** Removes a random item.
+
+---
+
+## 25.11 clear()
+
+```python
+fruits = {"apple", "banana"}
+
+fruits.clear()
+
+print(fruits)
+```
+
+### Output
+
+```text
+set()
+```
+
+**Explanation:** Removes all items.
+
+---
+
+## 25.12 Loop Set
+
+```python
+fruits = {"apple", "banana"}
+
+for fruit in fruits:
+    print(fruit)
+```
+
+### Output
+
+```text
+apple
+banana
+```
+
+**Explanation:** Iterate through every item.
+
+---
+
+## 25.13 Join Sets (Union)
+
+```python
+a = {1, 2}
+b = {3, 4}
+
+print(a.union(b))
+```
+
+### Output
+
+```text
+{1, 2, 3, 4}
+```
+
+**Explanation:** Combines all unique elements.
+
+---
+
+## 25.14 Intersection
+
+```python
+a = {1, 2, 3}
+b = {2, 3, 4}
+
+print(a.intersection(b))
+```
+
+### Output
+
+```text
+{2, 3}
+```
+
+**Explanation:** Returns common items.
+
+---
+
+## 25.15 Difference
+
+```python
+a = {1, 2, 3}
+b = {2, 3}
+
+print(a.difference(b))
+```
+
+### Output
+
+```text
+{1}
+```
+
+**Explanation:** Returns items only in the first set.
+
+---
+
+## Common Set Methods
+
+| Method | Purpose |
+| :-- | :-- |
+| add() | Add one item |
+| update() | Add multiple items |
+| remove() | Remove item |
+| discard() | Remove safely |
+| pop() | Remove random item |
+| clear() | Remove all items |
+| union() | Join sets |
+| intersection() | Common elements |
+| difference() | Different elements |
+| copy() | Copy set |
+
+---
+
+# 26. Python Dictionaries
+
+## 26.1 Create Dictionary
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+print(student)
+```
+
+### Output
+
+```text
+{'name': 'John', 'age': 20}
+```
+
+**Explanation:** Dictionaries store data as key-value pairs.
+
+---
+
+## 26.2 Dictionary Length
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+print(len(student))
+```
+
+### Output
+
+```text
+2
+```
+
+**Explanation:** Returns the number of key-value pairs.
+
+---
+
+## 26.3 Access Items
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+print(student["name"])
+```
+
+### Output
+
+```text
+John
+```
+
+**Explanation:** Access values using keys.
+
+---
+
+## 26.4 get()
+
+```python
+student = {
+    "name": "John"
+}
+
+print(student.get("name"))
+```
+
+### Output
+
+```text
+John
+```
+
+**Explanation:** `get()` safely returns a value.
+
+---
+
+## 26.5 keys()
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+print(student.keys())
+```
+
+### Output
+
+```text
+dict_keys(['name', 'age'])
+```
+
+**Explanation:** Returns all keys.
+
+---
+
+## 26.6 values()
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+print(student.values())
+```
+
+### Output
+
+```text
+dict_values(['John', 20])
+```
+
+**Explanation:** Returns all values.
+
+---
+
+## 26.7 items()
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+print(student.items())
+```
+
+### Output
+
+```text
+dict_items([('name', 'John'), ('age', 20)])
+```
+
+**Explanation:** Returns key-value pairs.
+
+---
+
+## 26.8 Change Items
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+student["age"] = 21
+
+print(student)
+```
+
+### Output
+
+```text
+{'name': 'John', 'age': 21}
+```
+
+**Explanation:** Change a value using its key.
+
+---
+
+## 26.9 update()
+
+```python
+student = {
+    "name": "John"
+}
+
+student.update({"age": 20})
+
+print(student)
+```
+
+### Output
+
+```text
+{'name': 'John', 'age': 20}
+```
+
+**Explanation:** Adds or updates key-value pairs.
+
+---
+
+## 26.10 Add Items
+
+```python
+student = {
+    "name": "John"
+}
+
+student["city"] = "Chennai"
+
+print(student)
+```
+
+### Output
+
+```text
+{'name': 'John', 'city': 'Chennai'}
+```
+
+**Explanation:** Assign a new key to add an item.
+
+---
+
+## 26.11 Remove Items
+
+### pop()
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+student.pop("age")
+
+print(student)
+```
+
+Output
+
+```text
+{'name': 'John'}
+```
+
+**Explanation:** Removes a specified key.
+
+---
+
+### popitem()
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+student.popitem()
+
+print(student)
+```
+
+### Output
+
+```text
+{'name': 'John'}
+```
+
+**Explanation:** Removes the last inserted item.
+
+---
+
+### del
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+del student["age"]
+
+print(student)
+```
+
+### Output
+
+```text
+{'name': 'John'}
+```
+
+**Explanation:** Deletes a key-value pair.
+
+---
+
+### clear()
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+student.clear()
+
+print(student)
+```
+
+### Output
+
+```text
+{}
+```
+
+**Explanation:** Removes all items.
+
+---
+
+## 26.12 Loop Dictionaries
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+for key, value in student.items():
+    print(key, value)
+```
+
+### Output
+
+```text
+name John
+age 20
+```
+
+**Explanation:** Iterate through keys and values.
+
+---
+
+## 26.13 Copy Dictionary
+
+```python
+student = {
+    "name": "John"
+}
+
+copy_dict = student.copy()
+
+print(copy_dict)
+```
+
+### Output
+
+```text
+{'name': 'John'}
+```
+
+**Explanation:** Creates a separate copy of the dictionary.
+
+---
+
+## 26.14 Nested Dictionaries
+
+```python
+students = {
+    "student1": {
+        "name": "John",
+        "age": 20
+    },
+    "student2": {
+        "name": "Alice",
+        "age": 21
+    }
+}
+
+print(students["student1"]["name"])
+```
+
+### Output
+
+```text
+John
+```
+
+**Explanation:** A dictionary can contain other dictionaries.
+
+---
+
+## Common Dictionary Methods
+
+| Method | Purpose |
+| :-- | :-- |
+| get() | Get value safely |
+| keys() | Return all keys |
+| values() | Return all values |
+| items() | Return key-value pairs |
+| update() | Add/update items |
+| pop() | Remove by key |
+| popitem() | Remove last item |
+| clear() | Remove all items |
+| copy() | Copy dictionary |
+| setdefault() | Return value or insert default |

@@ -1,0 +1,1165 @@
+---
+title: "new-roadmap"
+---
+
+## 60‑Day AI‑Engineer Road‑Map
+
+**All 60 days are dedicated to learning & building.**<br />No “demo / polish / launch” days – the final week is a continuation of the technical stack.
+
+> **Structure** –
+>
+> - **Week** – 7 days (or 8 for the last week)
+> - Each day follows the same template
+>   - **Learn** – Core concepts
+>   - **Code Challenge** – 1–2 h hands‑on exercise
+>   - **Build** – Runnable artifact you commit to the repo
+
+> **How to use**
+>
+> 1. Create a repo `my‑ai‑journey`.
+> 2. For each day create a folder `day‑<NN>` (or keep files in root).
+> 3. Follow the “Learn → Code Challenge → Build” sequence.
+> 4. Commit the artifact with a descriptive message.
+> 5. Update the root `README.md` with a table of contents and links to each day’s output.
+
+---
+
+## Week 1 – Python & Foundations (Days 1‑7)
+
+| Day | Learn | Code Challenge | Build |
+| --- | --- | --- | --- |
+| 01 | Syntax, variables, data types | `hello.py` – print “Hello” \+ simple math | `hello.py` |
+| 02 | Control flow – if / loops | `fizzbuzz.py` – FizzBuzz 1‑100 | `fizzbuzz.py` |
+| 03 | Functions | `utils.py` – factorial & gcd | `utils.py` |
+| 04 | Modules & `__init__` | `main.py` – use `utils` | `main.py` |
+| 05 | File I/O | `csv_reader.py` – read CSV, show stats | `csv_reader.py` |
+| 06 | Error handling & logging | `safe_div.py` – division with error | `safe_div.py` |
+| 07 | Virtual env & `requirements.txt` | `setup_env.sh` \+ `requirements.txt` | `requirements.txt` |
+
+---
+
+## Week 2 – Data Handling & Visualization (Days 8‑14)
+
+| Day | Learn | Code Challenge | Build |
+| --- | --- | --- | --- |
+| 08 | Pandas basics | `df_demo.ipynb` – load & describe CSV | `df_demo.ipynb` |
+| 09 | NumPy basics | `numpy_demo.ipynb` – array ops | `numpy_demo.ipynb` |
+| 10 | Matplotlib 101 | `plot_demo.py` – line & scatter plots | `plot_demo.py` |
+| 11 | Seaborn 101 | `sns_demo.py` – dist & pair plots | `sns_demo.py` |
+| 12 | Plotly 101 | `plotly_demo.py` – interactive chart | `plotly_demo.py` |
+| 13 | Visualisation best‑practices | `vis_guidelines.md` | `vis_guidelines.md` |
+| 14 | Mini‑project: dashboard | `dashboard.ipynb` – 3 plots \+ markdown | `dashboard.ipynb` |
+
+---
+
+## Week 3 – Statistics & Machine‑Learning Basics (Days 15‑21)
+
+| Day | Learn | Code Challenge | Build |
+| --- | --- | --- | --- |
+| 15 | Probability fundamentals | `prob_demo.py` – dice simulation | `prob_demo.py` |
+| 16 | Descriptive statistics | `stats_demo.py` – mean, median, std | `stats_demo.py` |
+| 17 | Hypothesis testing | `ttest_demo.py` – iris t‑test | `ttest_demo.py` |
+| 18 | Supervised learning intro | `train_simple.py` – linear regression | `train_simple.py` |
+| 19 | Model evaluation | `eval_demo.py` – MSE, R², residuals | `eval_demo.py` |
+| 20 | Pipeline & cross‑validation | `pipeline_demo.py` – sklearn pipeline | `pipeline_demo.py` |
+| 21 | Mini‑project: housing price | `housing_predict.ipynb` – train & evaluate | `housing_predict.ipynb` |
+
+---
+
+## Week 4 – Deep Learning Foundations (Days 22‑28)
+
+| Day | Learn | Code Challenge | Build |
+| --- | --- | --- | --- |
+| 22 | NN theory – layers & forward | `nn_theory.md` – diagram | `nn_theory.md` |
+| 23 | PyTorch basics | `pytorch_demo.py` – tensor ops | `pytorch_demo.py` |
+| 24 | MNIST Hello‑World | `mnist_simple.py` – 2‑layer NN | `mnist_simple.py` |
+| 25 | Training loop | `mnist_train.py` – optimizer, loss | `mnist_train.py` |
+| 26 | CNN basics | `mnist_cnn.py` – conv \+ pool | `mnist_cnn.py` |
+| 27 | Regularization | `mnist_dropout.py` – dropout | `mnist_dropout.py` |
+| 28 | Mini‑project: CIFAR‑10 | `cifar10_classifier.ipynb` – train & evaluate | `cifar10_classifier.ipynb` |
+
+---
+
+## Week 5 – NLP & Large‑Language‑Models (Days 29‑35)
+
+| Day | Learn | Code Challenge | Build |
+| --- | --- | --- | --- |
+| 29 | Tokenization & embeddings | `token_demo.py` – BPE \+ sentence‑transformer | `token_demo.py` |
+| 30 | HuggingFace transformers | `bert_demo.py` – fine‑tune BERT | `bert_demo.py` |
+| 31 | Sentiment analysis | `sentiment_demo.py` – text classification | `sentiment_demo.py` |
+| 32 | Prompt engineering | `prompt_demo.md` – prompt design | `prompt_demo.md` |
+| 33 | Chain‑of‑Thought | `cot_demo.py` – few‑shot prompt | `cot_demo.py` |
+| 34 | LLM inference API | `llm_api.py` – FastAPI wrapper for GPT‑2 | `llm_api.py` |
+| 35 | Mini‑project: chatbot | `chatbot.ipynb` – conversational agent | `chatbot.ipynb` |
+
+---
+
+## Week 6 – Retrieval‑Augmented Generation (RAG) (Days 36‑42)
+
+| Day | Learn | Code Challenge | Build |
+| --- | --- | --- | --- |
+| 36 | Vector embeddings | `embeddings_demo.py` – sentence‑transformers | `embeddings_demo.py` |
+| 37 | Vector store – FAISS | `faiss_demo.py` – build & query | `faiss_demo.py` |
+| 38 | Retrieval pipeline | `rag_pipeline.py` – embed \+ retrieve | `rag_pipeline.py` |
+| 39 | LangChain RAG | `langchain_rag.py` – build chain | `langchain_rag.py` |
+| 40 | RAG summarization | `rag_summary.py` – generate answer | `rag_summary.py` |
+| 41 | LLM fine‑tune on docs | `llm_finetune.py` | `llm_finetune.py` |
+| 42 | Mini‑project: knowledge‑base assistant | `kb_assistant.ipynb` | `kb_assistant.ipynb` |
+
+---
+
+## Week 7 – MLOps Foundations (Days 43‑49)
+
+| Day | Learn | Code Challenge | Build |
+| --- | --- | --- | --- |
+| 43 | Docker basics | `Dockerfile`, `docker-compose.yml` | `Dockerfile` |
+| 44 | FastAPI deployment | `api.py` – expose RAG service | `api.py` |
+| 45 | CI/CD with GitHub Actions | `ci.yml` – test & build | `ci.yml` |
+| 46 | Experiment tracking – MLflow | `mlflow_demo.py` | `mlflow_demo.py` |
+| 47 | Monitoring – Prometheus & Grafana | `metrics.py`, `prometheus.yml` | `metrics.py` |
+| 48 | Model registry & versioning | `model_registry.py` | `model_registry.py` |
+| 49 | Mini‑project: MLOps pipeline | `mlops_demo.ipynb` – end‑to‑end | `mlops_demo.ipynb` |
+
+---
+
+## Week 8 – Advanced Topics & Capstone (Days 50‑60)
+
+| Day | Learn | Code Challenge | Build |
+| --- | --- | --- | --- |
+| 50 | Advanced MLOps – canary deploy | `canary_demo.py` – roll‑out strategy | `canary_demo.py` |
+| 51 | Explainability – SHAP / LIME | `explain_demo.py` | `explain_demo.py` |
+| 52 | Model compression | `compress_demo.py` – quantization, pruning | `compress_demo.py` |
+| 53 | Multimodal models | `multimodal_demo.py` – image‑text fusion | `multimodal_demo.py` |
+| 54 | Reinforcement learning | `rl_demo.py` – DQN on OpenAI Gym | `rl_demo.py` |
+| 55 | Scaling inference | `scale_demo.py` – GPU cluster & batching | `scale_demo.py` |
+| 56 | Cloud deployment | `cloud_demo.py` – SageMaker / GCP AI | `cloud_demo.py` |
+| 57 | Security & privacy | `security_demo.py` – API key, encryption | `security_demo.py` |
+| 58 | Performance profiling | `profile_demo.py` – PyTorch profiler | `profile_demo.py` |
+| 59 | Research survey | `papers.md` – summary of two recent papers | `papers.md` |
+| 60 | Future learning roadmap | `future_roadmap.md` – 3‑month plan | `future_roadmap.md` |
+
+---
+
+### Summary
+
+- **8 weeks, 60 days** of hands‑on learning and building.
+- Every day produces a **runnable artifact** that you commit to your GitHub repo.
+- By the end of week 8 you will own a full stack: data ingestion → ML/DL model → RAG \+ LLM service → MLOps pipeline → advanced topics.
+- The repo itself becomes your **live portfolio** and interview‑ready showcase.
+
+Happy coding, and enjoy the sprint!
+
+# 60‑Day AI‑Engineer Road‑Map
+
+**All 60 days are dedicated to learning & building.**
+
+---
+
+## Day 1 – Python Basics
+
+```text
+Learn
+  • Variables & data types
+     – int, float, str, bool
+     – Naming conventions (snake_case)
+  • Syntax fundamentals
+     – Indentation, comments, simple expressions
+  • Basic I/O
+     – print(), input()
+  • Simple math
+     – Arithmetic operators (+, –, *, /, **, //, %)
+     – Order of operations
+
+Code Challenge (≈ 30 min)
+  • Create a file `hello.py`
+     – print("Hello, World!")
+     – Prompt user for a number `n`
+     – Print `n * 2`, `n / 3`, and `n ** 2`
+  • Test with multiple inputs (positive, negative, zero)
+
+Build (≈ 1 h)
+  • Write a command‑line calculator `calc.py`
+     – Prompt: “Enter first number: ”
+     – Prompt: “Enter operator (+, –, *, /): ”
+     – Prompt: “Enter second number: ”
+     – Compute and display result
+     – Handle division‑by‑zero gracefully
+  • Add a help menu: if user types `--help`, show usage
+  • Commit `hello.py` & `calc.py` to the repo
+  • Add a short `README` snippet explaining how to run the calculator:
+        python calc.py
+```
+
+---
+
+## Day 2 – Control Flow & Functions
+
+```text
+Learn
+  • Conditional statements: if / elif / else
+  • Looping: for…in, while
+  • Function definition, arguments, return, scope
+  • Basic try/except error handling
+
+Code Challenge (≈ 45 min)
+  • Implement `fizz_buzz(n)` that prints “Fizz”, “Buzz”, or “FizzBuzz” as appropriate for numbers 1‑100
+  • Test with edge cases (0, negative numbers)
+
+Build (≈ 1 h)
+  • Build `number_tool.py`: a CLI menu with options to sum, average, find min/max, or exit
+  • Validate input, use functions from the challenge
+  • Add `unittest` tests in `test_number_tool.py`
+  • Commit the CLI, tests, and README updates
+```
+
+---
+
+## Day 3 – Modules & Packages
+
+```text
+Learn
+  • Importing built‑in & third‑party modules
+  • Creating a module (`utils.py`) with reusable functions
+  • Using `__init__.py` to make a package
+
+Code Challenge (≈ 30 min)
+  • Write `utils.py` containing `factorial(n)` and `gcd(a,b)`
+  • Import and use these functions in a `main.py`
+
+Build (≈ 1 h)
+  • Commit the package `my_pkg/` and `main.py`
+  • Add documentation in `README` on how to import and use the package
+```
+
+---
+
+## Day 4 – File I/O
+
+```text
+Learn
+  • Reading/writing text files with open()
+  • CSV handling via the `csv` module
+  • Context managers (`with`)
+
+Code Challenge (≈ 30 min)
+  • `csv_reader.py` that reads a CSV, prints header and row count
+
+Build (≈ 1 h)
+  • `csv_stats.py` that outputs mean and std of numeric columns
+  • Commit the scripts and a sample CSV (`sample_data.csv`)
+```
+
+---
+
+## Day 5 – Error Handling & Logging
+
+```text
+Learn
+  • Custom exception classes
+  • Raising vs catching exceptions
+  • Basic logging with the `logging` module
+
+Code Challenge (≈ 30 min)
+  • `calculator.py` that raises `ZeroDivisionError` on division by zero and handles it gracefully
+
+Build (≈ 1 h)
+  • CLI calculator `calc_cli.py` that accepts bad input and logs errors to a file
+  • Commit all code, log file, and README notes
+```
+
+---
+
+## Day 6 – Virtual Environments
+
+```text
+Learn
+  • Creating and activating a virtual environment (`venv`)
+  • Managing `requirements.txt`
+  • Pinning package versions
+
+Code Challenge (≈ 15 min)
+  • Set up `venv`, install `pandas` and `numpy`
+
+Build (≈ 30 min)
+  • Add `requirements.txt` and `setup_env.sh`
+  • Commit to repo
+```
+
+---
+
+## Day 7 – Git Basics
+
+```text
+Learn
+  • `git init`, `git add`, `git commit`, `git push`
+  • Branching, merging, rebasing
+  • Remote repositories on GitHub
+
+Code Challenge (≈ 30 min)
+  • Create a feature branch, commit the code from Day 1–5, merge into `main`
+
+Build (≈ 1 h)
+  • Push repo to GitHub, update `README` with repo description
+  • Commit the entire history
+```
+
+---
+
+## Day 8 – Pandas Basics
+
+```text
+Learn
+  • Series & DataFrame creation
+  • Indexing, filtering, aggregation
+
+Code Challenge (≈ 30 min)
+  • Load a public CSV into a DataFrame, compute mean of a numeric column
+
+Build (≈ 1 h)
+  • `df_demo.ipynb` showing EDA on the dataset
+  • Commit notebook
+```
+
+---
+
+## Day 9 – NumPy Basics
+
+```text
+Learn
+  • Array creation, broadcasting
+  • Indexing, slicing, reshaping
+  • Element‑wise operations
+
+Code Challenge (≈ 30 min)
+  • Create a 2‑D array, compute row sums & transpose
+
+Build (≈ 1 h)
+  • `numpy_demo.ipynb` with visualizations
+  • Commit notebook
+```
+
+---
+
+## Day 10 – Matplotlib 101
+
+```text
+Learn
+  • Plotting basics: line, scatter, bar
+  • Axis labels, titles, legends
+  • Saving figures
+
+Code Challenge (≈ 30 min)
+  • `plot_demo.py` – plot a sine wave and a histogram
+
+Build (≈ 1 h)
+  • Commit `plot_demo.py` and generated PNG
+```
+
+---
+
+## Day 11 – Seaborn 101
+
+```text
+Learn
+  • Distribution plots: KDE, histogram, box
+  • Pair plots & heatmaps
+  • Styling and themes
+
+Code Challenge (≈ 30 min)
+  • `sns_demo.py` – KDE of a numeric column and a pairplot of 3 columns
+
+Build (≈ 1 h)
+  • Commit `sns_demo.py` and generated plots
+```
+
+---
+
+## Day 12 – Plotly 101
+
+```text
+Learn
+  • Interactive charts: scatter, line, heatmap
+  • Dashboards with layout & callbacks
+  • Exporting to HTML
+
+Code Challenge (≈ 30 min)
+  • `plotly_demo.py` – interactive scatter plot of a dataset
+
+Build (≈ 1 h)
+  • Commit `plotly_demo.py` and `plotly_demo.html`
+```
+
+---
+
+## Day 13 – Visualisation Best‑Practices
+
+```text
+Learn
+  • Choosing the right chart type
+  • Color palettes & accessibility
+  • Storytelling with data visualisation
+
+Code Challenge (≈ 30 min)
+  • Write `vis_guidelines.md` summarising 5 key rules
+
+Build (≈ 1 h)
+  • Commit `vis_guidelines.md`
+```
+
+---
+
+## Day 14 – Mini‑Project: Data Dashboard
+
+```text
+Learn
+  • Combining multiple plots in a single notebook
+  • Adding Markdown explanations
+
+Code Challenge (≈ 45 min)
+  • Build `dashboard.ipynb`: 3 plots (line, bar, heatmap) + Markdown summary
+
+Build (≈ 1 h)
+  • Commit `dashboard.ipynb`
+```
+
+---
+
+## Day 15 – Probability Fundamentals
+
+```text
+Learn
+  • Sample space, events, probability rules
+  • Conditional probability
+
+Code Challenge (≈ 30 min)
+  • `prob_demo.py` – calculate probability of rolling a 4 on a fair die
+
+Build (≈ 1 h)
+  • Commit `prob_demo.py` and results
+```
+
+---
+
+## Day 16 – Descriptive Statistics
+
+```text
+Learn
+  • Mean, median, mode, standard deviation
+  • Quartiles, inter‑quartile range
+
+Code Challenge (≈ 30 min)
+  • `stats_demo.py` – compute stats for a list of numbers
+
+Build (≈ 1 h)
+  • Commit `stats_demo.py` and printed output
+```
+
+---
+
+## Day 17 – Hypothesis Testing (t‑Test)
+
+```text
+Learn
+  • One‑sample vs two‑sample t‑test
+  • p‑value interpretation
+
+Code Challenge (≈ 30 min)
+  • `ttest_demo.py` – perform t‑test on Iris sepal width
+
+Build (≈ 1 h)
+  • Commit `ttest_demo.py` and results
+```
+
+---
+
+## Day 18 – Supervised Learning Intro (Linear Regression)
+
+```text
+Learn
+  • Least‑squares solution
+  • Normal equation
+
+Code Challenge (≈ 30 min)
+  • `train_simple.py` – implement linear regression from scratch on a toy dataset
+
+Build (≈ 1 h)
+  • Commit `train_simple.py` and demo run
+```
+
+---
+
+## Day 19 – Model Evaluation
+
+```text
+Learn
+  • MSE, MAE, R²
+  • Residual analysis
+
+Code Challenge (≈ 30 min)
+  • `eval_demo.py` – evaluate the linear regression model
+
+Build (≈ 1 h)
+  • Commit `eval_demo.py` and plots
+```
+
+---
+
+## Day 20 – Pipeline & Cross‑Validation
+
+```text
+Learn
+  • Scikit‑learn Pipeline
+  • K‑fold cross‑validation
+
+Code Challenge (≈ 30 min)
+  • `pipeline_demo.py` – create a pipeline that scales + regresses
+
+Build (≈ 1 h)
+  • Commit `pipeline_demo.py` and output
+```
+
+---
+
+## Day 21 – Mini‑Project: Housing Price Prediction
+
+```text
+Learn
+  • Regression on tabular data
+  • Feature engineering
+
+Code Challenge (≈ 45 min)
+  • `housing_predict.ipynb` – load Boston Housing, train, evaluate
+
+Build (≈ 1 h)
+  • Commit `housing_predict.ipynb`
+```
+
+---
+
+## Day 22 – Neural‑Network Theory – Architecture
+
+```text
+Learn
+  • Neurons, layers, activations
+  • Forward propagation
+
+Code Challenge (≈ 30 min)
+  • `nn_theory.md` – diagram a 3‑layer perceptron in Markdown
+
+Build (≈ 1 h)
+  • Commit `nn_theory.md`
+```
+
+---
+
+## Day 23 – PyTorch Basics
+
+```text
+Learn
+  • Tensors, device handling
+  • Basic arithmetic & broadcasting
+
+Code Challenge (≈ 15 min)
+  • `pytorch_demo.py` – create a tensor, move to GPU if available
+
+Build (≈ 30 min)
+  • Commit `pytorch_demo.py`
+```
+
+---
+
+## Day 24 – MNIST “Hello World” (2‑layer NN)
+
+```text
+Learn
+  • Dataset loading with `torchvision`
+  • Simple feed‑forward network
+
+Code Challenge (≈ 30 min)
+  • `mnist_simple.py` – train a 2‑layer NN, achieve >95 % accuracy
+
+Build (≈ 1 h)
+  • Commit `mnist_simple.py` and trained model
+```
+
+---
+
+## Day 25 – Training Loop, Optimizer & Scheduler
+
+```text
+Learn
+  • PyTorch training loop
+  • Adam optimizer, learning‑rate scheduler
+
+Code Challenge (≈ 30 min)
+  • `mnist_train.py` – add Adam, scheduler, and log loss
+
+Build (≈ 1 h)
+  • Commit `mnist_train.py` and training logs
+```
+
+---
+
+## Day 26 – Convolutional Neural Networks (CNN)
+
+```text
+Learn
+  • Convolution, padding, stride
+  • Pooling, activation
+
+Code Challenge (≈ 30 min)
+  • `mnist_cnn.py` – build a 3‑layer CNN, train on MNIST
+
+Build (≈ 1 h)
+  • Commit `mnist_cnn.py` and model artefacts
+```
+
+---
+
+## Day 27 – Regularization (Dropout, Weight Decay)
+
+```text
+Learn
+  • Dropout, weight decay
+  • Early stopping
+
+Code Challenge (≈ 30 min)
+  • `mnist_dropout.py` – add dropout to CNN, compare accuracy
+
+Build (≈ 1 h)
+  • Commit `mnist_dropout.py` and comparison plots
+```
+
+---
+
+## Day 28 – Mini‑Project: CIFAR‑10 Image Classifier
+
+```text
+Learn
+  • Transfer learning with pre‑trained models
+  • Fine‑tuning on small datasets
+
+Code Challenge (≈ 45 min)
+  • `cifar10_classifier.ipynb` – load CIFAR‑10, fine‑tune ResNet‑18
+
+Build (≈ 1 h)
+  • Commit `cifar10_classifier.ipynb` and trained weights
+```
+
+---
+
+## Day 29 – Tokenization & Sentence Embeddings
+
+```text
+Learn
+  • BPE, WordPiece tokenizers
+  • Sentence‑transformers for embeddings
+
+Code Challenge (≈ 30 min)
+  • `token_demo.py` – encode a few sentences, compute cosine similarity
+
+Build (≈ 1 h)
+  • Commit `token_demo.py` and similarity matrix
+```
+
+---
+
+## Day 30 – HuggingFace Transformers (Fine‑tune BERT)
+
+```text
+Learn
+  • Loading pre‑trained models
+  • Fine‑tuning on a text classification task
+
+Code Challenge (≈ 30 min)
+  • `bert_demo.py` – fine‑tune BERT on a small dataset (e.g., IMDb)
+
+Build (≈ 1 h)
+  • Commit `bert_demo.py` and evaluation metrics
+```
+
+---
+
+## Day 31 – Sentiment Analysis with HuggingFace
+
+```text
+Learn
+  • Text preprocessing for NLP
+  • Predicting sentiment using a fine‑tuned model
+
+Code Challenge (≈ 30 min)
+  • `sentiment_demo.py` – load a few reviews, predict sentiment
+
+Build (≈ 1 h)
+  • Commit `sentiment_demo.py` and predictions
+```
+
+---
+
+## Day 32 – Prompt Engineering Basics
+
+```text
+Learn
+  • Crafting prompts for LLMs
+  • Prompt templates & variables
+
+Code Challenge (≈ 30 min)
+  • `prompt_demo.md` – write 3 example prompts for different tasks
+
+Build (≈ 1 h)
+  • Commit `prompt_demo.md`
+```
+
+---
+
+## Day 33 – Chain‑of‑Thought Prompting
+
+```text
+Learn
+  • Few‑shot prompting
+  • Step‑by‑step reasoning
+
+Code Challenge (≈ 30 min)
+  • `cot_demo.py` – prompt GPT‑2 to solve a simple math problem using chain‑of‑thought
+
+Build (≈ 1 h)
+  • Commit `cot_demo.py` and output
+```
+
+---
+
+## Day 34 – LLM Inference API (FastAPI)
+
+```text
+Learn
+  • Building a FastAPI app
+  • Serving a HuggingFace model
+
+Code Challenge (≈ 30 min)
+  • `llm_api.py` – expose a `/predict` endpoint that runs a GPT‑2 model
+
+Build (≈ 1 h)
+  • Commit `llm_api.py` and a test client script
+```
+
+---
+
+## Day 35 – Mini‑Project: Conversational Chatbot
+
+```text
+Learn
+  • Dialogue management basics
+  • Integrating LLM with a simple state machine
+
+Code Challenge (≈ 45 min)
+  • `chatbot.ipynb` – build a rule‑based chatbot that calls the LLM API
+
+Build (≈ 1 h)
+  • Commit `chatbot.ipynb` and demo conversation
+```
+
+---
+
+## Day 36 – Sentence Embeddings for Retrieval
+
+```text
+Learn
+  • Sentence‑transformers
+  • Cosine similarity search
+
+Code Challenge (≈ 30 min)
+  • `embeddings_demo.py` – embed a set of FAQ sentences
+
+Build (≈ 1 h)
+  • Commit `embeddings_demo.py` and similarity results
+```
+
+---
+
+## Day 37 – Vector Store with FAISS
+
+```text
+Learn
+  • Indexing vectors with FAISS
+  • Persisting and querying an index
+
+Code Challenge (≈ 30 min)
+  • `faiss_demo.py` – build index from embeddings, query a new sentence
+
+Build (≈ 1 h)
+  • Commit `faiss_demo.py` and retrieved results
+```
+
+---
+
+## Day 38 – Retrieval Pipeline (RAG)
+
+```text
+Learn
+  • Retrieve‑augmented generation workflow
+  • Combining embeddings + index + LLM
+
+Code Challenge (≈ 45 min)
+  • `rag_pipeline.py` – given a user query, retrieve top‑k docs and generate an answer
+
+Build (≈ 1 h)
+  • Commit `rag_pipeline.py` and example outputs
+```
+
+---
+
+## Day 39 – LangChain RAG
+
+```text
+Learn
+  • LangChain fundamentals
+  • Building a chain with retriever + LLM
+
+Code Challenge (≈ 30 min)
+  • `langchain_rag.py` – build a simple RAG chain
+
+Build (≈ 1 h)
+  • Commit `langchain_rag.py` and sample interaction
+```
+
+---
+
+## Day 40 – Retrieval‑Augmented Summarisation
+
+```text
+Learn
+  • Summarisation with context from retrieved docs
+  • Prompt design for summarisation
+
+Code Challenge (≈ 30 min)
+  • `rag_summary.py` – summarize a long article using retrieved chunks
+
+Build (≈ 1 h)
+  • Commit `rag_summary.py` and summarised text
+```
+
+---
+
+## Day 41 – Fine‑Tune LLM on Custom Docs
+
+```text
+Learn
+  • LoRA / adapters for efficient fine‑tuning
+  • Preparing a small custom dataset
+
+Code Challenge (≈ 45 min)
+  • `llm_finetune.py` – fine‑tune GPT‑2 on a 10‑page PDF
+
+Build (≈ 1 h)
+  • Commit `llm_finetune.py` and saved adapter weights
+```
+
+---
+
+## Day 42 – Mini‑Project: Knowledge‑Base Assistant
+
+```text
+Learn
+  • Building a domain‑specific assistant
+  • Integrating retrieval + fine‑tuned LLM
+
+Code Challenge (≈ 45 min)
+  • `kb_assistant.ipynb` – ask questions about the PDF and get answers
+
+Build (≈ 1 h)
+  • Commit `kb_assistant.ipynb` and example Q&A
+```
+
+---
+
+## Day 43 – Docker Basics
+
+```text
+Learn
+  • Dockerfile syntax, layers, caching
+  • Building an image locally
+
+Code Challenge (≈ 30 min)
+  • `Dockerfile` for the `llm_api.py` app
+
+Build (≈ 1 h)
+  • Build the image, run a container, test `/predict` endpoint
+  • Commit `Dockerfile`
+```
+
+---
+
+## Day 44 – FastAPI Deployment (Docker Compose)
+
+```text
+Learn
+  • Compose a multi‑service stack
+  • Linking the API with a vector store container
+
+Code Challenge (≈ 30 min)
+  • `docker-compose.yml` that starts the API and FAISS index
+
+Build (≈ 1 h)
+  • Launch stack, verify service, commit `docker-compose.yml`
+```
+
+---
+
+## Day 45 – CI/CD with GitHub Actions
+
+```text
+Learn
+  • GitHub Actions workflow syntax
+  • Automated tests + image build
+
+Code Challenge (≈ 30 min)
+  • `ci.yml` that runs unit tests, builds image, pushes to GHCR
+
+Build (≈ 1 h)
+  • Commit `ci.yml`, verify run on push
+```
+
+---
+
+## Day 46 – Experiment Tracking with MLflow
+
+```text
+Learn
+  • Logging parameters, metrics, artifacts
+  • MLflow UI for tracking runs
+
+Code Challenge (≈ 30 min)
+  • `mlflow_demo.py` – log a simple training run
+
+Build (≈ 1 h)
+  • Commit `mlflow_demo.py` and show MLflow UI link
+```
+
+---
+
+## Day 47 – Monitoring – Prometheus & Grafana
+
+```text
+Learn
+  • Exporting metrics in Prometheus format
+  • Visualising with Grafana dashboards
+
+Code Challenge (≈ 30 min)
+  • `metrics.py` – expose `/metrics` endpoint
+  • `prometheus.yml` – scrape config
+
+Build (≈ 1 h)
+  • Commit `metrics.py`, `prometheus.yml` and a Grafana dashboard JSON
+```
+
+---
+
+## Day 48 – Model Registry & Versioning
+
+```text
+Learn
+  • Persisting models in a registry
+  • Semantic versioning
+
+Code Challenge (≈ 30 min)
+  • `model_registry.py` – save & load a model by version
+
+Build (≈ 1 h)
+  • Commit `model_registry.py` and a sample model
+```
+
+---
+
+## Day 49 – Mini‑Project: MLOps Pipeline
+
+```text
+Learn
+  • End‑to‑end flow: ingest → train → serve → monitor
+  • Automation with scripts
+
+Code Challenge (≈ 45 min)
+  • `mlops_demo.ipynb` – orchestrate all previous steps in one notebook
+
+Build (≈ 1 h)
+  • Commit `mlops_demo.ipynb` and all supporting scripts
+```
+
+---
+
+## Day 50 – Advanced MLOps – Canary Deployment
+
+```text
+Learn
+  • Canary rollout strategy
+  • Feature flags in API
+
+Code Challenge (≈ 30 min)
+  • `canary_demo.py` – switch between old & new model based on a header flag
+
+Build (≈ 1 h)
+  • Commit `canary_demo.py` and test requests
+```
+
+---
+
+## Day 51 – Model Explainability (SHAP, LIME)
+
+```text
+Learn
+  • Interpreting predictions with SHAP
+  • Local explanations with LIME
+
+Code Challenge (≈ 30 min)
+  • `explain_demo.py` – generate SHAP values for a single prediction
+
+Build (≈ 1 h)
+  • Commit `explain_demo.py` and SHAP plot
+```
+
+---
+
+## Day 52 – Model Compression (Quantization & Pruning)
+
+```text
+Learn
+  • Post‑training quantization (int8)
+  • Structured pruning
+
+Code Challenge (≈ 45 min)
+  • `compress_demo.py` – quantise a PyTorch model, compare size & latency
+
+Build (≈ 1 h)
+  • Commit `compress_demo.py` and benchmark results
+```
+
+---
+
+## Day 53 – Multimodal Models (Image \+ Text)
+
+```text
+Learn
+  • Image‑text fusion (e.g., CLIP)
+  • Simple image captioning pipeline
+
+Code Challenge (≈ 45 min)
+  • `multimodal_demo.py` – encode image and caption, compute similarity
+
+Build (≈ 1 h)
+  • Commit `multimodal_demo.py` and sample outputs
+```
+
+---
+
+## Day 54 – Reinforcement Learning (DQN on CartPole)
+
+```text
+Learn
+  • OpenAI Gym environments
+  • Deep Q‑Network architecture
+
+Code Challenge (≈ 45 min)
+  • `rl_demo.py` – implement DQN to solve CartPole
+
+Build (≈ 1 h)
+  • Commit `rl_demo.py` and training logs
+```
+
+---
+
+## Day 55 – Scaling Inference (GPU Cluster & Batching)
+
+```text
+Learn
+  • Batch inference with PyTorch DataLoader
+  • Simple multi‑GPU inference script
+
+Code Challenge (≈ 30 min)
+  • `scale_demo.py` – load a large dataset, run inference in batches
+
+Build (≈ 1 h)
+  • Commit `scale_demo.py` and throughput results
+```
+
+---
+
+## Day 56 – Cloud Deployment (SageMaker)
+
+```text
+Learn
+  • Creating a SageMaker endpoint
+  • Deploying a FastAPI container to SageMaker
+
+Code Challenge (≈ 45 min)
+  • `cloud_demo.py` – script that creates a SageMaker endpoint for `llm_api.py`
+
+Build (≈ 1 h)
+  • Commit `cloud_demo.py` and deployment logs
+```
+
+---
+
+## Day 57 – Security & Privacy (API Keys & Encryption)
+
+```text
+Learn
+  • API key authentication in FastAPI
+  • Basic encryption of data at rest
+
+Code Challenge (≈ 30 min)
+  • `security_demo.py` – add API key header, encrypt a secret field
+
+Build (≈ 1 h)
+  • Commit `security_demo.py` and test script
+```
+
+---
+
+## Day 58 – Performance Profiling (PyTorch Profiler)
+
+```text
+Learn
+  • Profiling training and inference
+  • Identifying bottlenecks
+
+Code Challenge (≈ 30 min)
+  • `profile_demo.py` – profile the DQN training loop
+
+Build (≈ 1 h)
+  • Commit `profile_demo.py` and a summary of results
+```
+
+---
+
+## Day 59 – Research Survey (Paper Summaries)
+
+```text
+Learn
+  • Skimming recent papers on LLMs & RAG
+  • Writing concise summaries
+
+Code Challenge (≈ 45 min)
+  • `papers.md` – summarize two recent papers
+
+Build (≈ 1 h)
+  • Commit `papers.md`
+```
+
+---
+
+## Day 60 – Future Learning Road‑Map
+
+```text
+Learn
+  • Setting SMART goals
+  • Planning next 3‑month sprint
+
+Code Challenge (≈ 30 min)
+  • `future_roadmap.md` – outline three new projects and milestones
+
+Build (≈ 1 h)
+  • Commit `future_roadmap.md`
+```
+
+---
+
+**End of the 60‑day sprint**<br />You now have a fully‑worked, repo‑ready portfolio covering the entire AI stack – from Python fundamentals to MLOps‑ready LLM services. Use it to impress recruiters or as a foundation for further growth. Happy coding!

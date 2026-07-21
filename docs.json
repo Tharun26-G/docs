@@ -83,7 +83,10 @@
         ]
       },
       {
-        "tab": "Learnings"
+        "tab": "Learnings",
+        "pages": [
+          "new-roadmap"
+        ]
       }
     ]
   },

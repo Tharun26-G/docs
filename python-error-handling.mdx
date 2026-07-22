@@ -1,0 +1,143 @@
+---
+title: "Python Error Handling"
+---
+
+---
+
+# 4. Basic Error Handling (`try` / `except`)
+
+Used to handle runtime errors without crashing the program.
+
+---
+
+## Basic Syntax
+
+```python
+try:
+    # risky code
+except:
+    # runs if error occurs
+```
+
+---
+
+## Example
+
+```python
+try:
+    print(10 / 0)
+except:
+    print("Cannot divide by zero")
+```
+
+Output
+
+```text
+Cannot divide by zero
+```
+
+---
+
+## Catch Specific Exceptions
+
+```python
+try:
+    number = int("abc")
+except ValueError:
+    print("Invalid number")
+```
+
+---
+
+## Multiple Exceptions
+
+```python
+try:
+    x = 10 / 0
+except ZeroDivisionError:
+    print("Division Error")
+except ValueError:
+    print("Value Error")
+```
+
+---
+
+## `else`
+
+Runs only if no exception occurs.
+
+```python
+try:
+    x = 10 / 2
+except ZeroDivisionError:
+    print("Error")
+else:
+    print("Success")
+```
+
+Output
+
+```text
+Success
+```
+
+---
+
+## `finally`
+
+Always executes.
+
+```python
+try:
+    print(10 / 2)
+except:
+    print("Error")
+finally:
+    print("Finished")
+```
+
+Output
+
+```text
+5.0
+Finished
+```
+
+---
+
+## Raising Exceptions
+
+```python
+age = -1
+
+if age < 0:
+    raise ValueError("Age cannot be negative")
+```
+
+---
+
+## Common Built-in Exceptions
+
+| Exception | Description |
+| :-- | :-- |
+| `ValueError` | Wrong value type |
+| `TypeError` | Wrong data type |
+| `NameError` | Variable not defined |
+| `IndexError` | Invalid list index |
+| `KeyError` | Invalid dictionary key |
+| `ZeroDivisionError` | Division by zero |
+| `FileNotFoundError` | File not found |
+| `AttributeError` | Invalid object attribute |
+
+---
+
+# Quick Revision
+
+### Error Handling
+
+- `try` → Code that may fail.
+- `except` → Handle exceptions.
+- `else` → Runs when no exception occurs.
+- `finally` → Always runs.
+- `raise` → Manually throw an exception.
+- Catch specific exceptions whenever possible instead of using a bare `except`.

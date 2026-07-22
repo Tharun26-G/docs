@@ -93,6 +93,15 @@
               "python-basics-1",
               "python-collections"
             ]
+          },
+          {
+            "group": "Day 2",
+            "pages": [
+              "python-c",
+              "python-looping",
+              "python-functions",
+              "python-error-handling"
+            ]
           }
         ]
       }

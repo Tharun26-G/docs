@@ -1,0 +1,719 @@
+---
+title: "Python Functions"
+---
+
+Functions are reusable blocks of code that perform a specific task. They improve code readability, reduce duplication, and make programs easier to maintain.
+
+---
+
+# Creating a Function
+
+Use the `def` keyword.
+
+## Syntax
+
+```python
+def function_name(parameters):
+    # code
+    return value
+```
+
+Example
+
+```python
+def greet():
+    print("Hello World")
+
+greet()
+```
+
+Output
+
+```text
+Hello World
+```
+
+---
+
+# Calling a Function
+
+A function executes only when it is called.
+
+```python
+def welcome():
+    print("Welcome!")
+
+welcome()
+welcome()
+```
+
+Output
+
+```text
+Welcome!
+Welcome!
+```
+
+---
+
+# Function Parameters and Arguments
+
+## Parameter
+
+Variables defined in the function.
+
+```python
+def greet(name):
+    print("Hello", name)
+```
+
+`name` is a **parameter**.
+
+---
+
+## Argument
+
+Actual value passed to the function.
+
+```python
+greet("Alice")
+```
+
+`"Alice"` is an **argument**.
+
+---
+
+# Positional Arguments
+
+Arguments are matched by position.
+
+```python
+def student(name, age):
+    print(name, age)
+
+student("John", 20)
+```
+
+Output
+
+```text
+John 20
+```
+
+---
+
+# Keyword Arguments
+
+Arguments are passed using parameter names.
+
+```python
+def student(name, age):
+    print(name, age)
+
+student(age=20, name="John")
+```
+
+Output
+
+```text
+John 20
+```
+
+---
+
+# Default Parameters
+
+A parameter can have a default value.
+
+```python
+def greet(name="Guest"):
+    print("Hello", name)
+
+greet()
+greet("Alice")
+```
+
+Output
+
+```text
+Hello Guest
+Hello Alice
+```
+
+---
+
+# Multiple Parameters
+
+```python
+def add(a, b):
+    print(a + b)
+
+add(10, 20)
+```
+
+Output
+
+```text
+30
+```
+
+---
+
+# Return Statement
+
+Returns a value to the caller.
+
+```python
+def square(n):
+    return n * n
+
+result = square(5)
+
+print(result)
+```
+
+Output
+
+```text
+25
+```
+
+---
+
+# Returning Multiple Values
+
+```python
+def details():
+    return "John", 20
+
+name, age = details()
+
+print(name)
+print(age)
+```
+
+Output
+
+```text
+John
+20
+```
+
+---
+
+# print() vs return
+
+### print()
+
+Displays output.
+
+```python
+def add():
+    print(5 + 5)
+
+x = add()
+
+print(x)
+```
+
+Output
+
+```text
+10
+None
+```
+
+---
+
+### return
+
+Returns a value.
+
+```python
+def add():
+    return 5 + 5
+
+x = add()
+
+print(x)
+```
+
+Output
+
+```text
+10
+```
+
+---
+
+# Arbitrary Arguments (`*args`)
+
+Accepts any number of positional arguments.
+
+```python
+def total(*numbers):
+    print(sum(numbers))
+
+total(10, 20, 30, 40)
+```
+
+Output
+
+```text
+100
+```
+
+---
+
+# Arbitrary Keyword Arguments (`**kwargs`)
+
+Accepts any number of keyword arguments.
+
+```python
+def person(**info):
+    print(info["name"])
+    print(info["age"])
+
+person(name="John", age=21)
+```
+
+Output
+
+```text
+John
+21
+```
+
+---
+
+# Combining Parameters
+
+```python
+def demo(a, b=10, *args, **kwargs):
+    print(a)
+    print(b)
+    print(args)
+    print(kwargs)
+
+demo(1, 2, 3, 4, city="Chennai")
+```
+
+Output
+
+```text
+1
+2
+(3, 4)
+{'city': 'Chennai'}
+```
+
+---
+
+# Variable Scope
+
+Scope determines where a variable can be accessed.
+
+---
+
+## Local Scope
+
+Created inside a function.
+
+```python
+def test():
+    x = 10
+    print(x)
+
+test()
+```
+
+Outside the function:
+
+```python
+print(x)
+```
+
+Output
+
+```text
+NameError
+```
+
+---
+
+## Global Scope
+
+Created outside every function.
+
+```python
+x = 100
+
+def show():
+    print(x)
+
+show()
+
+print(x)
+```
+
+Output
+
+```text
+100
+100
+```
+
+---
+
+## global Keyword
+
+Modify a global variable.
+
+```python
+count = 0
+
+def increment():
+    global count
+    count += 1
+
+increment()
+
+print(count)
+```
+
+Output
+
+```text
+1
+```
+
+---
+
+# Nested Functions
+
+A function inside another function.
+
+```python
+def outer():
+
+    def inner():
+        print("Inner Function")
+
+    inner()
+
+outer()
+```
+
+Output
+
+```text
+Inner Function
+```
+
+---
+
+# Recursive Function
+
+A function calling itself.
+
+```python
+def countdown(n):
+
+    if n == 0:
+        return
+
+    print(n)
+
+    countdown(n - 1)
+
+countdown(5)
+```
+
+Output
+
+```text
+5
+4
+3
+2
+1
+```
+
+---
+
+# Lambda Function (Anonymous Function)
+
+Small one-line function.
+
+```python
+square = lambda x: x * x
+
+print(square(5))
+```
+
+Output
+
+```text
+25
+```
+
+Multiple parameters
+
+```python
+add = lambda a, b: a + b
+
+print(add(10, 20))
+```
+
+Output
+
+```text
+30
+```
+
+---
+
+# Higher-Order Functions
+
+Functions can be passed as arguments.
+
+```python
+def greet():
+    return "Hello"
+
+def display(func):
+    print(func())
+
+display(greet)
+```
+
+Output
+
+```text
+Hello
+```
+
+---
+
+# Built-in Functions
+
+Some commonly used Python functions.
+
+| Function | Purpose |
+| :-- | :-- |
+| `print()` | Display output |
+| `input()` | Read user input |
+| `len()` | Length of object |
+| `type()` | Get data type |
+| `sum()` | Sum of numbers |
+| `max()` | Largest value |
+| `min()` | Smallest value |
+| `sorted()` | Sort values |
+| `abs()` | Absolute value |
+| `round()` | Round number |
+
+Example
+
+```python
+numbers = [5, 2, 8]
+
+print(len(numbers))
+print(max(numbers))
+print(min(numbers))
+print(sum(numbers))
+```
+
+---
+
+# Function Annotations (Type Hints)
+
+Used to specify expected types.
+
+```python
+def add(a: int, b: int) -> int:
+    return a + b
+
+print(add(5, 10))
+```
+
+---
+
+# Decorators
+
+A **decorator** is a function that modifies or extends the behavior of another function **without changing its original code**.
+
+Decorators use the `@` symbol.
+
+---
+
+## Simple Decorator
+
+```python
+def decorator(func):
+
+    def wrapper():
+        print("Before function")
+        func()
+        print("After function")
+
+    return wrapper
+
+@decorator
+def hello():
+    print("Hello")
+
+hello()
+```
+
+Output
+
+```text
+Before function
+Hello
+After function
+```
+
+---
+
+## Decorator with Arguments
+
+```python
+def decorator(func):
+
+    def wrapper(name):
+        print("Welcome")
+        func(name)
+
+    return wrapper
+
+@decorator
+def greet(name):
+    print("Hello", name)
+
+greet("Alice")
+```
+
+Output
+
+```text
+Welcome
+Hello Alice
+```
+
+---
+
+## Multiple Decorators
+
+Decorators are applied from bottom to top.
+
+```python
+def deco1(func):
+    def wrapper():
+        print("Decorator 1")
+        func()
+    return wrapper
+
+def deco2(func):
+    def wrapper():
+        print("Decorator 2")
+        func()
+    return wrapper
+
+@deco1
+@deco2
+def hello():
+    print("Hello")
+
+hello()
+```
+
+Output
+
+```text
+Decorator 1
+Decorator 2
+Hello
+```
+
+---
+
+## Common Built-in Decorators
+
+### `@staticmethod`
+
+Does not use `self` or `cls`.
+
+```python
+class Math:
+
+    @staticmethod
+    def add(a, b):
+        return a + b
+
+print(Math.add(5, 10))
+```
+
+---
+
+### `@classmethod`
+
+Receives the class (`cls`) instead of the object.
+
+```python
+class Student:
+
+    school = "ABC School"
+
+    @classmethod
+    def show_school(cls):
+        print(cls.school)
+
+Student.show_school()
+```
+
+---
+
+### `@property`
+
+Allows calling a method like an attribute.
+
+```python
+class Person:
+
+    def __init__(self, name):
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
+
+p = Person("John")
+
+print(p.name)
+```
+
+---
+
+# Quick Revision
+
+- `def` → Create a function
+- Call function using `()`
+- Parameters → Variables in function definition
+- Arguments → Values passed to function
+- `return` → Returns value
+- `print()` → Displays value
+- Default parameters → Optional values
+- `*args` → Multiple positional arguments
+- `**kwargs` → Multiple keyword arguments
+- Local scope → Inside function
+- Global scope → Outside function
+- `global` → Modify global variable
+- Nested function → Function inside another function
+- Recursion → Function calls itself
+- Lambda → Anonymous one-line function
+- Higher-order function → Takes or returns functions
+- Type hints → Specify expected parameter/return types
+- Decorator → Adds functionality without modifying the original function
+- `@staticmethod` → No `self` or `cls`
+- `@classmethod` → Uses class (`cls`)
+- `@property` → Access method like an attribute

@@ -1,0 +1,308 @@
+---
+title: "Python Looping"
+---
+
+---
+
+# 2. Loops
+
+Loops repeat code.
+
+Python has two loops:
+
+- `for`
+- `while`
+
+---
+
+# for Loop
+
+Used for iterating over sequences.
+
+## Syntax
+
+```python
+for variable in sequence:
+    code
+```
+
+---
+
+## Loop through List
+
+```python
+colors = ["Red", "Blue", "Green"]
+
+for color in colors:
+    print(color)
+```
+
+Output
+
+```text
+Red
+Blue
+Green
+```
+
+---
+
+## Loop through String
+
+```python
+for ch in "Python":
+    print(ch)
+```
+
+---
+
+## Using `range()`
+
+### `range(stop)`
+
+```python
+for i in range(5):
+    print(i)
+```
+
+Output
+
+```text
+0
+1
+2
+3
+4
+```
+
+---
+
+### `range(start, stop)`
+
+```python
+for i in range(2, 6):
+    print(i)
+```
+
+Output
+
+```text
+2
+3
+4
+5
+```
+
+---
+
+### `range(start, stop, step)`
+
+```python
+for i in range(1, 10, 2):
+    print(i)
+```
+
+Output
+
+```text
+1
+3
+5
+7
+9
+```
+
+---
+
+## Nested Loops
+
+```python
+for i in range(3):
+    for j in range(2):
+        print(i, j)
+```
+
+---
+
+## Loop through Dictionary
+
+```python
+student = {
+    "name": "John",
+    "age": 20
+}
+
+for key in student:
+    print(key)
+
+for value in student.values():
+    print(value)
+
+for key, value in student.items():
+    print(key, value)
+```
+
+---
+
+## Loop Control Statements
+
+### `break`
+
+Stops the loop immediately.
+
+```python
+for i in range(5):
+    if i == 3:
+        break
+    print(i)
+```
+
+Output
+
+```text
+0
+1
+2
+```
+
+---
+
+### `continue`
+
+Skips current iteration.
+
+```python
+for i in range(5):
+    if i == 2:
+        continue
+    print(i)
+```
+
+Output
+
+```text
+0
+1
+3
+4
+```
+
+---
+
+### `pass`
+
+Placeholder.
+
+```python
+for i in range(5):
+    pass
+```
+
+---
+
+## `else` with Loop
+
+Runs only if loop finishes normally.
+
+```python
+for i in range(3):
+    print(i)
+else:
+    print("Done")
+```
+
+Output
+
+```text
+0
+1
+2
+Done
+```
+
+---
+
+# while Loop
+
+Repeats while condition is True.
+
+## Syntax
+
+```python
+while condition:
+    code
+```
+
+---
+
+## Example
+
+```python
+count = 1
+
+while count <= 5:
+    print(count)
+    count += 1
+```
+
+Output
+
+```text
+1
+2
+3
+4
+5
+```
+
+---
+
+## Infinite Loop
+
+```python
+while True:
+    print("Running")
+```
+
+Stop using **Ctrl \+ C**.
+
+---
+
+## break in while
+
+```python
+i = 1
+
+while True:
+    if i == 5:
+        break
+    print(i)
+    i += 1
+```
+
+---
+
+## continue in while
+
+```python
+i = 0
+
+while i < 5:
+    i += 1
+    if i == 3:
+        continue
+    print(i)
+```
+
+---
+
+# Quick Revision
+
+### Loops
+
+- `for` → Iterate over sequences.
+- `while` → Repeat while condition is True.
+- `break` → Exit loop.
+- `continue` → Skip current iteration.
+- `pass` → Placeholder.
+- Loop `else` → Executes if loop completes normally.

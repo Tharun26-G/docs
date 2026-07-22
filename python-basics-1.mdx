@@ -2,11 +2,13 @@
 title: "Python Basics"
 ---
 
+---
+
 # 1. Variables
 
-### Definition
+## Definition
 
-A variable is used to store a value.
+A **variable** is used to store a value that can be used later in the program.
 
 ### Example
 
@@ -23,24 +25,27 @@ age = 20
 
 ### Explanation
 
-Variables store data that can be used later in the program.
+Variables hold data such as numbers, text, or Boolean values.
 
 ---
 
 # 2. Variable Naming Rules (snake\_case)
 
-### Rules
+## Rules
 
-- Use letters, numbers, and underscores.
-- Cannot start with a number.
-- Case-sensitive.
-- Use `snake_case` for readability.
+- Use letters, numbers, and underscores (`_`)
+- Cannot start with a number
+- Cannot contain spaces
+- Cannot use special characters except `_`
+- Case-sensitive (`age` and `Age` are different)
+- Use **snake\_case** for readability
 
 ### Good Examples
 
 ```python
 student_name = "Alice"
 total_marks = 95
+is_logged_in = True
 ```
 
 ### Bad Examples
@@ -48,6 +53,7 @@ total_marks = 95
 ```python
 2name = "Alice"
 student-name = "Alice"
+student name = "Alice"
 ```
 
 ### Output
@@ -58,7 +64,7 @@ SyntaxError
 
 ### Explanation
 
-Use meaningful names written in lowercase with underscores.
+Use meaningful lowercase variable names separated with underscores.
 
 ---
 
@@ -84,11 +90,11 @@ print(z)
 
 ### Explanation
 
-Assign multiple values in one line.
+Assign multiple values in a single line.
 
 ---
 
-## Same Value
+## Same Value to Multiple Variables
 
 ```python
 a = b = c = 100
@@ -108,7 +114,7 @@ print(c)
 
 ### Explanation
 
-Assign the same value to multiple variables.
+All variables point to the same value.
 
 ---
 
@@ -128,7 +134,7 @@ John
 
 ### Explanation
 
-`print()` displays values on the screen.
+`print()` displays the value stored in a variable.
 
 ---
 
@@ -149,7 +155,7 @@ John 20
 
 ### Explanation
 
-Separate multiple values with commas.
+Separate multiple values using commas.
 
 ---
 
@@ -176,9 +182,31 @@ Global variables can be accessed inside functions.
 
 ---
 
-# 6. Python Comments
+# 6. Local Variables
 
-## Single Line
+```python
+def show():
+    message = "Hello"
+    print(message)
+
+show()
+```
+
+### Output
+
+```text
+Hello
+```
+
+### Explanation
+
+Local variables exist only inside the function.
+
+---
+
+# 7. Python Comments
+
+## Single-line Comment
 
 ```python
 # This is a comment
@@ -194,11 +222,11 @@ Hello
 
 ### Explanation
 
-Comments are ignored by Python.
+Python ignores comments.
 
 ---
 
-## Multi-line
+## Multi-line Comment
 
 ```python
 """
@@ -218,11 +246,11 @@ Python
 
 ### Explanation
 
-Triple quotes are commonly used for multi-line comments/docstrings.
+Triple quotes are commonly used for multi-line comments or docstrings.
 
 ---
 
-# 7. Indentation
+# 8. Indentation
 
 ```python
 if True:
@@ -241,7 +269,7 @@ Indentation defines code blocks in Python.
 
 ---
 
-# 8. Basic Input
+# 9. Basic Input
 
 ```python
 name = input("Enter your name: ")
@@ -264,11 +292,38 @@ Alice
 
 ### Explanation
 
-`input()` reads user input as a string.
+`input()` always returns a string.
 
 ---
 
-# 9. Basic Output
+# 10. Taking Integer Input
+
+```python
+age = int(input("Enter age: "))
+
+print(age)
+```
+
+### Sample Input
+
+```text
+20
+```
+
+### Output
+
+```text
+Enter age: 20
+20
+```
+
+### Explanation
+
+Use `int()` to convert input into an integer.
+
+---
+
+# 11. Basic Output
 
 ```python
 print("Welcome")
@@ -286,9 +341,37 @@ Welcome
 
 ---
 
-# 10. Python Data Types
+# 12. Escape Characters
 
-## int
+```python
+print("Hello\nPython")
+print("She said \"Hi\"")
+```
+
+### Output
+
+```text
+Hello
+Python
+She said "Hi"
+```
+
+### Explanation
+
+Escape characters create special formatting.
+
+| Escape | Meaning |
+| --- | --- |
+| `\n` | New Line |
+| `\t` | Tab |
+| `\\` | Backslash |
+| `\"` | Double Quote |
+
+---
+
+# 13. Python Data Types
+
+## Integer
 
 ```python
 x = 25
@@ -308,7 +391,7 @@ Stores whole numbers.
 
 ---
 
-## float
+## Float
 
 ```python
 x = 3.14
@@ -328,7 +411,7 @@ Stores decimal numbers.
 
 ---
 
-## str
+## String
 
 ```python
 name = "Python"
@@ -348,7 +431,7 @@ Stores text.
 
 ---
 
-## bool
+## Boolean
 
 ```python
 x = True
@@ -364,11 +447,11 @@ print(type(x))
 
 ### Explanation
 
-Stores `True` or `False`.
+Stores True or False.
 
 ---
 
-# 11. Python Numbers
+# 14. Python Numbers
 
 ```python
 x = 10
@@ -390,11 +473,11 @@ print(type(z))
 
 ### Explanation
 
-Python supports integer, float, and complex numbers.
+Python supports integers, floats, and complex numbers.
 
 ---
 
-# 12. Python Casting
+# 15. Type Conversion (Casting)
 
 ```python
 x = int(4.9)
@@ -420,7 +503,7 @@ Casting converts one data type into another.
 
 ---
 
-# 13. Python Strings
+# 16. Strings
 
 ```python
 text = "Hello"
@@ -436,11 +519,83 @@ Hello
 
 ### Explanation
 
-Strings store sequences of characters.
+Strings store characters enclosed in quotes.
 
 ---
 
-# 14. Python Booleans
+## String Indexing
+
+```python
+text = "Python"
+
+print(text[0])
+print(text[-1])
+```
+
+### Output
+
+```text
+P
+n
+```
+
+### Explanation
+
+Index starts from **0**.
+
+---
+
+## String Slicing
+
+```python
+text = "Python"
+
+print(text[0:3])
+print(text[2:])
+```
+
+### Output
+
+```text
+Pyt
+thon
+```
+
+### Explanation
+
+Slicing extracts part of a string.
+
+---
+
+## Common String Methods
+
+```python
+text = "python programming"
+
+print(text.upper())
+print(text.lower())
+print(text.title())
+print(text.replace("python", "Java"))
+print(text.split())
+```
+
+### Output
+
+```text
+PYTHON PROGRAMMING
+python programming
+Python Programming
+Java programming
+['python', 'programming']
+```
+
+### Explanation
+
+Methods perform operations on strings.
+
+---
+
+# 17. Booleans
 
 ```python
 print(10 > 5)
@@ -454,15 +609,13 @@ True
 
 ### Explanation
 
-Boolean values represent true or false.
+Boolean values are either True or False.
 
 ---
 
-# 15. Python Operators
+# 18. Arithmetic Operators
 
-## Arithmetic Operators
-
-### Addition (\+)
+### Addition
 
 ```python
 print(5 + 3)
@@ -474,13 +627,9 @@ Output
 8
 ```
 
-Explanation
-
-Adds two values.
-
 ---
 
-### Subtraction (-)
+### Subtraction
 
 ```python
 print(10 - 4)
@@ -492,13 +641,9 @@ Output
 6
 ```
 
-Explanation
-
-Subtracts one value from another.
-
 ---
 
-### Multiplication (\*)
+### Multiplication
 
 ```python
 print(6 * 4)
@@ -510,13 +655,9 @@ Output
 24
 ```
 
-Explanation
-
-Multiplies two numbers.
-
 ---
 
-### Division (/)
+### Division
 
 ```python
 print(10 / 2)
@@ -528,13 +669,9 @@ Output
 5.0
 ```
 
-Explanation
-
-Returns decimal division.
-
 ---
 
-### Floor Division (//)
+### Floor Division
 
 ```python
 print(10 // 3)
@@ -546,13 +683,9 @@ Output
 3
 ```
 
-Explanation
-
-Returns quotient without decimal.
-
 ---
 
-### Modulus (%)
+### Modulus
 
 ```python
 print(10 % 3)
@@ -564,13 +697,9 @@ Output
 1
 ```
 
-Explanation
-
-Returns the remainder.
-
 ---
 
-### Exponent (\*\*)
+### Exponent
 
 ```python
 print(2 ** 3)
@@ -582,13 +711,9 @@ Output
 8
 ```
 
-Explanation
-
-Raises a number to a power.
-
 ---
 
-# 16. Order of Operations
+# 19. Order of Operations
 
 ```python
 print(2 + 3 * 4)
@@ -604,21 +729,27 @@ print((2 + 3) * 4)
 
 ### Explanation
 
-Parentheses are evaluated before multiplication and addition.
+Parentheses have the highest priority.
 
 ---
 
-# 17. Comparison Operators
+# 20. Comparison Operators
 
 ```python
 print(5 > 3)
+print(5 < 3)
 print(5 == 5)
 print(5 != 3)
+print(5 >= 5)
+print(3 <= 5)
 ```
 
 ### Output
 
 ```text
+True
+False
+True
 True
 True
 True
@@ -626,16 +757,19 @@ True
 
 ### Explanation
 
-Compare two values and return `True` or `False`.
+Compare two values and return True or False.
 
 ---
 
-# 18. Assignment Operators
+# 21. Assignment Operators
 
 ```python
 x = 5
-x += 2
 
+x += 2
+print(x)
+
+x *= 3
 print(x)
 ```
 
@@ -643,15 +777,16 @@ print(x)
 
 ```text
 7
+21
 ```
 
 ### Explanation
 
-Assignment operators update variable values.
+Assignment operators modify existing values.
 
 ---
 
-# 19. Logical Operators
+# 22. Logical Operators
 
 ```python
 print(True and False)
@@ -669,63 +804,164 @@ False
 
 ### Explanation
 
-Combine or invert Boolean values.
+Logical operators combine Boolean expressions.
 
 ---
 
-# 20. Identity Operators
+# 23. Identity Operators
 
 ```python
 x = [1, 2]
 y = x
+z = [1, 2]
 
 print(x is y)
+print(x is z)
 ```
 
 ### Output
 
 ```text
 True
+False
 ```
 
 ### Explanation
 
-Check whether two variables refer to the same object.
+`is` checks whether two variables refer to the same object.
 
 ---
 
-# 21. Membership Operators
+# 24. Membership Operators
 
 ```python
 numbers = [1, 2, 3]
 
 print(2 in numbers)
+print(5 not in numbers)
 ```
 
 ### Output
 
 ```text
 True
+True
 ```
 
 ### Explanation
 
-Check whether a value exists in a collection.
+Check whether a value exists inside a collection.
 
 ---
 
-# 22. Bitwise Operators
+# 25. Bitwise Operators
 
 ```python
 print(5 & 3)
+print(5 | 3)
+print(5 ^ 3)
+print(~5)
+print(5 << 1)
+print(5 >> 1)
 ```
 
 ### Output
 
 ```text
 1
+7
+6
+-6
+10
+2
 ```
 
 ### Explanation
 
-Perform operations on binary representations of numbers.
+Bitwise operators work directly on the binary representation of integers.
+
+---
+
+# 26. Getting the Data Type
+
+```python
+name = "Alice"
+
+print(type(name))
+```
+
+### Output
+
+```text
+<class 'str'>
+```
+
+### Explanation
+
+`type()` returns the data type of a variable.
+
+---
+
+# 27. Multiple print() Arguments
+
+```python
+name = "Alice"
+age = 22
+
+print("Name:", name)
+print("Age:", age)
+```
+
+### Output
+
+```text
+Name: Alice
+Age: 22
+```
+
+### Explanation
+
+`print()` can display multiple values separated by commas.
+
+---
+
+# 28. f-Strings (Formatted Strings)
+
+```python
+name = "John"
+age = 20
+
+print(f"My name is {name} and I am {age} years old.")
+```
+
+### Output
+
+```text
+My name is John and I am 20 years old.
+```
+
+### Explanation
+
+f-Strings make it easy to insert variables into strings.
+
+---
+
+# 29. Keywords
+
+```python
+import keyword
+
+print(keyword.kwlist)
+```
+
+### Output (Partial)
+
+```text
+['False', 'None', 'True', 'and', 'as', 'assert', ...]
+```
+
+### Explanation
+
+Keywords are reserved words and cannot be used as variable names.
+
+---

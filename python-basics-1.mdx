@@ -1,0 +1,731 @@
+---
+title: "Python Basics"
+---
+
+# 1. Variables
+
+### Definition
+
+A variable is used to store a value.
+
+### Example
+
+```python
+name = "John"
+age = 20
+```
+
+### Output
+
+```text
+(No output)
+```
+
+### Explanation
+
+Variables store data that can be used later in the program.
+
+---
+
+# 2. Variable Naming Rules (snake\_case)
+
+### Rules
+
+- Use letters, numbers, and underscores.
+- Cannot start with a number.
+- Case-sensitive.
+- Use `snake_case` for readability.
+
+### Good Examples
+
+```python
+student_name = "Alice"
+total_marks = 95
+```
+
+### Bad Examples
+
+```python
+2name = "Alice"
+student-name = "Alice"
+```
+
+### Output
+
+```text
+SyntaxError
+```
+
+### Explanation
+
+Use meaningful names written in lowercase with underscores.
+
+---
+
+# 3. Assign Multiple Values
+
+## Multiple Variables
+
+```python
+x, y, z = 10, 20, 30
+
+print(x)
+print(y)
+print(z)
+```
+
+### Output
+
+```text
+10
+20
+30
+```
+
+### Explanation
+
+Assign multiple values in one line.
+
+---
+
+## Same Value
+
+```python
+a = b = c = 100
+
+print(a)
+print(b)
+print(c)
+```
+
+### Output
+
+```text
+100
+100
+100
+```
+
+### Explanation
+
+Assign the same value to multiple variables.
+
+---
+
+# 4. Output Variables
+
+```python
+name = "John"
+
+print(name)
+```
+
+### Output
+
+```text
+John
+```
+
+### Explanation
+
+`print()` displays values on the screen.
+
+---
+
+## Printing Multiple Variables
+
+```python
+name = "John"
+age = 20
+
+print(name, age)
+```
+
+### Output
+
+```text
+John 20
+```
+
+### Explanation
+
+Separate multiple values with commas.
+
+---
+
+# 5. Global Variables
+
+```python
+name = "John"
+
+def show():
+    print(name)
+
+show()
+```
+
+### Output
+
+```text
+John
+```
+
+### Explanation
+
+Global variables can be accessed inside functions.
+
+---
+
+# 6. Python Comments
+
+## Single Line
+
+```python
+# This is a comment
+
+print("Hello")
+```
+
+### Output
+
+```text
+Hello
+```
+
+### Explanation
+
+Comments are ignored by Python.
+
+---
+
+## Multi-line
+
+```python
+"""
+This
+is
+a comment
+"""
+
+print("Python")
+```
+
+### Output
+
+```text
+Python
+```
+
+### Explanation
+
+Triple quotes are commonly used for multi-line comments/docstrings.
+
+---
+
+# 7. Indentation
+
+```python
+if True:
+    print("Correct")
+```
+
+### Output
+
+```text
+Correct
+```
+
+### Explanation
+
+Indentation defines code blocks in Python.
+
+---
+
+# 8. Basic Input
+
+```python
+name = input("Enter your name: ")
+
+print(name)
+```
+
+### Sample Input
+
+```text
+Alice
+```
+
+### Output
+
+```text
+Enter your name: Alice
+Alice
+```
+
+### Explanation
+
+`input()` reads user input as a string.
+
+---
+
+# 9. Basic Output
+
+```python
+print("Welcome")
+```
+
+### Output
+
+```text
+Welcome
+```
+
+### Explanation
+
+`print()` displays text or values.
+
+---
+
+# 10. Python Data Types
+
+## int
+
+```python
+x = 25
+
+print(type(x))
+```
+
+### Output
+
+```text
+<class 'int'>
+```
+
+### Explanation
+
+Stores whole numbers.
+
+---
+
+## float
+
+```python
+x = 3.14
+
+print(type(x))
+```
+
+### Output
+
+```text
+<class 'float'>
+```
+
+### Explanation
+
+Stores decimal numbers.
+
+---
+
+## str
+
+```python
+name = "Python"
+
+print(type(name))
+```
+
+### Output
+
+```text
+<class 'str'>
+```
+
+### Explanation
+
+Stores text.
+
+---
+
+## bool
+
+```python
+x = True
+
+print(type(x))
+```
+
+### Output
+
+```text
+<class 'bool'>
+```
+
+### Explanation
+
+Stores `True` or `False`.
+
+---
+
+# 11. Python Numbers
+
+```python
+x = 10
+y = 5.5
+z = 2 + 3j
+
+print(type(x))
+print(type(y))
+print(type(z))
+```
+
+### Output
+
+```text
+<class 'int'>
+<class 'float'>
+<class 'complex'>
+```
+
+### Explanation
+
+Python supports integer, float, and complex numbers.
+
+---
+
+# 12. Python Casting
+
+```python
+x = int(4.9)
+y = float(5)
+z = str(100)
+
+print(x)
+print(y)
+print(z)
+```
+
+### Output
+
+```text
+4
+5.0
+100
+```
+
+### Explanation
+
+Casting converts one data type into another.
+
+---
+
+# 13. Python Strings
+
+```python
+text = "Hello"
+
+print(text)
+```
+
+### Output
+
+```text
+Hello
+```
+
+### Explanation
+
+Strings store sequences of characters.
+
+---
+
+# 14. Python Booleans
+
+```python
+print(10 > 5)
+```
+
+### Output
+
+```text
+True
+```
+
+### Explanation
+
+Boolean values represent true or false.
+
+---
+
+# 15. Python Operators
+
+## Arithmetic Operators
+
+### Addition (\+)
+
+```python
+print(5 + 3)
+```
+
+Output
+
+```text
+8
+```
+
+Explanation
+
+Adds two values.
+
+---
+
+### Subtraction (-)
+
+```python
+print(10 - 4)
+```
+
+Output
+
+```text
+6
+```
+
+Explanation
+
+Subtracts one value from another.
+
+---
+
+### Multiplication (\*)
+
+```python
+print(6 * 4)
+```
+
+Output
+
+```text
+24
+```
+
+Explanation
+
+Multiplies two numbers.
+
+---
+
+### Division (/)
+
+```python
+print(10 / 2)
+```
+
+Output
+
+```text
+5.0
+```
+
+Explanation
+
+Returns decimal division.
+
+---
+
+### Floor Division (//)
+
+```python
+print(10 // 3)
+```
+
+Output
+
+```text
+3
+```
+
+Explanation
+
+Returns quotient without decimal.
+
+---
+
+### Modulus (%)
+
+```python
+print(10 % 3)
+```
+
+Output
+
+```text
+1
+```
+
+Explanation
+
+Returns the remainder.
+
+---
+
+### Exponent (\*\*)
+
+```python
+print(2 ** 3)
+```
+
+Output
+
+```text
+8
+```
+
+Explanation
+
+Raises a number to a power.
+
+---
+
+# 16. Order of Operations
+
+```python
+print(2 + 3 * 4)
+print((2 + 3) * 4)
+```
+
+### Output
+
+```text
+14
+20
+```
+
+### Explanation
+
+Parentheses are evaluated before multiplication and addition.
+
+---
+
+# 17. Comparison Operators
+
+```python
+print(5 > 3)
+print(5 == 5)
+print(5 != 3)
+```
+
+### Output
+
+```text
+True
+True
+True
+```
+
+### Explanation
+
+Compare two values and return `True` or `False`.
+
+---
+
+# 18. Assignment Operators
+
+```python
+x = 5
+x += 2
+
+print(x)
+```
+
+### Output
+
+```text
+7
+```
+
+### Explanation
+
+Assignment operators update variable values.
+
+---
+
+# 19. Logical Operators
+
+```python
+print(True and False)
+print(True or False)
+print(not True)
+```
+
+### Output
+
+```text
+False
+True
+False
+```
+
+### Explanation
+
+Combine or invert Boolean values.
+
+---
+
+# 20. Identity Operators
+
+```python
+x = [1, 2]
+y = x
+
+print(x is y)
+```
+
+### Output
+
+```text
+True
+```
+
+### Explanation
+
+Check whether two variables refer to the same object.
+
+---
+
+# 21. Membership Operators
+
+```python
+numbers = [1, 2, 3]
+
+print(2 in numbers)
+```
+
+### Output
+
+```text
+True
+```
+
+### Explanation
+
+Check whether a value exists in a collection.
+
+---
+
+# 22. Bitwise Operators
+
+```python
+print(5 & 3)
+```
+
+### Output
+
+```text
+1
+```
+
+### Explanation
+
+Perform operations on binary representations of numbers.

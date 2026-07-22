@@ -86,7 +86,14 @@
         "tab": "Learnings",
         "pages": [
           "new-roadmap",
-          "python-basics"
+          "python-basics",
+          {
+            "group": "Day 1",
+            "pages": [
+              "python-basics-1",
+              "python-collections"
+            ]
+          }
         ]
       }
     ]

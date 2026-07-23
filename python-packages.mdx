@@ -1,0 +1,237 @@
+---
+title: "Python Packages"
+---
+
+# 6. What is a Package?
+
+A **package** is a folder that contains multiple related modules.
+
+Example structure:
+
+```text
+project/
+│
+├── main.py
+│
+└── mypackage/
+    ├── __init__.py
+    ├── utils.py
+    └── calculator.py
+```
+
+Packages help organize larger Python projects.
+
+---
+
+# 7. What is `__init__.py`?
+
+`__init__.py` is a special file inside a package.
+
+It tells Python that the directory should be treated as a package (especially in older Python versions) and can also run initialization code or expose selected functions.
+
+Example:
+
+```text
+mypackage/
+    __init__.py
+    utils.py
+```
+
+---
+
+### utils.py
+
+```python
+def greet(name):
+    return f"Hello {name}"
+```
+
+---
+
+### **init**.py
+
+```python
+from .utils import greet
+```
+
+---
+
+### main.py
+
+```python
+from mypackage import greet
+
+print(greet("John"))
+```
+
+**Output**
+
+```text
+Hello John
+```
+
+Without importing `greet` in `__init__.py`, you would write:
+
+```python
+from mypackage.utils import greet
+```
+
+---
+
+# 8. Importing Modules from a Package
+
+Folder structure:
+
+```text
+project/
+│
+├── main.py
+│
+└── mypackage/
+    ├── __init__.py
+    ├── calculator.py
+```
+
+---
+
+### calculator.py
+
+```python
+def add(a, b):
+    return a + b
+```
+
+---
+
+### main.py
+
+```python
+from mypackage.calculator import add
+
+print(add(10, 20))
+```
+
+**Output**
+
+```text
+30
+```
+
+---
+
+# 6. What is a Package?
+
+A **package** is a folder that contains multiple related modules.
+
+Example structure:
+
+```text
+project/
+│
+├── main.py
+│
+└── mypackage/
+    ├── __init__.py
+    ├── utils.py
+    └── calculator.py
+```
+
+Packages help organize larger Python projects.
+
+---
+
+# 7. What is `__init__.py`?
+
+`__init__.py` is a special file inside a package.
+
+It tells Python that the directory should be treated as a package (especially in older Python versions) and can also run initialization code or expose selected functions.
+
+Example:
+
+```text
+mypackage/
+    __init__.py
+    utils.py
+```
+
+---
+
+### utils.py
+
+```python
+def greet(name):
+    return f"Hello {name}"
+```
+
+---
+
+### **init**.py
+
+```python
+from .utils import greet
+```
+
+---
+
+### main.py
+
+```python
+from mypackage import greet
+
+print(greet("John"))
+```
+
+**Output**
+
+```text
+Hello John
+```
+
+Without importing `greet` in `__init__.py`, you would write:
+
+```python
+from mypackage.utils import greet
+```
+
+---
+
+# 8. Importing Modules from a Package
+
+Folder structure:
+
+```text
+project/
+│
+├── main.py
+│
+└── mypackage/
+    ├── __init__.py
+    ├── calculator.py
+```
+
+---
+
+### calculator.py
+
+```python
+def add(a, b):
+    return a + b
+```
+
+---
+
+### main.py
+
+```python
+from mypackage.calculator import add
+
+print(add(10, 20))
+```
+
+**Output**
+
+```text
+30
+```
+
+---

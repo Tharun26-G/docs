@@ -102,6 +102,13 @@
               "python-functions",
               "python-error-handling"
             ]
+          },
+          {
+            "group": "Day 3",
+            "pages": [
+              "python-modules",
+              "python-packages"
+            ]
           }
         ]
       }

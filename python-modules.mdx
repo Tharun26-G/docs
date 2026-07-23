@@ -1,0 +1,258 @@
+---
+title: "Python Modules"
+---
+
+## 1. What is a Module?
+
+A **module** is a Python file (`.py`) that contains functions, variables, or classes that can be reused in other Python programs.
+
+Example:
+
+```python
+# math_utils.py
+
+def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    return a - b
+```
+
+You can import and use it in another file:
+
+```python
+import math_utils
+
+print(math_utils.add(5, 3))
+```
+
+**Output:**
+
+```text
+8
+```
+
+### Advantages of Modules
+
+- Code reusability
+- Better organization
+- Easier debugging
+- Avoid code duplication
+- Makes projects easier to maintain
+
+---
+
+# 2. Importing Built-in Modules
+
+Python provides many **built-in modules** that come with the language.
+
+### Example: `math`
+
+```python
+import math
+
+print(math.sqrt(25))
+print(math.pi)
+```
+
+**Output**
+
+```text
+5.0
+3.141592653589793
+```
+
+Common functions:
+
+| Function | Description |
+| --- | --- |
+| `math.sqrt(x)` | Square root |
+| `math.pow(x, y)` | Power |
+| `math.ceil(x)` | Round up |
+| `math.floor(x)` | Round down |
+| `math.factorial(x)` | Factorial |
+
+---
+
+### Example: `random`
+
+```python
+import random
+
+print(random.randint(1, 10))
+```
+
+Generates a random integer between 1 and 10.
+
+---
+
+### Example: `datetime`
+
+```python
+import datetime
+
+today = datetime.datetime.now()
+
+print(today)
+```
+
+Shows the current date and time.
+
+---
+
+# 3. Different Ways to Import Modules
+
+### a) Import entire module
+
+```python
+import math
+
+print(math.sqrt(16))
+```
+
+---
+
+### b) Import specific function
+
+```python
+from math import sqrt
+
+print(sqrt(16))
+```
+
+---
+
+### c) Import multiple functions
+
+```python
+from math import sqrt, factorial
+
+print(sqrt(36))
+print(factorial(5))
+```
+
+---
+
+### d) Import with alias
+
+```python
+import math as m
+
+print(m.pi)
+```
+
+Alias (`m`) is a shorter name.
+
+---
+
+### e) Import everything (Not recommended)
+
+```python
+from math import *
+
+print(sqrt(64))
+```
+
+Avoid this in large projects because it can create naming conflicts.
+
+---
+
+# 4. Third-Party Modules
+
+Third-party modules are created by other developers and installed using **pip**.
+
+### Install
+
+```bash
+pip install requests
+```
+
+---
+
+### Example
+
+```python
+import requests
+
+response = requests.get("https://api.github.com")
+
+print(response.status_code)
+```
+
+---
+
+Some popular third-party modules:
+
+| Module | Purpose |
+| --- | --- |
+| `requests` | HTTP requests |
+| `numpy` | Numerical computing |
+| `pandas` | Data analysis |
+| `matplotlib` | Data visualization |
+| `flask` | Web development |
+
+---
+
+# 5. Creating Your Own Module (`utils.py`)
+
+Suppose you have a file named:
+
+```text
+utils.py
+```
+
+Contents:
+
+```python
+# utils.py
+
+def greet(name):
+    return f"Hello, {name}"
+
+def square(num):
+    return num * num
+```
+
+---
+
+Another file:
+
+```text
+main.py
+```
+
+```python
+import utils
+
+print(utils.greet("Alice"))
+print(utils.square(6))
+```
+
+**Output**
+
+```text
+Hello, Alice
+36
+```
+
+---
+
+### Import specific function
+
+```python
+from utils import greet
+
+print(greet("Bob"))
+```
+
+---
+
+### Alias
+
+```python
+import utils as u
+
+print(u.square(9))
+```
+
+---

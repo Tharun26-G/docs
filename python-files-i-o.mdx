@@ -1,0 +1,221 @@
+---
+title: "Python Files I/O"
+---
+
+# File Handling, CSV, and Context Managers
+
+## 1. Reading and Writing Text Files with `open()`
+
+The `open()` function is used to open a file for reading, writing, or appending.
+
+### Syntax
+
+```python
+file = open("filename.txt", "mode")
+```
+
+### Common File Modes
+
+| Mode | Description |
+| --- | --- |
+| `"r"` | Read (default) |
+| `"w"` | Write (creates new file or overwrites existing) |
+| `"a"` | Append (adds content to end of file) |
+| `"x"` | Create a new file; error if file exists |
+| `"r+"` | Read and write |
+
+### Reading a File
+
+```python
+file = open("sample.txt", "r")
+content = file.read()
+print(content)
+file.close()
+```
+
+### Read Line by Line
+
+```python
+file = open("sample.txt", "r")
+
+for line in file:
+    print(line)
+
+file.close()
+```
+
+### Writing to a File
+
+```python
+file = open("sample.txt", "w")
+file.write("Hello, Python!")
+file.close()
+```
+
+### Appending to a File
+
+```python
+file = open("sample.txt", "a")
+file.write("\nWelcome!")
+file.close()
+```
+
+---
+
+# 2. CSV Handling Using the `csv` Module
+
+CSV (Comma-Separated Values) files store tabular data.
+
+### Import Module
+
+```python
+import csv
+```
+
+### Reading a CSV File
+
+```python
+import csv
+
+with open("students.csv", "r") as file:
+    reader = csv.reader(file)
+
+    for row in reader:
+        print(row)
+```
+
+**Output Example**
+
+```text
+['Name', 'Age']
+['Alice', '20']
+['Bob', '21']
+```
+
+### Writing to a CSV File
+
+```python
+import csv
+
+with open("students.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+
+    writer.writerow(["Name", "Age"])
+    writer.writerow(["Alice", 20])
+    writer.writerow(["Bob", 21])
+```
+
+### Writing Multiple Rows
+
+```python
+rows = [
+    ["John", 22],
+    ["Emma", 19],
+    ["David", 21]
+]
+
+with open("students.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerows(rows)
+```
+
+### Using `DictReader`
+
+```python
+import csv
+
+with open("students.csv", "r") as file:
+    reader = csv.DictReader(file)
+
+    for row in reader:
+        print(row["Name"], row["Age"])
+```
+
+---
+
+# 3. Context Managers (`with` Statement)
+
+A context manager automatically handles opening and closing files.
+
+### Syntax
+
+```python
+with open("file.txt", "r") as file:
+    content = file.read()
+    print(content)
+```
+
+### Advantages
+
+- Automatically closes the file.
+- Prevents resource leaks.
+- Cleaner and more readable code.
+- Handles exceptions safely.
+
+### Without `with`
+
+```python
+file = open("file.txt", "r")
+content = file.read()
+file.close()
+```
+
+### With `with`
+
+```python
+with open("file.txt", "r") as file:
+    content = file.read()
+```
+
+No need to call `close()`.
+
+---
+
+# Common File Methods
+
+| Method | Purpose |
+| --- | --- |
+| `read()` | Reads the entire file |
+| `readline()` | Reads one line |
+| `readlines()` | Reads all lines into a list |
+| `write()` | Writes text |
+| `writelines()` | Writes multiple lines |
+| `close()` | Closes the file |
+
+---
+
+# Example Program
+
+```python
+import csv
+
+# Write to a text file
+with open("message.txt", "w") as file:
+    file.write("Hello World!")
+
+# Read the text file
+with open("message.txt", "r") as file:
+    print(file.read())
+
+# Write CSV data
+with open("marks.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerow(["Name", "Marks"])
+    writer.writerow(["Alice", 95])
+    writer.writerow(["Bob", 88])
+
+# Read CSV data
+with open("marks.csv", "r") as file:
+    reader = csv.reader(file)
+    for row in reader:
+        print(row)
+```
+
+## Quick Revision
+
+- **`open()`**: Opens a file.
+- **Modes**: `r` (read), `w` (write), `a` (append), `x` (create).
+- **`csv.reader()`**: Reads CSV files.
+- **`csv.writer()`**: Writes CSV files.
+- **`csv.DictReader()`**: Reads CSV rows as dictionaries.
+- **`with` statement**: Automatically closes files and makes code safer and cleaner.

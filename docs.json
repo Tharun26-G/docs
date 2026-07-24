@@ -109,6 +109,12 @@
               "python-modules",
               "python-packages"
             ]
+          },
+          {
+            "group": "Day 4",
+            "pages": [
+              "python-files-i-o"
+            ]
           }
         ]
       }

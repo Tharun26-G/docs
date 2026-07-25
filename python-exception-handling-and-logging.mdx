@@ -1,0 +1,233 @@
+---
+title: "Python Exception Handling & Logging"
+---
+
+# 1. Custom Exception Classes
+
+Python allows you to create your own exception classes by inheriting from the built-in `Exception` class. Custom exceptions make error messages more meaningful and help handle application-specific errors.
+
+### Syntax
+
+```python
+class CustomException(Exception):
+    pass
+```
+
+### Example
+
+```python
+class InvalidAgeError(Exception):
+    pass
+
+age = 15
+
+if age < 18:
+    raise InvalidAgeError("Age must be 18 or above.")
+
+print("Eligible")
+```
+
+**Output**
+
+```text
+Traceback (most recent call last):
+...
+InvalidAgeError: Age must be 18 or above.
+```
+
+### Example with Exception Handling
+
+```python
+class InvalidAgeError(Exception):
+    pass
+
+try:
+    age = 15
+
+    if age < 18:
+        raise InvalidAgeError("Age must be 18 or above.")
+
+except InvalidAgeError as e:
+    print(e)
+```
+
+**Output**
+
+```text
+Age must be 18 or above.
+```
+
+---
+
+# 2. Raising vs Catching Exceptions
+
+## Raising Exceptions
+
+Raising an exception means deliberately generating an error when an invalid condition occurs. The `raise` keyword is used for this purpose.
+
+### Example
+
+```python
+age = 16
+
+if age < 18:
+    raise ValueError("Not eligible to vote.")
+```
+
+**Output**
+
+```text
+Traceback (most recent call last):
+...
+ValueError: Not eligible to vote.
+```
+
+---
+
+## Catching Exceptions
+
+Catching an exception means handling the error using a `try` and `except` block so that the program continues running.
+
+### Example
+
+```python
+try:
+    age = 16
+
+    if age < 18:
+        raise ValueError("Not eligible to vote.")
+
+except ValueError as e:
+    print("Error:", e)
+```
+
+**Output**
+
+```text
+Error: Not eligible to vote.
+```
+
+---
+
+## Difference Between Raising and Catching
+
+| Raising Exceptions | Catching Exceptions |
+| --- | --- |
+| Generates an exception | Handles an exception |
+| Uses the `raise` keyword | Uses `try` and `except` |
+| Stops normal program flow unless handled | Prevents program termination by handling the error |
+| Used to report invalid conditions | Used to recover from errors gracefully |
+
+---
+
+# 3. Basic Logging with the `logging` Module
+
+The `logging` module is used to record events that happen while a program runs. It is more flexible than using `print()` statements and is commonly used for debugging and monitoring applications.
+
+### Basic Logging Example
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+logging.info("Program started")
+logging.warning("Low disk space")
+logging.error("File not found")
+```
+
+**Output**
+
+```text
+INFO:root:Program started
+WARNING:root:Low disk space
+ERROR:root:File not found
+```
+
+---
+
+## Logging Levels
+
+| Level | Purpose |
+| --- | --- |
+| `DEBUG` | Detailed information for debugging |
+| `INFO` | General information about program execution |
+| `WARNING` | Indicates a possible problem |
+| `ERROR` | Reports an error that affected an operation |
+| `CRITICAL` | Reports a serious error that may stop the program |
+
+### Example
+
+```python
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+logging.debug("Debug message")
+logging.info("Information message")
+logging.warning("Warning message")
+logging.error("Error message")
+logging.critical("Critical error")
+```
+
+**Output**
+
+```text
+DEBUG:root:Debug message
+INFO:root:Information message
+WARNING:root:Warning message
+ERROR:root:Error message
+CRITICAL:root:Critical error
+```
+
+---
+
+## Logging to a File
+
+You can store log messages in a file instead of displaying them on the console.
+
+### Example
+
+```python
+import logging
+
+logging.basicConfig(
+    filename="app.log",
+    level=logging.INFO
+)
+
+logging.info("Application started")
+logging.error("An error occurred")
+```
+
+**Contents of `app.log`**
+
+```text
+INFO:root:Application started
+ERROR:root:An error occurred
+```
+
+---
+
+# Best Practices
+
+- Create custom exceptions for application-specific errors.
+- Use `raise` to report invalid conditions.
+- Use `try` and `except` to handle exceptions gracefully.
+- Prefer the `logging` module over `print()` for debugging and application monitoring.
+- Use appropriate logging levels (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) based on the importance of the message.
+
+---
+
+# Quick Revision Table
+
+| Topic | Summary |
+| --- | --- |
+| Custom Exception Classes | User-defined exceptions created by inheriting from `Exception` |
+| `raise` | Generates an exception when an invalid condition occurs |
+| `try` / `except` | Catches and handles exceptions |
+| Raising Exceptions | Creates an error using `raise` |
+| Catching Exceptions | Handles errors using `try` and `except` |
+| `logging` Module | Records application events and errors |
+| Logging Levels | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
+| File Logging | Stores log messages in a file using `filename` in `basicConfig()` |

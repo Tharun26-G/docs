@@ -119,7 +119,8 @@
           {
             "group": "Day 5",
             "pages": [
-              "python-oops"
+              "python-oops",
+              "python-exception-handling-and-logging"
             ]
           }
         ]

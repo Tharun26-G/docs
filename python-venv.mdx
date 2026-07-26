@@ -1,0 +1,335 @@
+---
+title: "Python venv"
+---
+
+## 1. Creating and Activating a Virtual Environment (`venv`)
+
+### What is a Virtual Environment?
+
+A **virtual environment** is an isolated Python environment where you can install packages without affecting the global Python installation.
+
+### Why Use a Virtual Environment?
+
+- Prevents package conflicts between projects.
+- Keeps project dependencies separate.
+- Makes projects easier to share.
+- Ensures consistent development environments.
+
+---
+
+## Creating a Virtual Environment
+
+Open a terminal in your project folder and run:
+
+```bash
+python -m venv venv
+```
+
+or
+
+```bash
+python3 -m venv venv
+```
+
+**Explanation:**
+
+- `python -m venv` → Runs Python's built-in virtual environment module.
+- `venv` → Name of the virtual environment folder (can be any name).
+
+Example project structure:
+
+```text
+MyProject/
+│
+├── venv/
+├── main.py
+└── requirements.txt
+```
+
+---
+
+## Activating the Virtual Environment
+
+### Windows (Command Prompt)
+
+```cmd
+venv\Scripts\activate
+```
+
+### Windows (PowerShell)
+
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+### macOS/Linux
+
+```bash
+source venv/bin/activate
+```
+
+After activation, the terminal usually shows:
+
+```text
+(venv) C:\Projects\MyProject>
+```
+
+---
+
+## Deactivating the Virtual Environment
+
+When finished:
+
+```bash
+deactivate
+```
+
+---
+
+## Checking Installed Packages
+
+```bash
+pip list
+```
+
+---
+
+# 2. Managing `requirements.txt`
+
+## What is `requirements.txt`?
+
+`requirements.txt` is a file that lists all Python packages required for a project.
+
+Example:
+
+```text
+Flask==3.1.0
+requests==2.32.3
+numpy==2.1.1
+```
+
+It helps others install the exact dependencies needed.
+
+---
+
+## Creating `requirements.txt`
+
+After installing packages:
+
+```bash
+pip freeze > requirements.txt
+```
+
+Example output:
+
+```text
+Flask==3.1.0
+requests==2.32.3
+numpy==2.1.1
+```
+
+---
+
+## Installing Packages from `requirements.txt`
+
+```bash
+pip install -r requirements.txt
+```
+
+This installs all listed packages automatically.
+
+---
+
+## Updating `requirements.txt`
+
+Whenever new packages are added:
+
+```bash
+pip freeze > requirements.txt
+```
+
+---
+
+## Viewing Installed Packages
+
+```bash
+pip list
+```
+
+or
+
+```bash
+pip freeze
+```
+
+Difference:
+
+- `pip list` → Shows packages in a readable table.
+- `pip freeze` → Outputs packages in `requirements.txt` format.
+
+---
+
+# 3. Pinning Package Versions
+
+## What is Version Pinning?
+
+Version pinning means specifying the exact version of a package to ensure everyone uses the same version.
+
+Example:
+
+```text
+requests==2.32.3
+```
+
+instead of
+
+```text
+requests
+```
+
+---
+
+## Why Pin Versions?
+
+Without pinning:
+
+- Different developers may install different versions.
+- Updates can introduce bugs.
+- The application may behave differently across systems.
+
+With pinning:
+
+- Consistent behavior.
+- Easier debugging.
+- Reliable deployments.
+
+---
+
+## Installing a Specific Version
+
+```bash
+pip install requests==2.32.3
+```
+
+---
+
+## Version Specifiers
+
+| Specifier | Meaning | Example |
+| --- | --- | --- |
+| `==` | Exact version | `numpy==2.1.1` |
+| `>=` | Minimum version | `numpy>=2.1.1` |
+| `<=` | Maximum version | `numpy<=2.1.1` |
+| `>` | Greater than | `numpy>2.1.1` |
+| `<` | Less than | `numpy<2.1.1` |
+| `~=` | Compatible release | `numpy~=2.1` |
+
+---
+
+## Example `requirements.txt`
+
+```text
+Flask==3.1.0
+requests==2.32.3
+numpy==2.1.1
+pandas==2.2.2
+```
+
+Install everything:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# Complete Workflow
+
+### Step 1: Create a project
+
+```bash
+mkdir MyProject
+cd MyProject
+```
+
+### Step 2: Create a virtual environment
+
+```bash
+python -m venv venv
+```
+
+### Step 3: Activate it
+
+Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+Linux/macOS:
+
+```bash
+source venv/bin/activate
+```
+
+### Step 4: Install packages
+
+```bash
+pip install requests flask
+```
+
+### Step 5: Save dependencies
+
+```bash
+pip freeze > requirements.txt
+```
+
+### Step 6: Share the project
+
+Share:
+
+```text
+MyProject/
+│
+├── main.py
+├── requirements.txt
+└── .gitignore
+```
+
+> Typically, do **not** include the `venv/` folder in version control. Instead, include `requirements.txt` so others can recreate the environment.
+
+### Step 7: Another developer installs dependencies
+
+```bash
+git clone <repository>
+cd MyProject
+python -m venv venv
+```
+
+Activate the environment:
+
+```bash
+# Windows
+venv\Scripts\activate
+
+# Linux/macOS
+source venv/bin/activate
+```
+
+Install the required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# Summary
+
+- **`python -m venv venv`** → Create a virtual environment.
+- **Activate:** `venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Linux/macOS).
+- **`deactivate`** → Exit the virtual environment.
+- **`pip install package_name`** → Install a package.
+- **`pip freeze > requirements.txt`** → Save installed packages.
+- **`pip install -r requirements.txt`** → Install dependencies from the file.
+- **Version pinning (`==`)** → Ensures everyone uses the same package version for consistent and reproducible environments.

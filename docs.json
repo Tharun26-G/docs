@@ -128,6 +128,12 @@
             "pages": [
               "python-venv"
             ]
+          },
+          {
+            "group": "Day 7",
+            "pages": [
+              "git-and-github"
+            ]
           }
         ]
       }

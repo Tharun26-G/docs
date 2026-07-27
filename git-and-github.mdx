@@ -1,0 +1,677 @@
+---
+title: "Git & Github"
+---
+
+# 1. What is Git?
+
+**Git** is a **Distributed Version Control System (DVCS)** used to track changes in source code.
+
+It allows developers to:
+
+- Track file changes
+- Restore previous versions
+- Collaborate with others
+- Manage different project versions
+
+Git works locally on your computer and stores the entire project history. (\[GitHub Docs\]\[1\])
+
+---
+
+# 2. What is GitHub?
+
+GitHub is a cloud platform that hosts Git repositories.
+
+It provides:
+
+- Cloud backup
+- Collaboration
+- Pull Requests
+- Issues
+- Code Review
+- GitHub Actions (CI/CD)
+
+**Difference**
+
+| Git | GitHub |
+| --- | --- |
+| Software | Website/Cloud Platform |
+| Works locally | Works online |
+| Version Control | Repository Hosting |
+| Open Source | Collaboration Platform |
+
+(\[GitHub Docs\]\[1\])
+
+---
+
+# 3. Version Control System (VCS)
+
+A Version Control System keeps track of every modification.
+
+Benefits:
+
+- Undo mistakes
+- Track history
+- Multiple developers can work together
+- Backup
+- Branching
+
+---
+
+# 4. Install Git
+
+Download Git
+
+Windows: [https://git-scm.com](https://git-scm.com)
+
+Verify installation
+
+```bash
+git --version
+```
+
+---
+
+# 5. Configure Git
+
+```bash
+git config --global user.name "Your Name"
+
+git config --global user.email "email@example.com"
+```
+
+Check configuration
+
+```bash
+git config --list
+```
+
+---
+
+# 6. Git Repository
+
+A Repository (Repo) is a project folder tracked by Git.
+
+Types
+
+- Local Repository
+- Remote Repository
+
+---
+
+# 7. Initialize Repository
+
+```bash
+git init
+```
+
+Creates
+
+```text
+.git
+```
+
+hidden folder.
+
+---
+
+# 8. Git Workflow
+
+```text
+Working Directory
+        ↓
+git add
+        ↓
+Staging Area
+        ↓
+git commit
+        ↓
+Local Repository
+        ↓
+git push
+        ↓
+GitHub Repository
+```
+
+---
+
+# 9. Git Status
+
+```bash
+git status
+```
+
+Shows:
+
+- Modified files
+- New files
+- Deleted files
+- Staged files
+
+---
+
+# 10. Git Add
+
+Stage one file
+
+```bash
+git add file.txt
+```
+
+Stage all files
+
+```bash
+git add .
+```
+
+---
+
+# 11. Git Commit
+
+Save snapshot
+
+```bash
+git commit -m "Initial Commit"
+```
+
+---
+
+# 12. Git Log
+
+Show commit history
+
+```bash
+git log
+```
+
+Short history
+
+```bash
+git log --oneline
+```
+
+---
+
+# 13. Clone Repository
+
+Download GitHub project
+
+```bash
+git clone repository_url
+```
+
+Example
+
+```bash
+git clone https://github.com/user/project.git
+```
+
+---
+
+# 14. Remote Repository
+
+Check remote
+
+```bash
+git remote -v
+```
+
+Add remote
+
+```bash
+git remote add origin URL
+```
+
+---
+
+# 15. Push
+
+Upload code
+
+```bash
+git push origin main
+```
+
+First Push
+
+```bash
+git push -u origin main
+```
+
+---
+
+# 16. Pull
+
+Download latest code
+
+```bash
+git pull origin main
+```
+
+---
+
+# 17. Fetch
+
+Download changes only
+
+```bash
+git fetch
+```
+
+Difference
+
+Fetch → Downloads only
+
+Pull → Downloads \+ Merge
+
+---
+
+# 18. Branch
+
+Create branch
+
+```bash
+git branch feature
+```
+
+List branches
+
+```bash
+git branch
+```
+
+Delete branch
+
+```bash
+git branch -d feature
+```
+
+---
+
+# 19. Switch Branch
+
+```bash
+git checkout feature
+```
+
+or
+
+```bash
+git switch feature
+```
+
+---
+
+# 20. Create and Switch
+
+```bash
+git checkout -b feature
+```
+
+or
+
+```bash
+git switch -c feature
+```
+
+---
+
+# 21. Merge
+
+Merge feature branch
+
+```bash
+git checkout main
+
+git merge feature
+```
+
+---
+
+# 22. Merge Conflict
+
+Occurs when two developers modify the same line.
+
+Resolve by:
+
+1. Edit file
+2. Remove conflict markers
+3. Add file
+4. Commit
+
+---
+
+# 23. Git Ignore
+
+Ignore files
+
+Example
+
+```text
+node_modules/
+
+.env
+
+*.log
+
+dist/
+```
+
+File name
+
+```text
+.gitignore
+```
+
+---
+
+# 24. Remove File
+
+```bash
+git rm file.txt
+```
+
+---
+
+# 25. Rename File
+
+```bash
+git mv old.txt new.txt
+```
+
+---
+
+# 26. Undo Changes
+
+Discard changes
+
+```bash
+git restore file.txt
+```
+
+Unstage
+
+```bash
+git restore --staged file.txt
+```
+
+---
+
+# 27. Reset
+
+Soft
+
+```bash
+git reset --soft HEAD~1
+```
+
+Mixed
+
+```bash
+git reset HEAD~1
+```
+
+Hard
+
+```bash
+git reset --hard HEAD~1
+```
+
+---
+
+# 28. Revert
+
+Undo commit safely
+
+```bash
+git revert commitID
+```
+
+---
+
+# 29. Stash
+
+Save work temporarily
+
+```bash
+git stash
+```
+
+View stash
+
+```bash
+git stash list
+```
+
+Restore
+
+```bash
+git stash pop
+```
+
+Delete
+
+```bash
+git stash clear
+```
+
+---
+
+# 30. Tags
+
+Create
+
+```bash
+git tag v1.0
+```
+
+Push
+
+```bash
+git push origin v1.0
+```
+
+---
+
+# 31. Fork
+
+Fork creates your own copy of another person's GitHub repository.
+
+Used in Open Source.
+
+---
+
+# 32. Pull Request (PR)
+
+Request to merge code into another branch.
+
+Steps
+
+Fork
+
+↓
+
+Clone
+
+↓
+
+Create Branch
+
+↓
+
+Commit
+
+↓
+
+Push
+
+↓
+
+Open Pull Request
+
+↓
+
+Review
+
+↓
+
+Merge
+
+---
+
+# 33. GitHub Issues
+
+Used to:
+
+- Report bugs
+- Request features
+- Track tasks
+
+---
+
+# 34. README.md
+
+Project documentation
+
+Contains
+
+- Project name
+- Installation
+- Usage
+- Features
+- License
+
+---
+
+# 35. Markdown Basics
+
+Heading
+
+```text
+# Heading
+```
+
+Bold
+
+```text
+**Bold**
+```
+
+Italic
+
+```text
+*Italic*
+```
+
+Code
+
+```text
+`Code`
+```
+
+Code Block
+
+````text
+```python
+print("Hello")
+```
+````
+
+---
+
+# 36. Common Git Commands Cheat Sheet
+
+```bash
+git init
+
+git clone URL
+
+git status
+
+git add .
+
+git commit -m "message"
+
+git log
+
+git branch
+
+git checkout branch
+
+git switch branch
+
+git checkout -b newbranch
+
+git merge branch
+
+git remote -v
+
+git push
+
+git pull
+
+git fetch
+
+git stash
+
+git stash pop
+
+git reset
+
+git revert
+
+git rm
+
+git mv
+
+git tag
+```
+
+---
+
+# 37. Complete Git Workflow
+
+```text
+Create Project
+
+↓
+
+git init
+
+↓
+
+git add .
+
+↓
+
+git commit
+
+↓
+
+Create GitHub Repository
+
+↓
+
+git remote add origin URL
+
+↓
+
+git push
+
+↓
+
+Make Changes
+
+↓
+
+git add
+
+↓
+
+git commit
+
+↓
+
+git push
+```
+
+---

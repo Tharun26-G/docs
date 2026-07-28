@@ -1,0 +1,1668 @@
+---
+title: "Numpy"
+---
+
+NumPy is a Python library used for fast numerical computing with multidimensional arrays.
+
+## `np.array()`
+
+Creates a NumPy array from a list, tuple, or other iterable.
+
+```python
+import numpy as np
+
+arr = np.array([10, 20, 30])
+print(arr)
+```
+
+**Output**
+
+```python
+[10 20 30]
+```
+
+Converts a Python list into a NumPy array.
+
+---
+
+## `np.array(34)`
+
+Creates a zero-dimensional (scalar) NumPy array.
+
+```python
+import numpy as np
+
+arr = np.array(34)
+
+print(arr)
+print(arr.ndim)
+```
+
+**Output**
+
+```python
+34
+0
+```
+
+A single value has 0 dimensions.
+
+---
+
+## `.ndim`
+
+Returns the number of dimensions of an array.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2],[3,4]])
+
+print(arr.ndim)
+```
+
+**Output**
+
+```python
+2
+```
+
+The array has two dimensions.
+
+---
+
+## `.shape`
+
+Returns the shape of an array.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2,3],
+                [4,5,6]])
+
+print(arr.shape)
+```
+
+**Output**
+
+```python
+(2, 3)
+```
+
+The array contains 2 rows and 3 columns.
+
+**Tip:** Shape is always `(rows, columns)` for a 2D array.
+
+---
+
+## `np.arange()`
+
+Creates evenly spaced values within a range.
+
+```python
+import numpy as np
+
+arr = np.arange(1, 10, 2)
+
+print(arr)
+```
+
+**Output**
+
+```python
+[1 3 5 7 9]
+```
+
+Numbers increase by the specified step value.
+
+---
+
+## `np.linspace()`
+
+Creates evenly spaced numbers between two values.
+
+```python
+import numpy as np
+
+arr = np.linspace(0, 10, 5)
+
+print(arr)
+```
+
+**Output**
+
+```python
+[ 0.   2.5  5.   7.5 10. ]
+```
+
+Generates 5 equally spaced numbers.
+
+---
+
+## `np.logspace()`
+
+Creates numbers spaced evenly on a logarithmic scale.
+
+```python
+import numpy as np
+
+arr = np.logspace(1, 3, 3)
+
+print(arr)
+```
+
+**Output**
+
+```python
+[  10.  100. 1000.]
+```
+
+Values are powers of 10.
+
+---
+
+## `np.zeros()`
+
+Creates an array filled with zeros.
+
+```python
+import numpy as np
+
+arr = np.zeros((2,3))
+
+print(arr)
+```
+
+**Output**
+
+```python
+[[0. 0. 0.]
+ [0. 0. 0.]]
+```
+
+Creates a 2×3 matrix of zeros.
+
+---
+
+## `np.ones()`
+
+Creates an array filled with ones.
+
+```python
+import numpy as np
+
+arr = np.ones((2,2))
+
+print(arr)
+```
+
+**Output**
+
+```python
+[[1. 1.]
+ [1. 1.]]
+```
+
+Every element is initialized to 1.
+
+---
+
+## `np.full()`
+
+Creates an array filled with a specified value.
+
+```python
+import numpy as np
+
+arr = np.full((2,3), 5)
+
+print(arr)
+```
+
+**Output**
+
+```python
+[[5 5 5]
+ [5 5 5]]
+```
+
+All elements contain the same value.
+
+---
+
+## `np.empty()`
+
+Creates an uninitialized array.
+
+```python
+import numpy as np
+
+arr = np.empty((2,2))
+
+print(arr)
+```
+
+**Output**
+
+```python
+[[6.9e-310 6.9e-310]
+ [6.9e-310 6.9e-310]]
+```
+
+Values are random memory contents.
+
+---
+
+## `.dtype`
+
+Returns the data type of array elements.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3])
+
+print(arr.dtype)
+```
+
+**Output**
+
+```python
+int64
+```
+
+The array stores integer values.
+
+---
+
+## `astype()`
+
+Converts an array to another data type.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3])
+
+print(arr.astype(float))
+```
+
+**Output**
+
+```python
+[1. 2. 3.]
+```
+
+The integer array becomes a float array.
+
+---
+
+## `.size`
+
+Returns the total number of elements.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2,3],
+                [4,5,6]])
+
+print(arr.size)
+```
+
+**Output**
+
+```python
+6
+```
+
+The array contains six elements.
+
+---
+
+## `.itemsize`
+
+Returns the memory occupied by one element.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3], dtype=np.int32)
+
+print(arr.itemsize)
+```
+
+**Output**
+
+```python
+4
+```
+
+Each element occupies 4 bytes.
+
+---
+
+# Array Manipulation
+
+## `reshape()`
+
+Changes the shape of an array.
+
+```python
+import numpy as np
+
+arr = np.arange(1,7)
+
+print(arr.reshape(2,3))
+```
+
+**Output**
+
+```python
+[[1 2 3]
+ [4 5 6]]
+```
+
+The 1D array becomes a 2×3 array.
+
+**Tip:** Total elements must remain the same.
+
+---
+
+## `ravel()`
+
+Converts an array into a 1D view.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2],
+                [3,4]])
+
+print(arr.ravel())
+```
+
+**Output**
+
+```python
+[1 2 3 4]
+```
+
+Returns a flattened view of the original array.
+
+**Tip:** Changes in the view affect the original array.
+
+---
+
+## `flatten()`
+
+Returns a flattened copy of an array.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2],
+                [3,4]])
+
+print(arr.flatten())
+```
+
+**Output**
+
+```python
+[1 2 3 4]
+```
+
+Returns a new one-dimensional array.
+
+**Tip:** Changes do not affect the original array.
+
+---
+
+## `transpose()`
+
+Swaps rows and columns.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2,3],
+                [4,5,6]])
+
+print(arr.transpose())
+```
+
+**Output**
+
+```python
+[[1 4]
+ [2 5]
+ [3 6]]
+```
+
+Rows become columns.
+
+---
+
+## `swapaxes()`
+
+Swaps two specified axes.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2,3],
+                [4,5,6]])
+
+print(np.swapaxes(arr,0,1))
+```
+
+**Output**
+
+```python
+[[1 4]
+ [2 5]
+ [3 6]]
+```
+
+Axis 0 and Axis 1 are exchanged.
+
+---
+
+# Indexing, Slicing & Iteration
+
+## Access Elements
+
+Accesses elements using their index.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40])
+
+print(arr[2])
+```
+
+**Output**
+
+```python
+30
+```
+
+Returns the element at index 2.
+
+---
+
+## Slicing
+
+Extracts a portion of an array.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40,50,60])
+
+print(arr[1:5])
+```
+
+**Output**
+
+```python
+[20 30 40 50]
+```
+
+Returns elements from index 1 to 4.
+
+**Tip:** `start` is included, `stop` is excluded.
+
+---
+
+## Reverse Slicing
+
+Returns elements in reverse order.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40,50])
+
+print(arr[::-1])
+```
+
+**Output**
+
+```python
+[50 40 30 20 10]
+```
+
+The array is reversed.
+
+**Tip:** `[::-1]` is the easiest way to reverse an array.
+
+---
+
+## Multidimensional Slicing
+
+Slices rows and columns together.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2,3],
+                [4,5,6],
+                [7,8,9]])
+
+print(arr[0:2,1:3])
+```
+
+**Output**
+
+```python
+[[2 3]
+ [5 6]]
+```
+
+Selects specific rows and columns.
+
+**Tip:** Use `array[rows, columns]`.
+
+---
+
+## Specific Rows and Columns
+
+Accesses complete rows or columns.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2,3],
+                [4,5,6],
+                [7,8,9]])
+
+print(arr[:,1])
+print(arr[1,:])
+```
+
+**Output**
+
+```python
+[2 5 8]
+[4 5 6]
+```
+
+Returns the second column and second row.
+
+---
+
+## `np.take()`
+
+Selects elements using index positions.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40,50])
+
+print(np.take(arr,[0,2,4]))
+```
+
+**Output**
+
+```python
+[10 30 50]
+```
+
+Returns elements at the specified indices.
+
+---
+
+## `np.nditer()`
+
+Efficiently iterates through every element.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2],
+                [3,4]])
+
+for i in np.nditer(arr):
+    print(i)
+```
+
+**Output**
+
+```python
+1
+2
+3
+4
+```
+
+Visits every element one by one.
+
+---
+
+## `np.ndenumerate()`
+
+Iterates through elements with their indices.
+
+```python
+import numpy as np
+
+arr = np.array([[10,20],
+                [30,40]])
+
+for index, value in np.ndenumerate(arr):
+    print(index, value)
+```
+
+**Output**
+
+```python
+(0, 0) 10
+(0, 1) 20
+(1, 0) 30
+(1, 1) 40
+```
+
+Returns both the index and value of each element.
+
+---
+
+# Arithmetic Operations on NumPy Arrays
+
+Performs mathematical operations element-wise on arrays.
+
+```python
+import numpy as np
+
+a = np.array([10, 20, 30])
+b = np.array([1, 2, 3])
+
+print(a + b)
+print(a - b)
+print(a * b)
+print(a / b)
+```
+
+**Output**
+
+```python
+[11 22 33]
+[ 9 18 27]
+[10 40 90]
+[10. 10. 10.]
+```
+
+Each operation is performed on corresponding elements.
+
+**Tip:** Both arrays should have compatible shapes.
+
+---
+
+# Universal Functions (ufuncs)
+
+Built-in NumPy functions that operate element-wise on arrays.
+
+```python
+import numpy as np
+
+arr = np.array([1, 4, 9, 16])
+
+print(np.sqrt(arr))
+```
+
+**Output**
+
+```python
+[1. 2. 3. 4.]
+```
+
+The square root is calculated for every element.
+
+---
+
+# `np.sin()`
+
+Computes the sine of each element (in radians).
+
+```python
+import numpy as np
+
+arr = np.array([0, np.pi/2, np.pi])
+
+print(np.sin(arr))
+```
+
+**Output**
+
+```python
+[0.0000000e+00 1.0000000e+00 1.2246468e-16]
+```
+
+Returns the sine value of each angle.
+
+**Tip:** NumPy trigonometric functions use radians.
+
+---
+
+# Broadcasting
+
+Allows arrays of different shapes to perform arithmetic automatically.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2,3],
+                [4,5,6]])
+
+print(arr + 10)
+```
+
+**Output**
+
+```python
+[[11 12 13]
+ [14 15 16]]
+```
+
+The value 10 is added to every element.
+
+**Tip:** Broadcasting avoids manually repeating data.
+
+---
+
+# Vectorization
+
+Performs operations on entire arrays without using loops.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3,4])
+
+print(arr * 5)
+```
+
+**Output**
+
+```python
+[ 5 10 15 20]
+```
+
+Each element is multiplied by 5.
+
+**Tip:** Vectorized operations are much faster than Python loops.
+
+---
+
+# Joining Arrays
+
+Combines multiple arrays into a single array.
+
+```python
+import numpy as np
+
+a = np.array([1,2,3])
+b = np.array([4,5,6])
+
+print(np.concatenate((a,b)))
+```
+
+**Output**
+
+```python
+[1 2 3 4 5 6]
+```
+
+The two arrays are joined together.
+
+---
+
+# `np.concatenate()`
+
+Joins arrays along an existing axis.
+
+```python
+import numpy as np
+
+a = np.array([[1,2],[3,4]])
+b = np.array([[5,6],[7,8]])
+
+print(np.concatenate((a,b), axis=0))
+```
+
+**Output**
+
+```python
+[[1 2]
+ [3 4]
+ [5 6]
+ [7 8]]
+```
+
+Arrays are joined row-wise.
+
+**Tip:** Use `axis=1` to join column-wise.
+
+---
+
+# `np.vstack()`
+
+Stacks arrays vertically (row-wise).
+
+```python
+import numpy as np
+
+a = np.array([1,2,3])
+b = np.array([4,5,6])
+
+print(np.vstack((a,b)))
+```
+
+**Output**
+
+```python
+[[1 2 3]
+ [4 5 6]]
+```
+
+The arrays are stacked as rows.
+
+---
+
+# `np.hstack()`
+
+Stacks arrays horizontally (column-wise).
+
+```python
+import numpy as np
+
+a = np.array([1,2,3])
+b = np.array([4,5,6])
+
+print(np.hstack((a,b)))
+```
+
+**Output**
+
+```python
+[1 2 3 4 5 6]
+```
+
+The arrays are joined side by side.
+
+---
+
+# `np.stack()`
+
+Stacks arrays along a new axis.
+
+```python
+import numpy as np
+
+a = np.array([1,2,3])
+b = np.array([4,5,6])
+
+print(np.stack((a,b)))
+```
+
+**Output**
+
+```python
+[[1 2 3]
+ [4 5 6]]
+```
+
+A new dimension is created while stacking.
+
+**Tip:** Unlike `concatenate()`, `stack()` creates a new axis.
+
+---
+
+# Splitting Arrays
+
+Divides an array into multiple sub-arrays.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3,4,5,6])
+
+print(np.split(arr,3))
+```
+
+**Output**
+
+```python
+[array([1, 2]), array([3, 4]), array([5, 6])]
+```
+
+The array is split into three equal parts.
+
+---
+
+# `np.split()`
+
+Splits an array into equal sections.
+
+```python
+import numpy as np
+
+arr = np.arange(8)
+
+print(np.split(arr,4))
+```
+
+**Output**
+
+```python
+[array([0, 1]), array([2, 3]), array([4, 5]), array([6, 7])]
+```
+
+Returns a list of smaller arrays.
+
+**Tip:** The array size must be divisible by the number of splits.
+
+---
+
+# `np.repeat()`
+
+Repeats each element a specified number of times.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3])
+
+print(np.repeat(arr,2))
+```
+
+**Output**
+
+```python
+[1 1 2 2 3 3]
+```
+
+Each element is repeated twice.
+
+---
+
+# `np.tile()`
+
+Repeats the entire array multiple times.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3])
+
+print(np.tile(arr,2))
+```
+
+**Output**
+
+```python
+[1 2 3 1 2 3]
+```
+
+The whole array is repeated two times.
+
+**Tip:** `repeat()` repeats **elements**, while `tile()` repeats the **entire array**.
+
+---
+
+# `np.sum()`
+
+Calculates the total sum of array elements.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40])
+
+print(np.sum(arr))
+```
+
+**Output**
+
+```python
+100
+```
+
+Adds all elements of the array.
+
+---
+
+# `np.std()`
+
+Calculates the standard deviation of array elements.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40])
+
+print(np.std(arr))
+```
+
+**Output**
+
+```python
+11.180339887498949
+```
+
+Shows how much values differ from the average.
+
+---
+
+# `np.min()`
+
+Returns the smallest value in an array.
+
+```python
+import numpy as np
+
+arr = np.array([5,2,8,1,9])
+
+print(np.min(arr))
+```
+
+**Output**
+
+```python
+1
+```
+
+Returns the minimum element.
+
+---
+
+# Sum by Axis
+
+Calculates sums along specific dimensions.
+
+```python
+import numpy as np
+
+arr = np.array([[1,2,3],
+                [4,5,6]])
+
+print(np.sum(arr, axis=0))
+print(np.sum(arr, axis=1))
+```
+
+**Output**
+
+```python
+[5 7 9]
+[ 6 15]
+```
+
+`axis=0` adds columns and `axis=1` adds rows.
+
+**Tip:**
+
+- `axis=0` → vertical operation (columns)
+- `axis=1` → horizontal operation (rows)
+
+---
+
+# `np.cumsum()`
+
+Returns the cumulative sum of elements.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3,4])
+
+print(np.cumsum(arr))
+```
+
+**Output**
+
+```python
+[ 1  3  6 10]
+```
+
+Each element stores the sum of all previous elements.
+
+---
+
+# `np.cumprod()`
+
+Returns the cumulative product of elements.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3,4])
+
+print(np.cumprod(arr))
+```
+
+**Output**
+
+```python
+[ 1  2  6 24]
+```
+
+Each element stores the multiplication of previous values.
+
+---
+
+# `np.where()`
+
+Returns indices or values based on a condition.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40])
+
+result = np.where(arr > 20)
+
+print(result)
+```
+
+**Output**
+
+```python
+(array([2, 3]),)
+```
+
+Returns positions where the condition is true.
+
+---
+
+# `np.argwhere()`
+
+Returns indices of elements that satisfy a condition.
+
+```python
+import numpy as np
+
+arr = np.array([5,10,15,20])
+
+print(np.argwhere(arr > 10))
+```
+
+**Output**
+
+```python
+[[2]
+ [3]]
+```
+
+Returns the index positions of matching elements.
+
+---
+
+# Masking in Arrays
+
+Selects elements using a condition.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40])
+
+mask = arr > 20
+
+print(arr[mask])
+```
+
+**Output**
+
+```python
+[30 40]
+```
+
+Only elements satisfying the condition are selected.
+
+**Tip:** Masking is useful for filtering data.
+
+---
+
+# `np.logical_and()`
+
+Combines two conditions using AND operation.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40])
+
+result = np.logical_and(arr > 10, arr < 40)
+
+print(arr[result])
+```
+
+**Output**
+
+```python
+[20 30]
+```
+
+Returns values satisfying both conditions.
+
+---
+
+# `np.logical_or()`
+
+Combines two conditions using OR operation.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40])
+
+result = np.logical_or(arr < 20, arr > 30)
+
+print(arr[result])
+```
+
+**Output**
+
+```python
+[10 40]
+```
+
+Returns values satisfying either condition.
+
+---
+
+# `np.nan`
+
+Represents missing or undefined numerical values.
+
+```python
+import numpy as np
+
+arr = np.array([10, np.nan, 30])
+
+print(arr)
+```
+
+**Output**
+
+```python
+[10. nan 30.]
+```
+
+`nan` represents a missing value.
+
+---
+
+# `np.isnan()`
+
+Checks whether elements are NaN values.
+
+```python
+import numpy as np
+
+arr = np.array([10, np.nan, 30])
+
+print(np.isnan(arr))
+```
+
+**Output**
+
+```python
+[False  True False]
+```
+
+Returns True for missing values.
+
+---
+
+# Infinite Values
+
+Represents values that are positive or negative infinity.
+
+```python
+import numpy as np
+
+arr = np.array([1, np.inf, -np.inf])
+
+print(arr)
+```
+
+**Output**
+
+```python
+[  1.  inf -inf]
+```
+
+Stores infinite numerical values.
+
+---
+
+# `np.isinf()`
+
+Checks whether elements are infinite.
+
+```python
+import numpy as np
+
+arr = np.array([10, np.inf, 30])
+
+print(np.isinf(arr))
+```
+
+**Output**
+
+```python
+[False True False]
+```
+
+Returns True for infinite values.
+
+---
+
+# `np.nan_to_num()`
+
+Replaces NaN and infinity values with numbers.
+
+```python
+import numpy as np
+
+arr = np.array([10, np.nan, np.inf])
+
+print(np.nan_to_num(arr))
+```
+
+**Output**
+
+```python
+[1.00000000e+01 0.00000000e+00 1.79769313e+308]
+```
+
+Converts invalid values into valid numbers.
+
+---
+
+# `np.random.random()`
+
+Generates random decimal numbers between 0 and 1.
+
+```python
+import numpy as np
+
+print(np.random.random(3))
+```
+
+**Output**
+
+```python
+[0.25 0.73 0.11]
+```
+
+Creates random floating-point values.
+
+---
+
+# `np.random.choice()`
+
+Selects random values from an array.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30,40])
+
+print(np.random.choice(arr,2))
+```
+
+**Output**
+
+```python
+[20 40]
+```
+
+Randomly selects elements from the array.
+
+---
+
+# `np.random.seed()`
+
+Controls random number generation for reproducible results.
+
+```python
+import numpy as np
+
+np.random.seed(10)
+
+print(np.random.rand(3))
+```
+
+**Output**
+
+```python
+[0.77132064 0.02075195 0.63364823]
+```
+
+The same random values are generated every time.
+
+---
+
+# `np.sort()`
+
+Sorts array elements in ascending order.
+
+```python
+import numpy as np
+
+arr = np.array([5,2,8,1])
+
+print(np.sort(arr))
+```
+
+**Output**
+
+```python
+[1 2 5 8]
+```
+
+Returns sorted values.
+
+---
+
+# `np.unique()`
+
+Returns unique values from an array.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,2,3,3,3])
+
+print(np.unique(arr))
+```
+
+**Output**
+
+```python
+[1 2 3]
+```
+
+Removes duplicate values.
+
+---
+
+# `np.argsort()`
+
+Returns indices that would sort an array.
+
+```python
+import numpy as np
+
+arr = np.array([30,10,20])
+
+print(np.argsort(arr))
+```
+
+**Output**
+
+```python
+[1 2 0]
+```
+
+Returns the positions of sorted elements.
+
+---
+
+# `np.argmax()`
+
+Returns the index of the maximum value.
+
+```python
+import numpy as np
+
+arr = np.array([10,50,30])
+
+print(np.argmax(arr))
+```
+
+**Output**
+
+```python
+1
+```
+
+Returns the position of the largest element.
+
+---
+
+# `np.argmin()`
+
+Returns the index of the minimum value.
+
+```python
+import numpy as np
+
+arr = np.array([10,50,30])
+
+print(np.argmin(arr))
+```
+
+**Output**
+
+```python
+0
+```
+
+Returns the position of the smallest element.
+
+---
+
+# `np.save()`
+
+Saves a NumPy array into a file.
+
+```python
+import numpy as np
+
+arr = np.array([1,2,3])
+
+np.save("data.npy", arr)
+```
+
+**Output**
+
+```python
+File saved successfully
+```
+
+Stores array data permanently.
+
+---
+
+# `np.load()`
+
+Loads an array from a saved file.
+
+```python
+import numpy as np
+
+arr = np.load("data.npy")
+
+print(arr)
+```
+
+**Output**
+
+```python
+[1 2 3]
+```
+
+Reads the saved NumPy array.
+
+---
+
+# `np.mean()`
+
+Calculates the average value of elements.
+
+```python
+import numpy as np
+
+arr = np.array([10,20,30])
+
+print(np.mean(arr))
+```
+
+**Output**
+
+```python
+20.0
+```
+
+Returns the arithmetic average.
+
+---
+
+# `np.max()`
+
+Returns the largest value in an array.
+
+```python
+import numpy as np
+
+arr = np.array([5,10,15])
+
+print(np.max(arr))
+```
+
+**Output**
+
+```python
+15
+```
+
+Returns the maximum element.
+
+---
+
+# `np.min()`
+
+Returns the smallest value in an array.
+
+```python
+import numpy as np
+
+arr = np.array([5,10,15])
+
+print(np.min(arr))
+```
+
+**Output**
+
+```python
+5
+```
+
+Returns the minimum element.

@@ -134,6 +134,12 @@
             "pages": [
               "git-and-github"
             ]
+          },
+          {
+            "group": "Day 8",
+            "pages": [
+              "numpy"
+            ]
           }
         ]
       }

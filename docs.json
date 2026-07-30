@@ -146,6 +146,12 @@
             "pages": [
               "Pandas"
             ]
+          },
+          {
+            "group": "Day 10",
+            "pages": [
+              "matplotlibary"
+            ]
           }
         ]
       }

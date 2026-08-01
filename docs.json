@@ -158,6 +158,12 @@
             "pages": [
               "sea_born"
             ]
+          },
+          {
+            "group": "Day 12",
+            "pages": [
+              "plotly"
+            ]
           }
         ]
       }

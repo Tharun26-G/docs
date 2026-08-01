@@ -120,8 +120,12 @@ fig = px.scatter(df,
 ```python
 fig = px.bar(df,
              x="year",
-             y="pop")
+             y="pop"
 ```
+
+<Frame>
+  ![Plotly Barplot](/images/plotly-barplot.png "Plotly Barplot")
+</Frame>
 
 ---
 
@@ -131,6 +135,10 @@ fig = px.bar(df,
 fig = px.histogram(df,
                    x="lifeExp")
 ```
+
+<Frame>
+  ![Plotly Histogram](/images/plotly-histogram.png "Plotly Histogram")
+</Frame>
 
 ---
 
@@ -142,6 +150,10 @@ fig = px.box(df,
              y="lifeExp")
 ```
 
+<Frame>
+  ![Plotly Boxplot1](/images/plotly-boxplot1.png "Plotly Boxplot1")
+</Frame>
+
 ---
 
 ## F. Violin Plot
@@ -151,6 +163,10 @@ fig = px.violin(df,
                 x="continent",
                 y="lifeExp")
 ```
+
+<Frame>
+  ![Plotly Voilinplot](/images/plotly-voilinplot.png "Plotly Voilinplot")
+</Frame>
 
 ---
 
@@ -162,6 +178,10 @@ fig = px.pie(df,
              values="pop")
 ```
 
+<Frame>
+  ![Plotly Piechart](/images/plotly-piechart.png "Plotly Piechart")
+</Frame>
+
 ---
 
 ## H. Area Chart
@@ -171,6 +191,10 @@ fig = px.area(df,
               x="year",
               y="pop")
 ```
+
+<Frame>
+  ![Plotly Areachart](/images/plotly-areachart.png "Plotly Areachart")
+</Frame>
 
 ---
 
@@ -186,6 +210,10 @@ fig = px.scatter(
 )
 ```
 
+<Frame>
+  ![Plotly Bubblechart](/images/plotly-bubblechart.png "Plotly Bubblechart")
+</Frame>
+
 ---
 
 # 7. Sunburst Chart
@@ -198,6 +226,10 @@ fig = px.sunburst(
 )
 ```
 
+<Frame>
+  ![Plotly Sunbrust](/images/plotly-sunbrust.png "Plotly Sunbrust")
+</Frame>
+
 ---
 
 # 8. Treemap
@@ -209,6 +241,10 @@ fig = px.treemap(
     values="pop"
 )
 ```
+
+<Frame>
+  ![Plotly Treemap](/images/plotly-treemap.png "Plotly Treemap")
+</Frame>
 
 ---
 
@@ -227,6 +263,10 @@ fig = px.funnel(
 )
 ```
 
+<Frame>
+  ![Plotly Funnelchart](/images/plotly-funnelchart.png "Plotly Funnelchart")
+</Frame>
+
 ---
 
 # 10. Density Heatmap
@@ -238,6 +278,10 @@ fig = px.density_heatmap(
     y="lifeExp"
 )
 ```
+
+<Frame>
+  ![Plotly Density1](/images/plotly-density1.png "Plotly Density1")
+</Frame>
 
 ---
 
@@ -251,6 +295,10 @@ fig = px.density_contour(
 )
 ```
 
+<Frame>
+  ![Plotly Density2](/images/plotly-density2.png "Plotly Density2")
+</Frame>
+
 ---
 
 # 12. Choropleth Map
@@ -263,6 +311,10 @@ fig = px.choropleth(
 )
 ```
 
+<Frame>
+  ![Plotly Cmap](/images/plotly-cmap.png "Plotly Cmap")
+</Frame>
+
 ---
 
 # 13. Scatter Geo
@@ -274,6 +326,10 @@ fig = px.scatter_geo(
     size="pop"
 )
 ```
+
+<Frame>
+  ![Plotly Scattergeo](/images/plotly-scattergeo.png "Plotly Scattergeo")
+</Frame>
 
 ---
 
@@ -296,6 +352,10 @@ fig = px.timeline(
 )
 ```
 
+<Frame>
+  ![Plotly Timeline](/images/plotly-timeline.png "Plotly Timeline")
+</Frame>
+
 ---
 
 # 15. Polar Chart
@@ -306,6 +366,10 @@ fig = px.line_polar(
     theta=[0,90,180]
 )
 ```
+
+<Frame>
+  ![Plotly Polar](/images/plotly-polar.png "Plotly Polar")
+</Frame>
 
 ---
 
@@ -323,6 +387,10 @@ fig.add_trace(go.Scatterpolar(
 fig.show()
 ```
 
+<Frame>
+  ![Plotly Radar](/images/plotly-radar.png "Plotly Radar")
+</Frame>
+
 ---
 
 # 17. 3D Scatter Plot
@@ -336,6 +404,10 @@ fig = px.scatter_3d(
 )
 ```
 
+<Frame>
+  ![Plotly 3dscatter](/images/plotly-3dscatter.png "Plotly 3dscatter")
+</Frame>
+
 ---
 
 # 18. 3D Line Plot
@@ -348,6 +420,10 @@ fig = px.line_3d(
     z="pop"
 )
 ```
+
+<Frame>
+  ![Plotly 3dline](/images/plotly-3dline.png "Plotly 3dline")
+</Frame>
 
 ---
 
@@ -363,6 +439,10 @@ fig = go.Figure(
 )
 ```
 
+<Frame>
+  ![Plotly Surface](/images/plotly-surface.png "Plotly Surface")
+</Frame>
+
 ---
 
 # 20. Mesh3D
@@ -376,6 +456,10 @@ fig = go.Figure(
     )]
 )
 ```
+
+<Frame>
+  ![Plotly Mesh3d](/images/plotly-mesh3d.png "Plotly Mesh3d")
+</Frame>
 
 ---
 
@@ -398,6 +482,10 @@ fig.add_trace(
 fig.show()
 ```
 
+<Frame>
+  ![Plotly Go](/images/plotly-go.png "Plotly Go")
+</Frame>
+
 ---
 
 # 22. Figure Layout
@@ -410,6 +498,10 @@ fig.update_layout(
     template="plotly_dark"
 )
 ```
+
+<Frame>
+  ![Plotly Go2](/images/plotly-go2.png "Plotly Go2")
+</Frame>
 
 ---
 
@@ -449,6 +541,10 @@ fig.add_trace(
 )
 ```
 
+<Frame>
+  ![Plotly Multitrace](/images/plotly-multitrace.png "Plotly Multitrace")
+</Frame>
+
 ---
 
 # 25. Subplots
@@ -472,6 +568,10 @@ fig.add_trace(
 
 fig.show()
 ```
+
+<Frame>
+  ![Plotly Subplot](/images/plotly-subplot.png "Plotly Subplot")
+</Frame>
 
 ---
 
@@ -556,6 +656,10 @@ fig = px.scatter(
     animation_frame="year"
 )
 ```
+
+<Frame>
+  ![Plotly Animation](/images/plotly-animation.png "Plotly Animation")
+</Frame>
 
 ---
 

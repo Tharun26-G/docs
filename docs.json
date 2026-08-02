@@ -164,6 +164,12 @@
             "pages": [
               "plotly"
             ]
+          },
+          {
+            "group": "Day 13",
+            "pages": [
+              "Visualization"
+            ]
           }
         ]
       }

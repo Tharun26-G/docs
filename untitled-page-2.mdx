@@ -1,0 +1,410 @@
+---
+title: "Probability example"
+---
+
+1. Basic Introduction<br /><br />Probability is the mathematics of uncertainty.<br /><br />AI/ML uses probability to:<br />- predict outcomes<br />- handle uncertain data<br />- build models
+
+```text
+# Probability of getting head in coin toss
+
+probability = 1 / 2
+print(probability)
+```
+
+---
+
+# 2. Basic Terminology
+
+| Term | Meaning |
+| --- | --- |
+| Experiment | Action with uncertain result |
+| Sample Space | All possible outcomes |
+| Event | Selected outcomes |
+| Probability | Chance of occurrence |
+
+Example:
+
+```python
+outcomes = ["Head", "Tail"]
+
+print(len(outcomes))
+```
+
+---
+
+# 3. Types of Events
+
+## Simple Event
+
+Single outcome.
+
+Example:
+
+```text
+Rolling dice = 6
+```
+
+## Compound Event
+
+Multiple outcomes.
+
+Example:
+
+```text
+Rolling dice = even number
+(2,4,6)
+```
+
+```python
+event = [2,4,6]
+print(event)
+```
+
+---
+
+# 4. Probability Rules
+
+## Formula
+
+```text
+P(A) = Favorable Outcomes / Total Outcomes
+```
+
+Example:
+
+```python
+favorable = 3
+total = 6
+
+p = favorable / total
+
+print(p)
+```
+
+Output:
+
+```text
+0.5
+```
+
+---
+
+# 5. Conditional Probability
+
+Probability of A happening when B is true.
+
+Formula:
+
+```text
+P(A|B)=P(A∩B)/P(B)
+```
+
+Example:
+
+```python
+A_and_B = 2
+B = 5
+
+conditional_probability = A_and_B / B
+
+print(conditional_probability)
+```
+
+---
+
+# 6. Law of Total Probability
+
+Formula:
+
+```text
+P(A)=P(A|B)P(B)+P(A|C)P(C)
+```
+
+Example:
+
+```python
+p_a_b = 0.5
+p_b = 0.4
+
+p_a_c = 0.2
+p_c = 0.6
+
+result = (p_a_b*p_b)+(p_a_c*p_c)
+
+print(result)
+```
+
+---
+
+# 7. Bayes' Theorem
+
+Used heavily in ML classification.
+
+Formula:
+
+```text
+P(A|B)=P(B|A)P(A)/P(B)
+```
+
+Example:
+
+```python
+p_b_a = 0.9
+p_a = 0.1
+p_b = 0.2
+
+bayes = (p_b_a*p_a)/p_b
+
+print(bayes)
+```
+
+---
+
+# 8. Random Variable
+
+A variable whose value depends on random outcomes.
+
+Types:
+
+- Discrete
+- Continuous
+
+Example:
+
+```python
+import random
+
+x = random.randint(1,6)
+
+print(x)
+```
+
+---
+
+# 9. Mean, Median, Mode
+
+## Mean
+
+Average value.
+
+```text
+Mean = Sum / Count
+```
+
+Example:
+
+```python
+data=[2,4,6]
+
+mean=sum(data)/len(data)
+
+print(mean)
+```
+
+---
+
+## Median
+
+Middle value.
+
+```python
+import statistics
+
+data=[1,3,5]
+
+print(statistics.median(data))
+```
+
+---
+
+## Mode
+
+Most frequent value.
+
+```python
+import statistics
+
+data=[1,2,2,3]
+
+print(statistics.mode(data))
+```
+
+---
+
+# 10. Variance & Standard Deviation
+
+Variance measures spread.
+
+Standard deviation is square root of variance.
+
+Example:
+
+```python
+import statistics
+
+data=[10,20,30]
+
+variance=statistics.variance(data)
+
+std=statistics.stdev(data)
+
+print(variance)
+print(std)
+```
+
+---
+
+# 11. Probability Distributions
+
+A probability distribution describes possible values and their probabilities.
+
+Types:
+
+- Bernoulli
+- Binomial
+- Uniform
+- Normal
+- Poisson
+
+---
+
+# 12. Bernoulli Distribution
+
+Only two outcomes:
+
+```text
+Success = 1
+Failure = 0
+```
+
+Example:
+
+```python
+from scipy.stats import bernoulli
+
+x = bernoulli.rvs(0.5)
+
+print(x)
+```
+
+---
+
+# 13. Binomial Distribution
+
+Number of successes in repeated trials.
+
+Formula:
+
+```text
+P(X)=nCx p^x(1-p)^(n-x)
+```
+
+Example:
+
+```python
+from scipy.stats import binom
+
+result = binom.pmf(
+    k=3,
+    n=5,
+    p=0.5
+)
+
+print(result)
+```
+
+---
+
+# 14. Uniform Distribution
+
+All values have equal probability.
+
+Example:
+
+```python
+from scipy.stats import uniform
+
+x = uniform.rvs(
+    loc=0,
+    scale=10
+)
+
+print(x)
+```
+
+---
+
+# 15. Normal Distribution
+
+Most common distribution in ML.
+
+Shape:
+
+```text
+       *
+     *   *
+   *       *
+ *           *
+--------------
+```
+
+Example:
+
+```python
+from scipy.stats import norm
+
+x = norm.pdf(
+    0,
+    loc=0,
+    scale=1
+)
+
+print(x)
+```
+
+---
+
+# 16. Poisson Distribution
+
+Used for counting events.
+
+Examples:
+
+- website visits
+- failures
+- calls per hour
+
+Formula:
+
+```text
+P(X)= (λ^x e^-λ)/x!
+```
+
+Example:
+
+```python
+from scipy.stats import poisson
+
+result = poisson.pmf(
+    k=3,
+    mu=5
+)
+
+print(result)
+```
+
+---
+
+# AI/ML Probability Summary
+
+| Concept | ML Usage |
+| --- | --- |
+| Probability | Prediction |
+| Conditional Probability | Classification |
+| Bayes Theorem | Naive Bayes |
+| Random Variable | Data Modeling |
+| Mean | Feature Analysis |
+| Variance | Feature Scaling |
+| Normal Distribution | Statistics |
+| Binomial | Binary Models |
+| Poisson | Event Prediction |

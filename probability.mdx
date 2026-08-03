@@ -1,0 +1,923 @@
+---
+title: "Probability"
+---
+
+1. Introduction
+2. Basic Terminology
+3. Types of Events
+4. Probability Rules
+5. Conditional Probability
+6. Law of Total Probability
+7. Bayes' Theorem
+8. Random Variable
+9. Mean, Median, Mode
+10. Variance & Standard Deviation
+11. Probability Distributions
+12. Bernoulli Distribution
+13. Binomial Distribution
+14. Uniform Distribution
+15. Normal Distribution
+16. Poisson Distribution
+17. AI/ML Applications
+18. Formula Cheat Sheet
+
+---
+
+# 1. Introduction
+
+Probability is a branch of mathematics that measures the **likelihood of an event occurring**.
+
+It answers questions like:
+
+- What is the chance of getting a Head?
+- What is the probability a customer buys a product?
+- What is the probability an email is spam?
+
+In Machine Learning, probability helps in:
+
+- Classification
+- Prediction
+- Decision Making
+- Uncertainty Estimation
+- Bayesian Learning
+
+Probability values lie between
+
+$$
+0 \le P(E) \le 1
+$$
+
+where
+
+- **0** → Impossible event
+- **1** → Certain event
+
+---
+
+# 2. Basic Terminology
+
+## Experiment
+
+An action that produces outcomes.
+
+Examples:
+
+- Tossing a coin
+- Rolling a die
+- Picking a card
+
+---
+
+## Sample Space (S)
+
+Set of all possible outcomes.
+
+Coin
+
+$$
+S={H,T}
+$$
+
+Die
+
+$$
+S={1,2,3,4,5,6}
+$$
+
+---
+
+## Event (E)
+
+A subset of the sample space.
+
+Example
+
+Rolling an even number
+
+$$
+E={2,4,6}
+$$
+
+---
+
+## Probability of an Event
+
+$$
+P(E)=\frac{\text{Number of favorable outcomes}}
+{\text{Total outcomes}}
+$$
+
+---
+
+## Example 1: Coin Toss
+
+Sample Space
+
+$$
+{H,T}
+$$
+
+Event
+
+Getting Head
+
+$$
+P(H)=\frac12
+$$
+
+```python
+sample = ["H", "T"]
+p_head = 1 / len(sample)
+print(p_head)
+```
+
+Output
+
+```text
+0.5
+```
+
+---
+
+## Example 2: Roll a Die
+
+Event
+
+Even number
+
+$$
+E={2,4,6}
+$$
+
+$$
+P(E)=\frac36=\frac12
+$$
+
+```python
+sample = [1,2,3,4,5,6]
+even = [2,4,6]
+
+print(len(even)/len(sample))
+```
+
+---
+
+## Example 3: Coin \+ Die
+
+Event
+
+Head AND Even Number
+
+Total outcomes
+
+$$
+2\times6=12
+$$
+
+Favorable
+
+$$
+(H,2),(H,4),(H,6)
+$$
+
+$$
+P(E)=\frac3{12}=\frac14
+$$
+
+---
+
+# 3. Types of Events
+
+## Simple Event
+
+Contains one outcome.
+
+Example
+
+Getting 4 on a die.
+
+---
+
+## Compound Event
+
+Contains multiple outcomes.
+
+Example
+
+Getting an even number.
+
+---
+
+## Certain Event
+
+Always occurs.
+
+$$
+P(E)=1
+$$
+
+Example
+
+Rolling a number less than 7.
+
+---
+
+## Impossible Event
+
+Never occurs.
+
+$$
+P(E)=0
+$$
+
+Example
+
+Rolling 8 on a standard die.
+
+---
+
+## Union of Events
+
+"A or B"
+
+$$
+A\cup B
+$$
+
+Example
+
+Even OR Odd
+
+---
+
+## Intersection of Events
+
+"A and B"
+
+$$
+A\cap B
+$$
+
+Example
+
+Even AND Multiple of 3
+
+Result
+
+$$
+{6}
+$$
+
+---
+
+## Mutually Exclusive Events
+
+Cannot occur together.
+
+$$
+A\cap B=\varnothing
+$$
+
+Example
+
+Head and Tail in one coin toss.
+
+---
+
+## Independent Events
+
+One event does not affect another.
+
+Example
+
+Two coin tosses.
+
+---
+
+## Dependent Events
+
+One event affects another.
+
+Example
+
+Drawing cards without replacement.
+
+---
+
+# 4. Probability Rules
+
+## Rule 1: Complement Rule
+
+Probability that an event does **not** occur.
+
+$$
+P(A')=1-P(A)
+$$
+
+Example
+
+$$
+P(\text{Not Head})=1-\frac12=\frac12
+$$
+
+---
+
+## Addition Rule
+
+### Mutually Exclusive
+
+$$
+P(A\cup B)=P(A)+P(B)
+$$
+
+Example
+
+Roll a die
+
+A = 2
+
+B = 4
+
+$$
+P(A)=\frac16
+$$
+
+$$
+P(B)=\frac16
+$$
+
+$$
+P(A\cup B)=\frac16+\frac16=\frac13
+$$
+
+---
+
+### Non-Mutually Exclusive
+
+$$
+P(A\cup B)=P(A)+P(B)-P(A\cap B)
+$$
+
+Example
+
+A = Even
+
+B = Multiple of 3
+
+$$
+A={2,4,6}
+$$
+
+$$
+B={3,6}
+$$
+
+Intersection
+
+$$
+{6}
+$$
+
+$$
+P(A)=\frac36
+$$
+
+$$
+P(B)=\frac26
+$$
+
+$$
+P(A\cap B)=\frac16
+$$
+
+$$
+P(A\cup B)=\frac36+\frac26-\frac16=\frac46=\frac23
+$$
+
+---
+
+## Multiplication Rule
+
+### Independent
+
+$$
+P(A\cap B)=P(A)P(B)
+$$
+
+Example
+
+Two coins
+
+$$
+P(HH)=\frac12\times\frac12=\frac14
+$$
+
+---
+
+### Dependent
+
+$$
+P(A\cap B)=P(A)P(B|A)
+$$
+
+---
+
+# 5. Conditional Probability
+
+Probability of B given A occurred.
+
+$$
+P(B|A)=
+\frac{P(A\cap B)}
+{P(A)}
+$$
+
+Example
+
+A = Even
+
+B = Multiple of 3
+
+$$
+P(B|A)=\frac{1/6}{3/6}
+=\frac13
+$$
+
+```python
+p_intersection = 1/6
+p_even = 3/6
+
+print(p_intersection/p_even)
+```
+
+---
+
+# 6. Law of Total Probability
+
+If
+
+$$
+A_1,A_2,...A_n
+$$
+
+partition the sample space,
+
+then
+
+$$
+P(B)=
+\sum_i P(B|A_i)P(A_i)
+$$
+
+Used when probability comes from multiple possible cases.
+
+Example
+
+Medical diagnosis
+
+Different age groups contribute differently to disease probability.
+
+---
+
+# 7. Bayes' Theorem
+
+Used to update probabilities after observing evidence.
+
+$$
+P(A|B)=
+\frac{P(B|A)P(A)}
+{P(B)}
+$$
+
+Where
+
+- (P(A)) = Prior
+- (P(B|A)) = Likelihood
+- (P(B)) = Evidence
+- (P(A|B)) = Posterior
+
+Applications
+
+- Spam filtering
+- Medical diagnosis
+- Recommendation systems
+- Naive Bayes Classifier
+
+Example
+
+Disease prevalence
+
+$$
+P(D)=0.01
+$$
+
+Test accuracy
+
+$$
+P(+|D)=0.99
+$$
+
+False positive
+
+$$
+P(+|\bar D)=0.05
+$$
+
+Use Bayes' theorem to compute
+
+$$
+P(D|+)
+$$
+
+---
+
+# 8. Random Variable
+
+A variable whose value depends on a random experiment.
+
+## Discrete Random Variable
+
+Countable values.
+
+Example
+
+Number of Heads.
+
+---
+
+## Continuous Random Variable
+
+Infinite values.
+
+Example
+
+Height
+
+Weight
+
+Temperature
+
+---
+
+# 9. Mean, Median, Mode
+
+## Mean
+
+Average value.
+
+$$
+\mu=
+\frac{\sum x}{n}
+$$
+
+---
+
+## Median
+
+Middle value after sorting.
+
+---
+
+## Mode
+
+Most frequently occurring value.
+
+---
+
+# 10. Variance & Standard Deviation
+
+## Variance
+
+Measures spread.
+
+Population
+
+$$
+\sigma^2=
+\frac{\sum(x-\mu)^2}
+N
+$$
+
+Sample
+
+$$
+s^2=
+\frac{\sum(x-\bar x)^2}
+{n-1}
+$$
+
+---
+
+## Standard Deviation
+
+Square root of variance.
+
+$$
+\sigma=\sqrt{\sigma^2}
+$$
+
+Higher SD ⇒ More spread.
+
+Lower SD ⇒ Less spread.
+
+```python
+import numpy as np
+
+data = [2,4,6,8]
+
+print(np.mean(data))
+print(np.var(data))
+print(np.std(data))
+```
+
+---
+
+# 11. Probability Distribution
+
+Describes how probabilities are assigned to values.
+
+Two types
+
+- Discrete Distribution
+- Continuous Distribution
+
+Common distributions
+
+- Bernoulli
+- Binomial
+- Uniform
+- Normal
+- Poisson
+
+---
+
+# 12. Bernoulli Distribution
+
+Single trial.
+
+Only two outcomes.
+
+- Success
+- Failure
+
+Parameter
+
+$$
+p
+$$
+
+Examples
+
+- Pass/Fail
+- Spam/Not Spam
+- Click/No Click
+
+Mean
+
+$$
+p
+$$
+
+Variance
+
+$$
+p(1-p)
+$$
+
+---
+
+# 13. Binomial Distribution
+
+Extension of Bernoulli.
+
+Conditions
+
+- Fixed number of trials
+- Independent trials
+- Same probability
+
+Formula
+
+$$
+P(X=k)=
+\binom nk
+p^k
+(1-p)^{n-k}
+$$
+
+Example
+
+Probability of exactly 3 Heads in 5 tosses.
+
+Applications
+
+- Customer conversions
+- Defect detection
+
+---
+
+# 14. Uniform Distribution
+
+Every value is equally likely.
+
+PDF
+
+$$
+f(x)=
+\frac1{b-a}
+$$
+
+Example
+
+Random number between
+
+0 and 1.
+
+Applications
+
+- Random initialization
+- Simulation
+
+---
+
+# 15. Normal Distribution
+
+Most important distribution in ML.
+
+Bell-shaped curve.
+
+Properties
+
+- Symmetric
+- Mean = Median = Mode
+- Area = 1
+
+PDF
+
+$$
+f(x)=
+\frac1{\sigma\sqrt{2\pi}}
+e^{-\frac{(x-\mu)^2}{2\sigma^2}}
+$$
+
+68-95-99.7 Rule
+
+- 68% within 1 SD
+- 95% within 2 SD
+- 99.7% within 3 SD
+
+Applications
+
+- Gaussian Naive Bayes
+- Noise Modeling
+- Statistics
+- Data Normalization
+
+---
+
+# 16. Poisson Distribution
+
+Models the number of events occurring in a fixed interval.
+
+Formula
+
+$$
+P(X=k)=
+\frac{e^{-\lambda}\lambda^k}
+{k!}
+$$
+
+Applications
+
+- Calls per minute
+- Website hits
+- Machine failures
+- Customer arrivals
+
+---
+
+# 17. AI/ML Applications
+
+| Topic | AI/ML Application |
+| --- | --- |
+| Probability | Classification |
+| Conditional Probability | Bayesian Networks |
+| Bayes' Theorem | Naive Bayes |
+| Mean | Feature Scaling |
+| Variance | Data Spread |
+| Standard Deviation | Outlier Detection |
+| Bernoulli | Binary Classification |
+| Binomial | Conversion Prediction |
+| Normal | Gaussian Models |
+| Poisson | Event Prediction |
+
+---
+
+# 18. Formula Cheat Sheet
+
+### Probability
+
+$$
+P(E)=\frac{\text{Favorable}}{\text{Total}}
+$$
+
+### Complement
+
+$$
+P(A')=1-P(A)
+$$
+
+### Addition Rule
+
+$$
+P(A\cup B)=P(A)+P(B)-P(A\cap B)
+$$
+
+### Multiplication Rule
+
+$$
+P(A\cap B)=P(A)P(B)
+$$
+
+### Conditional Probability
+
+$$
+P(B|A)=
+\frac{P(A\cap B)}
+{P(A)}
+$$
+
+### Total Probability
+
+$$
+P(B)=\sum P(B|A_i)P(A_i)
+$$
+
+### Bayes' Theorem
+
+$$
+P(A|B)=
+\frac{P(B|A)P(A)}
+{P(B)}
+$$
+
+### Mean
+
+$$
+\mu=\frac{\sum x}{n}
+$$
+
+### Variance
+
+$$
+\sigma^2=\frac{\sum(x-\mu)^2}{N}
+$$
+
+### Standard Deviation
+
+$$
+\sigma=\sqrt{\sigma^2}
+$$
+
+### Binomial Distribution
+
+$$
+P(X=k)=
+\binom nk
+p^k
+(1-p)^{n-k}
+$$
+
+### Uniform Distribution
+
+$$
+f(x)=\frac1{b-a}
+$$
+
+### Normal Distribution
+
+$$
+f(x)=
+\frac1{\sigma\sqrt{2\pi}}
+e^{-\frac{(x-\mu)^2}{2\sigma^2}}
+$$
+
+### Poisson Distribution
+
+$$
+P(X=k)=
+\frac{e^{-\lambda}\lambda^k}
+{k!}
+$$
+
+---
+
+# Key Takeaways
+
+- Probability measures uncertainty and ranges from **0 to 1**.
+- Understand **sample space**, **events**, and **probability rules** before advanced topics.
+- **Conditional Probability**, **Law of Total Probability**, and **Bayes' Theorem** are foundational for probabilistic ML.
+- **Random variables** describe outcomes numerically.
+- **Mean**, **variance**, and **standard deviation** summarize data.
+- The most important probability distributions for AI/ML are **Bernoulli**, **Binomial**, **Uniform**, **Normal**, and **Poisson**.
+- These concepts underpin algorithms such as **Naive Bayes**, **Gaussian Models**, **Bayesian Networks**, and many statistical learning methods.

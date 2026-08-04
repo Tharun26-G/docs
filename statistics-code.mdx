@@ -1,0 +1,507 @@
+---
+title: "Statistics Code"
+---
+
+## Imports
+
+```python
+import numpy as np
+import pandas as pd
+from scipy import stats
+```
+
+---
+
+# 1. Population vs Sample
+
+```python
+import numpy as np
+
+population = np.arange(1, 101)
+
+sample = np.random.choice(population, size=10, replace=False)
+
+print("Population Size:", len(population))
+print("Sample:", sample)
+```
+
+---
+
+# 2. Types of Data
+
+```python
+age = 22              # Integer
+
+height = 175.8        # Float
+
+gender = "Male"       # String
+
+is_student = True     # Boolean
+
+print(age, height, gender, is_student)
+```
+
+---
+
+# 3. Levels of Measurement
+
+```python
+nominal = ["Red", "Blue", "Green"]
+
+ordinal = ["Low", "Medium", "High"]
+
+interval = [-5, 10, 20]
+
+ratio = [5, 10, 20]
+
+print(nominal)
+```
+
+---
+
+# 4. Descriptive Statistics
+
+```python
+import pandas as pd
+
+df = pd.DataFrame({
+    "Marks": [70, 80, 90, 85, 95]
+})
+
+print(df.describe())
+```
+
+---
+
+# 5. Mean
+
+```python
+import numpy as np
+
+marks = [70, 80, 90, 85, 95]
+
+print(np.mean(marks))
+```
+
+---
+
+# 6. Median
+
+```python
+import numpy as np
+
+marks = [70, 80, 90, 85, 95]
+
+print(np.median(marks))
+```
+
+---
+
+# 7. Mode
+
+```python
+from scipy import stats
+
+marks = [70, 80, 80, 90, 95]
+
+print(stats.mode(marks))
+```
+
+---
+
+# 8. Range
+
+```python
+marks = [70, 80, 90, 85, 95]
+
+print(max(marks) - min(marks))
+```
+
+---
+
+# 9. Variance
+
+```python
+import numpy as np
+
+marks = [70, 80, 90, 85, 95]
+
+print(np.var(marks))
+```
+
+---
+
+# 10. Standard Deviation
+
+```python
+import numpy as np
+
+marks = [70, 80, 90, 85, 95]
+
+print(np.std(marks))
+```
+
+---
+
+# 11. Percentiles
+
+```python
+import numpy as np
+
+marks = [70, 80, 90, 85, 95]
+
+print(np.percentile(marks, 90))
+```
+
+---
+
+# 12. Quartiles
+
+```python
+import numpy as np
+
+marks = [70, 80, 90, 85, 95]
+
+print(np.percentile(marks, [25, 50, 75]))
+```
+
+---
+
+# 13. Interquartile Range (IQR)
+
+```python
+from scipy.stats import iqr
+
+marks = [70, 80, 90, 85, 95]
+
+print(iqr(marks))
+```
+
+---
+
+# 14. Outlier Detection
+
+```python
+import numpy as np
+
+data = np.array([10, 12, 14, 16, 100])
+
+Q1 = np.percentile(data, 25)
+Q3 = np.percentile(data, 75)
+
+IQR = Q3 - Q1
+
+lower = Q1 - 1.5 * IQR
+upper = Q3 + 1.5 * IQR
+
+print(data[(data < lower) | (data > upper)])
+```
+
+---
+
+# 15. Skewness
+
+```python
+from scipy.stats import skew
+
+data = [10, 12, 14, 16, 100]
+
+print(skew(data))
+```
+
+---
+
+# 16. Kurtosis
+
+```python
+from scipy.stats import kurtosis
+
+data = [10, 12, 14, 16, 100]
+
+print(kurtosis(data))
+```
+
+---
+
+# 17. Covariance
+
+```python
+import numpy as np
+
+x = [1, 2, 3, 4]
+
+y = [2, 4, 6, 8]
+
+print(np.cov(x, y))
+```
+
+---
+
+# 18. Correlation
+
+```python
+import numpy as np
+
+x = [1, 2, 3, 4]
+
+y = [2, 4, 6, 8]
+
+print(np.corrcoef(x, y))
+```
+
+---
+
+# 19. Random Sampling
+
+```python
+import pandas as pd
+
+df = pd.DataFrame({
+    "Marks": [60, 70, 80, 90, 95]
+})
+
+print(df.sample(2))
+```
+
+---
+
+# 20. Sampling Distribution
+
+```python
+import numpy as np
+
+sample = np.random.choice([10,20,30,40,50], size=3)
+
+print(sample.mean())
+```
+
+---
+
+# 21. Central Limit Theorem
+
+```python
+import numpy as np
+
+population = np.random.normal(50, 10, 1000)
+
+sample = np.random.choice(population, 30)
+
+print(sample.mean())
+```
+
+---
+
+# 22. Confidence Interval
+
+```python
+from scipy import stats
+import numpy as np
+
+data = [10,20,30,40,50]
+
+ci = stats.t.interval(
+    confidence=0.95,
+    df=len(data)-1,
+    loc=np.mean(data),
+    scale=stats.sem(data)
+)
+
+print(ci)
+```
+
+---
+
+# 23. Statistical Inference
+
+```python
+import numpy as np
+
+sample = [10,20,30,40]
+
+population_mean = np.mean(sample)
+
+print(population_mean)
+```
+
+---
+
+# 24. Hypothesis Testing
+
+```python
+from scipy import stats
+
+data = [20,22,19,24,21]
+
+result = stats.ttest_1samp(data, popmean=20)
+
+print(result)
+```
+
+---
+
+# 25. P-value
+
+```python
+from scipy import stats
+
+data = [20,22,19,24,21]
+
+t, p = stats.ttest_1samp(data, 20)
+
+print(p)
+```
+
+---
+
+# 26. Type I & Type II Error
+
+```python
+alpha = 0.05
+
+p_value = 0.03
+
+if p_value < alpha:
+    print("Reject H0")
+else:
+    print("Fail to Reject H0")
+```
+
+---
+
+# 27. Z-Test
+
+```python
+from statsmodels.stats.weightstats import ztest
+
+data = [10,20,30,40,50]
+
+print(ztest(data, value=30))
+```
+
+---
+
+# 28. T-Test
+
+```python
+from scipy import stats
+
+group1 = [10,20,30]
+
+group2 = [15,25,35]
+
+print(stats.ttest_ind(group1, group2))
+```
+
+---
+
+# 29. Chi-Square Test
+
+```python
+from scipy.stats import chi2_contingency
+
+table = [
+    [10,20],
+    [20,30]
+]
+
+print(chi2_contingency(table))
+```
+
+---
+
+# 30. ANOVA
+
+```python
+from scipy.stats import f_oneway
+
+group1 = [10,20,30]
+
+group2 = [15,25,35]
+
+group3 = [18,28,38]
+
+print(f_oneway(group1, group2, group3))
+```
+
+---
+
+# 31. Feature Scaling
+
+```python
+import pandas as pd
+
+X = pd.DataFrame({
+    "Age":[20,25,30],
+    "Salary":[30000,50000,80000]
+})
+
+print(X)
+```
+
+---
+
+# 32. Standardization
+
+```python
+from sklearn.preprocessing import StandardScaler
+
+X = [[20],[25],[30]]
+
+scaler = StandardScaler()
+
+print(scaler.fit_transform(X))
+```
+
+---
+
+# 33. Normalization
+
+```python
+from sklearn.preprocessing import MinMaxScaler
+
+X = [[20],[25],[30]]
+
+scaler = MinMaxScaler()
+
+print(scaler.fit_transform(X))
+```
+
+---
+
+# 34. Z-Score
+
+```python
+from scipy.stats import zscore
+
+marks = [70,80,90,85,95]
+
+print(zscore(marks))
+```
+
+---
+
+# 35. Missing Data
+
+```python
+import pandas as pd
+
+df = pd.DataFrame({
+    "Marks":[80,None,90]
+})
+
+print(df.fillna(df.mean()))
+```
+
+---
+
+# Useful Libraries
+
+```python
+import numpy as np
+import pandas as pd
+from scipy import stats
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
+```
+
+---

@@ -183,6 +183,13 @@
               "probability1",
               "probability-eg"
             ]
+          },
+          {
+            "group": "Day 16",
+            "pages": [
+              "statitics",
+              "statistics-code"
+            ]
           }
         ]
       }

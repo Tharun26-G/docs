@@ -190,6 +190,12 @@
               "statitics",
               "statistics-code"
             ]
+          },
+          {
+            "group": "Day 17",
+            "pages": [
+              "hypothesis-testing"
+            ]
           }
         ]
       }

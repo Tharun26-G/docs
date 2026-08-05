@@ -1,0 +1,609 @@
+---
+title: "Hypothesis Testing"
+---
+
+Hypothesis testing is a statistical method used to determine whether there is enough evidence from sample data to support a claim about a population.
+
+---
+
+# Table of Contents
+
+- Null & Alternative Hypotheses
+- Hypothesis Testing Workflow
+- One-sample t-test
+- Two-sample t-test
+- p-value
+- Significance Level (α)
+- Type I & Type II Errors
+- Confidence Intervals
+- Choosing the Correct Test
+- Complete Python Examples
+- Interview Questions
+- Summary
+
+---
+
+# 1. Null & Alternative Hypotheses
+
+A **hypothesis** is an assumption about a population parameter.
+
+There are always two hypotheses.
+
+## Null Hypothesis (H₀)
+
+The null hypothesis assumes **no effect**, **no difference**, or **no relationship**.
+
+Examples:
+
+- Average salary = ₹50,000
+- New medicine is not better than old medicine.
+- Two algorithms have equal accuracy.
+
+Example:
+
+```text
+H₀: μ = 50
+```
+
+where
+
+- μ = population mean
+
+---
+
+## Alternative Hypothesis (H₁ or Hₐ)
+
+The alternative hypothesis represents what we want to prove.
+
+Examples
+
+```text
+H₁: μ ≠ 50
+```
+
+or
+
+```text
+H₁: μ > 50
+```
+
+or
+
+```text
+H₁: μ < 50
+```
+
+---
+
+## Types of Alternative Hypotheses
+
+### Two-tailed
+
+Testing for any difference.
+
+```text
+H₀: μ = 50
+H₁: μ ≠ 50
+```
+
+---
+
+### Right-tailed
+
+Testing if value is greater.
+
+```text
+H₀: μ ≤ 50
+H₁: μ > 50
+```
+
+---
+
+### Left-tailed
+
+Testing if value is smaller.
+
+```text
+H₀: μ ≥ 50
+H₁: μ < 50
+```
+
+---
+
+# Hypothesis Testing Workflow
+
+```text
+State hypotheses
+        ↓
+Collect sample
+        ↓
+Choose statistical test
+        ↓
+Calculate test statistic
+        ↓
+Compute p-value
+        ↓
+Compare with α
+        ↓
+Reject or Fail to Reject H₀
+```
+
+---
+
+# 2. One-Sample t-test
+
+Used when comparing **one sample mean** against a known population value.
+
+## Example
+
+A company claims average battery life is **10 hours**.
+
+Sample:
+
+```python
+[10.5, 9.8, 10.2, 10.4, 9.9]
+```
+
+Question:
+
+Is the actual average different from 10?
+
+---
+
+## Formula
+
+$$
+t = \\frac{\\bar{x}-\\mu}{s/\\sqrt{n}}
+$$
+
+where
+
+- x̄ = sample mean
+- μ = population mean
+- s = sample standard deviation
+- n = sample size
+
+---
+
+## Python Example
+
+```python
+from scipy.stats import ttest_1samp
+
+battery = [10.5, 9.8, 10.2, 10.4, 9.9]
+
+t_stat, p_value = ttest_1samp(battery, popmean=10)
+
+print("t statistic:", t_stat)
+print("p-value:", p_value)
+```
+
+---
+
+## Interpretation
+
+If
+
+```text
+p < 0.05
+```
+
+Reject H₀
+
+Otherwise
+
+Fail to reject H₀.
+
+---
+
+# 3. Two-Sample t-test
+
+Used to compare means of **two independent groups**.
+
+Example
+
+Do students using Method A score differently than students using Method B?
+
+---
+
+Sample
+
+Method A
+
+```python
+[78, 82, 85, 88, 90]
+```
+
+Method B
+
+```python
+[72, 75, 79, 80, 81]
+```
+
+---
+
+## Python
+
+```python
+from scipy.stats import ttest_ind
+
+group1 = [78,82,85,88,90]
+group2 = [72,75,79,80,81]
+
+t_stat, p = ttest_ind(group1, group2)
+
+print(t_stat)
+print(p)
+```
+
+---
+
+## Equal Variance Assumption
+
+If variances are unequal
+
+```python
+ttest_ind(group1, group2, equal_var=False)
+```
+
+This performs **Welch's t-test**.
+
+---
+
+# Difference Between One-Sample and Two-Sample t-test
+
+| Feature | One Sample | Two Sample |
+| --- | --- | --- |
+| Number of groups | 1 | 2 |
+| Compare against | Known value | Another group |
+| Example | Mean = 50? | Group A vs Group B |
+| Function | `ttest_1samp()` | `ttest_ind()` |
+
+---
+
+# 4. p-value
+
+The **p-value** measures how likely the observed data would occur if the null hypothesis were true.
+
+It is **not** the probability that the null hypothesis is true.
+
+---
+
+## Interpretation
+
+| p-value | Decision |
+| --- | --- |
+| \< 0.01 | Very strong evidence against H₀ |
+| \< 0.05 | Strong evidence against H₀ |
+| \> 0.05 | Not enough evidence to reject H₀ |
+
+---
+
+Example
+
+```text
+α = 0.05
+
+p = 0.03
+```
+
+Since
+
+```text
+0.03 < 0.05
+```
+
+Reject H₀.
+
+---
+
+Another Example
+
+```text
+p = 0.18
+```
+
+Cannot reject H₀.
+
+---
+
+# 5. Significance Level (α)
+
+The significance level is the threshold for deciding whether to reject the null hypothesis.
+
+Common choices
+
+```text
+0.10
+0.05
+0.01
+```
+
+Most commonly
+
+```text
+α = 0.05
+```
+
+Meaning
+
+Accept a **5% chance** of incorrectly rejecting a true null hypothesis.
+
+---
+
+Decision Rule
+
+```text
+If p ≤ α
+
+Reject H₀
+```
+
+Otherwise
+
+```text
+Fail to Reject H₀
+```
+
+---
+
+# 6. Type I & Type II Errors
+
+## Type I Error (False Positive)
+
+Rejecting a true null hypothesis.
+
+Reality:
+
+```text
+Medicine doesn't work.
+```
+
+Conclusion:
+
+```text
+Medicine works.
+```
+
+Wrong conclusion.
+
+Probability
+
+```text
+α
+```
+
+---
+
+## Type II Error (False Negative)
+
+Failing to reject a false null hypothesis.
+
+Reality
+
+```text
+Medicine works.
+```
+
+Conclusion
+
+```text
+Medicine doesn't work.
+```
+
+Probability
+
+```text
+β
+```
+
+---
+
+## Statistical Power
+
+Power
+
+```text
+Power = 1 - β
+```
+
+Higher power means a better chance of detecting a true effect.
+
+---
+
+## Error Table
+
+| Reality | Decision | Result |
+| --- | --- | --- |
+| H₀ True | Reject | Type I Error |
+| H₀ True | Fail to Reject | Correct |
+| H₀ False | Reject | Correct |
+| H₀ False | Fail to Reject | Type II Error |
+
+---
+
+# 7. Confidence Intervals
+
+A confidence interval gives a range where the true population parameter is likely to lie.
+
+Example
+
+```text
+95% CI
+
+(48.2, 52.6)
+```
+
+Interpretation:
+
+Using this method repeatedly, about 95% of the intervals constructed would contain the true population mean.
+
+---
+
+### Formula
+
+```text
+Confidence Interval = x̄ ± t* × (s / √n)
+```
+
+Where:
+
+- `x̄` = Sample mean
+- `t*` = Critical t-value (depends on confidence level and degrees of freedom)
+- `s` = Sample standard deviation
+- `n` = Sample size
+
+---
+
+## Python Example
+
+```python
+import numpy as np
+from scipy import stats
+
+data = [10,11,9,10,12,11,9]
+
+confidence = 0.95
+
+mean = np.mean(data)
+sem = stats.sem(data)
+
+interval = stats.t.interval(
+    confidence,
+    len(data)-1,
+    loc=mean,
+    scale=sem
+)
+
+print(interval)
+```
+
+---
+
+## Interpretation
+
+If the confidence interval contains the hypothesized value
+
+```text
+Example
+
+95% CI
+
+(48, 53)
+
+Hypothesized mean = 50
+```
+
+Since
+
+```text
+50 lies inside interval
+```
+
+Fail to reject H₀ at the 5% significance level.
+
+---
+
+# Choosing the Correct Test
+
+| Situation | Test |
+| --- | --- |
+| Compare one sample with known mean | One-sample t-test |
+| Compare two independent groups | Two-sample t-test |
+| Compare paired measurements | Paired t-test |
+| Compare more than two groups | ANOVA |
+
+---
+
+# Complete Python Example
+
+```python
+import numpy as np
+from scipy.stats import ttest_1samp, ttest_ind
+
+# ----------------------------
+# One Sample t-test
+# ----------------------------
+
+sample = [52, 49, 51, 48, 50, 52, 53]
+
+t, p = ttest_1samp(sample, popmean=50)
+
+print("One Sample Test")
+print("t =", t)
+print("p =", p)
+
+# ----------------------------
+# Two Sample t-test
+# ----------------------------
+
+group1 = [75,80,82,78,77]
+group2 = [70,72,71,68,74]
+
+t, p = ttest_ind(group1, group2)
+
+print("\nTwo Sample Test")
+print("t =", t)
+print("p =", p)
+```
+
+---
+
+# Interview Questions
+
+### What is the null hypothesis?
+
+A statement that assumes there is no difference or no effect.
+
+---
+
+### What does a p-value represent?
+
+The probability of observing results at least as extreme as those obtained if the null hypothesis is true.
+
+---
+
+### Why use a t-test?
+
+To compare means when the population standard deviation is unknown.
+
+---
+
+### Difference between α and p-value?
+
+- **α** is chosen before the experiment (decision threshold).
+- **p-value** is computed from the observed sample data.
+
+---
+
+### What is a 95% confidence interval?
+
+An interval produced by a method that, over many repeated samples, would contain the true population parameter about 95% of the time.
+
+---
+
+# Summary
+
+| Topic | Key Idea |
+| --- | --- |
+| Null Hypothesis | No effect or difference |
+| Alternative Hypothesis | Effect or difference exists |
+| One-Sample t-test | Compare one sample with known mean |
+| Two-Sample t-test | Compare two independent means |
+| p-value | Evidence against H₀ |
+| Significance Level (α) | Decision threshold |
+| Type I Error | False Positive |
+| Type II Error | False Negative |
+| Confidence Interval | Plausible range for the population parameter |
+| Power | Probability of detecting a true effect (`1 - β`) |
+
+---
+
+# Key Takeaways
+
+- Start by defining **H₀** and **H₁**.
+- Choose the correct statistical test based on the data.
+- Compare the **p-value** with **α** to make a decision.
+- Understand the risks of **Type I** and **Type II** errors.
+- Use **confidence intervals** to estimate plausible values for the population parameter.
+- Report both the **test result** and the **confidence interval** for a more complete statistical interpretation.

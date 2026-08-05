@@ -456,66 +456,153 @@ Build (≈ 1 h)
 
 ---
 
-## Day 17 – Hypothesis Testing (t‑Test)
+## Day 17 - Hypothesis Testing & Statistical Inference
 
 ```text
 Learn
-  • One‑sample vs two‑sample t‑test
-  • p‑value interpretation
+  • Null & Alternative Hypotheses
+  • One-sample vs Two-sample t-test
+  • p-value interpretation
+  • Significance level (α)
+  • Type I & Type II Errors
+  • Confidence Intervals
 
-Code Challenge (≈ 30 min)
-  • `ttest_demo.py` – perform t‑test on Iris sepal width
+Code Challenge (≈ 30 min)
+  • `ttest_demo.py`
+     – Perform a one-sample t-test on Iris sepal width
+     – Perform a two-sample t-test between two Iris species
+     – Interpret the p-value and confidence interval
 
-Build (≈ 1 h)
-  • Commit `ttest_demo.py` and results
+Build (≈ 1 h)
+  • `hypothesis_testing.ipynb`
+     – Load the Iris dataset
+     – Perform hypothesis testing
+     – Visualize distributions
+     – Summarize conclusions
+  • Commit notebook and results
 ```
 
 ---
 
-## Day 18 – Supervised Learning Intro (Linear Regression)
+## Day 18 – Scikit-learn Fundamentals
 
 ```text
 Learn
-  • Least‑squares solution
-  • Normal equation
+  • Introduction to scikit-learn
+  • Built-in datasets
+  • train_test_split()
+  • Model workflow
+     – fit()
+     – predict()
+     – score()
+  • Data preprocessing
+     – StandardScaler
+     – MinMaxScaler
+     – LabelEncoder
+     – OneHotEncoder
+  • Model persistence with joblib
 
-Code Challenge (≈ 30 min)
-  • `train_simple.py` – implement linear regression from scratch on a toy dataset
+Code Challenge (≈ 45 min)
+  • `sklearn_basics.py`
+     – Load the Iris dataset
+     – Split into train/test sets
+     – Scale features
+     – Train a Logistic Regression model
+     – Evaluate accuracy
+     – Save the trained model
 
-Build (≈ 1 h)
-  • Commit `train_simple.py` and demo run
+Build (≈ 1 h)
+  • `iris_classifier.ipynb`
+     – Perform EDA
+     – Train a classifier
+     – Save the trained model
+  • Commit notebook, model, and README updates
 ```
 
 ---
 
-## Day 19 – Model Evaluation
+## Day 19 – Supervised ML Algorithms & Model Evaluation
 
 ```text
 Learn
-  • MSE, MAE, R²
-  • Residual analysis
+  • Regression
+     – Linear Regression
+     – Ridge Regression
+     – Lasso Regression
+  • Classification
+     – Logistic Regression
+     – K-Nearest Neighbors (KNN)
+     – Decision Tree
+     – Random Forest
+     – Support Vector Machine (SVM)
+     – Naive Bayes
+  • Model Evaluation
+     – Accuracy
+     – Precision
+     – Recall
+     – F1 Score
+     – Confusion Matrix
+     – ROC-AUC
+     – MAE
+     – MSE
+     – RMSE
+     – R²
 
-Code Challenge (≈ 30 min)
-  • `eval_demo.py` – evaluate the linear regression model
+Code Challenge (≈ 45 min)
+  • `compare_models.py`
+     – Train multiple supervised learning models
+     – Compare evaluation metrics
+     – Select the best-performing model
 
-Build (≈ 1 h)
-  • Commit `eval_demo.py` and plots
+Build (≈ 1 h)
+  • `titanic_prediction.ipynb`
+     – Train multiple classifiers
+     – Evaluate and compare models
+     – Save the best model
+  • Commit notebook, trained model, and evaluation report
 ```
 
 ---
 
-## Day 20 – Pipeline & Cross‑Validation
+## Day 20 – Unsupervised Learning, Feature Engineering & Hyperparameter Tuning
 
 ```text
 Learn
-  • Scikit‑learn Pipeline
-  • K‑fold cross‑validation
+  • Clustering
+     – K-Means
+     – Hierarchical Clustering
+     – DBSCAN
+  • Dimensionality Reduction
+     – Principal Component Analysis (PCA)
+     – t-SNE (overview)
+  • Cluster Evaluation
+     – Elbow Method
+     – Silhouette Score
+  • Feature Engineering
+     – Missing value handling
+     – Encoding categorical variables
+     – Feature scaling
+     – Feature selection
+  • Hyperparameter Tuning
+     – GridSearchCV
+     – RandomizedSearchCV
+  • Cross-Validation
+     – K-Fold
+     – Stratified K-Fold
 
-Code Challenge (≈ 30 min)
-  • `pipeline_demo.py` – create a pipeline that scales + regresses
+Code Challenge (≈ 45 min)
+  • `clustering_demo.py`
+     – Cluster the Iris dataset
+     – Visualize clusters with PCA
+     – Tune a Random Forest model using GridSearchCV
 
-Build (≈ 1 h)
-  • Commit `pipeline_demo.py` and output
+Build (≈ 1 h)
+  • `customer_segmentation.ipynb`
+     – Engineer features
+     – Build customer clusters
+     – Tune model parameters
+     – Visualize results
+  • Commit notebook and plots
 ```
 
 ---
@@ -524,14 +611,26 @@ Build (≈ 1 h)
 
 ```text
 Learn
+  • End-to-end machine learning workflow
   • Regression on tabular data
-  • Feature engineering
+  • Pipeline design
+  • Model comparison
+  • Model selection
 
-Code Challenge (≈ 45 min)
-  • `housing_predict.ipynb` – load Boston Housing, train, evaluate
+Code Challenge (≈ 45 min)
+  • `housing_pipeline.ipynb`
+     – Load the California Housing dataset
+     – Perform feature engineering
+     – Build preprocessing pipelines
+     – Train multiple regression models
+     – Tune the best model with GridSearchCV
+     – Evaluate using MAE, RMSE, and R²
+     – Save the final model
 
-Build (≈ 1 h)
-  • Commit `housing_predict.ipynb`
+Build (≈ 1 h)
+  • Commit `housing_pipeline.ipynb`
+  • Save the trained model
+  • Add evaluation plots and README summary
 ```
 
 ---

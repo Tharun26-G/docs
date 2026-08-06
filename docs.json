@@ -196,6 +196,12 @@
             "pages": [
               "hypothesis-testing"
             ]
+          },
+          {
+            "group": "Day 18",
+            "pages": [
+              "scikit-learn"
+            ]
           }
         ]
       }

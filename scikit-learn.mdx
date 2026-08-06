@@ -1,0 +1,805 @@
+---
+title: "Scikit Learn"
+---
+
+---
+
+## What is Scikit-learn?
+
+**Scikit-learn (sklearn)** is one of the most popular Python libraries for Machine Learning. It provides easy-to-use implementations of various ML algorithms for:
+
+- Classification
+- Regression
+- Clustering
+- Dimensionality Reduction
+- Model Selection
+- Data Preprocessing
+- Evaluation
+
+### Installation
+
+```bash
+pip install scikit-learn
+```
+
+Import commonly used libraries:
+
+```python
+import numpy as np
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+```
+
+---
+
+# Scikit-learn Workflow
+
+Almost every ML model in sklearn follows the same workflow.
+
+```text
+Dataset
+   │
+   ▼
+Preprocessing
+   │
+   ▼
+Train-Test Split
+   │
+   ▼
+Create Model
+   │
+   ▼
+fit()
+   │
+   ▼
+predict()
+   │
+   ▼
+Evaluate
+```
+
+---
+
+# Built-in Datasets
+
+Scikit-learn provides several datasets for learning and experimentation.
+
+## Common Datasets
+
+| Dataset | Type | Use Case |
+| --- | --- | --- |
+| load\_iris() | Classification | Flower Classification |
+| load\_digits() | Classification | Handwritten Digits |
+| load\_wine() | Classification | Wine Types |
+| load\_breast\_cancer() | Classification | Cancer Prediction |
+| fetch\_california\_housing() | Regression | House Price Prediction |
+| make\_classification() | Synthetic | Custom Classification Data |
+| make\_regression() | Synthetic | Custom Regression Data |
+
+---
+
+## Example: Iris Dataset
+
+```python
+from sklearn.datasets import load_iris
+
+iris = load_iris()
+
+print(iris.keys())
+```
+
+Output
+
+```text
+dict_keys([
+'data',
+'target',
+'target_names',
+'feature_names',
+'DESCR',
+'frame'
+])
+```
+
+Access data
+
+```python
+X = iris.data
+y = iris.target
+
+print(X.shape)
+print(y.shape)
+```
+
+Feature names
+
+```python
+print(iris.feature_names)
+```
+
+Target classes
+
+```python
+print(iris.target_names)
+```
+
+---
+
+## Example: California Housing Dataset
+
+```python
+from sklearn.datasets import fetch_california_housing
+
+housing = fetch_california_housing()
+
+X = housing.data
+y = housing.target
+```
+
+---
+
+# Train-Test Split
+
+Machine Learning models should never be evaluated using the same data they were trained on.
+
+Instead:
+
+- Training Data → Learn patterns
+- Testing Data → Evaluate performance
+
+---
+
+## Syntax
+
+```python
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+```
+
+---
+
+## Parameters
+
+| Parameter | Description |
+| --- | --- |
+| test\_size | Percentage of testing data |
+| train\_size | Percentage of training data |
+| random\_state | Makes results reproducible |
+| shuffle | Shuffle before splitting |
+| stratify | Maintain class distribution |
+
+---
+
+### Example
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.25,
+    random_state=42,
+    stratify=y
+)
+```
+
+---
+
+# Model Workflow
+
+All sklearn models have the same interface.
+
+```python
+model = SomeModel()
+
+model.fit(X_train, y_train)
+
+predictions = model.predict(X_test)
+
+accuracy = model.score(X_test, y_test)
+```
+
+This consistency is one of sklearn's biggest strengths.
+
+---
+
+# fit()
+
+Used to train the model.
+
+```python
+model.fit(X_train, y_train)
+```
+
+Example
+
+```python
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression()
+
+model.fit(X_train, y_train)
+```
+
+---
+
+# predict()
+
+Predicts outputs for unseen data.
+
+```python
+predictions = model.predict(X_test)
+```
+
+Example
+
+```python
+print(predictions[:5])
+```
+
+Predict a single sample
+
+```python
+sample = X_test[0].reshape(1, -1)
+
+prediction = model.predict(sample)
+
+print(prediction)
+```
+
+---
+
+# predict\_proba()
+
+Returns prediction probabilities.
+
+```python
+prob = model.predict_proba(X_test)
+
+print(prob[:5])
+```
+
+Example Output
+
+```text
+[[0.01 0.96 0.03]
+ [0.90 0.05 0.05]]
+```
+
+Useful for:
+
+- Confidence scores
+- ROC Curve
+- Threshold tuning
+
+---
+
+# score()
+
+Returns the default evaluation metric.
+
+Classification
+
+```python
+accuracy = model.score(X_test, y_test)
+
+print(accuracy)
+```
+
+Regression
+
+Returns **R² Score**
+
+```python
+score = model.score(X_test, y_test)
+```
+
+---
+
+# Complete Example
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+
+iris = load_iris()
+
+X = iris.data
+y = iris.target
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+model = LogisticRegression()
+
+model.fit(X_train, y_train)
+
+predictions = model.predict(X_test)
+
+accuracy = model.score(X_test, y_test)
+
+print("Accuracy:", accuracy)
+```
+
+---
+
+# Data Preprocessing
+
+Preprocessing improves model performance.
+
+Common preprocessing includes:
+
+- Scaling
+- Encoding
+- Missing values
+- Feature engineering
+
+---
+
+# StandardScaler
+
+Standardizes features.
+
+Formula
+
+```text
+z = (x - mean) / standard deviation
+```
+
+Output
+
+- Mean = 0
+- Standard Deviation = 1
+
+Useful for:
+
+- Logistic Regression
+- SVM
+- KNN
+- Neural Networks
+
+---
+
+## Example
+
+```python
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+
+X_test_scaled = scaler.transform(X_test)
+```
+
+Notice
+
+```python
+# Training
+scaler.fit(X_train)
+
+# Testing
+scaler.transform(X_test)
+```
+
+Never do
+
+```python
+scaler.fit(X_test)
+```
+
+---
+
+# MinMaxScaler
+
+Scales values between 0 and 1.
+
+Formula
+
+```text
+(x - min) / (max - min)
+```
+
+Example
+
+```python
+from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+
+X_test_scaled = scaler.transform(X_test)
+```
+
+Useful for:
+
+- Neural Networks
+- Distance-based algorithms
+
+---
+
+# StandardScaler vs MinMaxScaler
+
+| StandardScaler | MinMaxScaler |
+| --- | --- |
+| Mean = 0 | Range = 0 to 1 |
+| Handles outliers better | Sensitive to outliers |
+| Gaussian distributions | Neural Networks |
+| Most commonly used | Image Data |
+
+---
+
+# LabelEncoder
+
+Encodes target labels.
+
+Example
+
+```python
+from sklearn.preprocessing import LabelEncoder
+
+encoder = LabelEncoder()
+
+y = ["Cat", "Dog", "Cat", "Bird"]
+
+encoded = encoder.fit_transform(y)
+
+print(encoded)
+```
+
+Output
+
+```text
+[1 2 1 0]
+```
+
+Decode
+
+```python
+encoder.inverse_transform(encoded)
+```
+
+> **Note:** Use `LabelEncoder` mainly for the **target (`y`)**, not feature columns.
+
+---
+
+# OneHotEncoder
+
+Converts categorical features into binary columns.
+
+Example
+
+```python
+from sklearn.preprocessing import OneHotEncoder
+
+encoder = OneHotEncoder()
+
+X = [["Red"], ["Blue"], ["Green"]]
+
+encoded = encoder.fit_transform(X)
+
+print(encoded.toarray())
+```
+
+Output
+
+```text
+[[0 0 1]
+ [1 0 0]
+ [0 1 0]]
+```
+
+Ignore unknown categories
+
+```python
+encoder = OneHotEncoder(handle_unknown="ignore")
+```
+
+---
+
+# Model Persistence with joblib
+
+Instead of training every time, save the trained model.
+
+Install
+
+```bash
+pip install joblib
+```
+
+---
+
+## Save Model
+
+```python
+import joblib
+
+joblib.dump(model, "iris_model.pkl")
+```
+
+---
+
+## Load Model
+
+```python
+loaded_model = joblib.load("iris_model.pkl")
+```
+
+Use it
+
+```python
+prediction = loaded_model.predict(X_test)
+```
+
+---
+
+# Complete Example
+
+```python
+import joblib
+
+# Save
+joblib.dump(model, "model.pkl")
+
+# Load
+model = joblib.load("model.pkl")
+
+predictions = model.predict(X_test)
+```
+
+---
+
+# Important Missing Topics
+
+## Pipelines (Highly Recommended)
+
+Instead of manually scaling and training:
+
+```python
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+
+pipeline = Pipeline([
+    ("scaler", StandardScaler()),
+    ("classifier", LogisticRegression())
+])
+
+pipeline.fit(X_train, y_train)
+
+predictions = pipeline.predict(X_test)
+```
+
+Advantages
+
+- Prevents data leakage
+- Cleaner code
+- Easy deployment
+
+---
+
+## Model Evaluation
+
+### Accuracy
+
+```python
+from sklearn.metrics import accuracy_score
+
+accuracy = accuracy_score(y_test, predictions)
+```
+
+---
+
+### Confusion Matrix
+
+```python
+from sklearn.metrics import confusion_matrix
+
+cm = confusion_matrix(y_test, predictions)
+
+print(cm)
+```
+
+---
+
+### Classification Report
+
+```python
+from sklearn.metrics import classification_report
+
+print(classification_report(y_test, predictions))
+```
+
+Shows:
+
+- Precision
+- Recall
+- F1 Score
+- Accuracy
+
+---
+
+## Regression Metrics
+
+```python
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+
+print(mean_absolute_error(y_test, predictions))
+print(mean_squared_error(y_test, predictions))
+print(r2_score(y_test, predictions))
+```
+
+---
+
+# Cross Validation
+
+Instead of a single train-test split:
+
+```python
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression()
+
+scores = cross_val_score(model, X, y, cv=5)
+
+print(scores)
+print(scores.mean())
+```
+
+Benefits
+
+- More reliable evaluation
+- Less variance
+- Better performance estimate
+
+---
+
+# Random State
+
+```python
+train_test_split(
+    X,
+    y,
+    random_state=42
+)
+```
+
+Ensures reproducible results.
+
+Without it:
+
+- Every run gives a different split.
+
+---
+
+# Common Mistakes
+
+❌ Scaling before splitting data
+
+```python
+scaler.fit_transform(X)
+```
+
+✔ Correct
+
+```python
+X_train, X_test = train_test_split(X)
+
+scaler.fit(X_train)
+
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
+```
+
+---
+
+❌ Fitting scaler on test data
+
+```python
+scaler.fit(X_test)
+```
+
+✔ Correct
+
+```python
+scaler.transform(X_test)
+```
+
+---
+
+❌ Training and testing on the same dataset
+
+```python
+model.fit(X, y)
+
+model.predict(X)
+```
+
+Always keep a separate test set.
+
+---
+
+# End-to-End Example
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+import joblib
+
+# Load dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+# Build pipeline
+pipeline = Pipeline([
+    ("scaler", StandardScaler()),
+    ("classifier", LogisticRegression())
+])
+
+# Train model
+pipeline.fit(X_train, y_train)
+
+# Predict
+predictions = pipeline.predict(X_test)
+
+# Evaluate
+print("Accuracy:", pipeline.score(X_test, y_test))
+
+# Save model
+joblib.dump(pipeline, "iris_pipeline.pkl")
+
+# Load model
+loaded_model = joblib.load("iris_pipeline.pkl")
+
+# Predict again
+print(loaded_model.predict(X_test[:5]))
+```
+
+---
+
+# Summary
+
+| Topic | Purpose |
+| --- | --- |
+| `load_iris()` | Load sample dataset |
+| `train_test_split()` | Split train/test data |
+| `fit()` | Train the model |
+| `predict()` | Make predictions |
+| `predict_proba()` | Prediction probabilities |
+| `score()` | Default evaluation metric |
+| `StandardScaler` | Standardize features |
+| `MinMaxScaler` | Normalize features |
+| `LabelEncoder` | Encode target labels |
+| `OneHotEncoder` | Encode categorical features |
+| `Pipeline` | Combine preprocessing \+ model |
+| `accuracy_score()` | Classification evaluation |
+| `cross_val_score()` | Cross-validation |
+| `joblib.dump()` | Save trained model |
+| `joblib.load()` | Load trained model |

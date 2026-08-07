@@ -203,6 +203,12 @@
               "scikit-learn",
               "scikit-learn-code"
             ]
+          },
+          {
+            "group": "Day 19",
+            "pages": [
+              "supervised-model-eval"
+            ]
           }
         ]
       }

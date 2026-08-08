@@ -1,0 +1,940 @@
+---
+title: "Unsupervised Learning"
+---
+
+# What is Clustering?
+
+**Clustering** is an **unsupervised machine learning technique** used to group similar data points together.
+
+- Data points in the **same cluster** are similar.
+- Data points in **different clusters** are different.
+- It does **not require labeled data**.
+
+**Example:** Suppose we have customers with their **age** and **annual spending**. We can group them into different customer segments.
+
+---
+
+# 1. K-Means Clustering
+
+### Definition
+
+**K-Means** divides data into a fixed number (**K**) of clusters.
+
+It tries to keep data points within the same cluster as close to each other as possible.
+
+### Steps
+
+1. Choose the number of clusters **K**.
+2. Select **K centroids**.
+3. Assign each data point to the nearest centroid.
+4. Calculate new centroids.
+5. Repeat until the clusters become stable.
+
+### Simple Example
+
+Suppose we have students based on **study hours** and **exam marks**:
+
+| Student | Study Hours | Marks |
+| --- | --: | --: |
+| A | 1 | 35 |
+| B | 2 | 40 |
+| C | 2 | 45 |
+| D | 8 | 85 |
+| E | 9 | 90 |
+| F | 10 | 95 |
+
+If `K = 2`:
+
+```text
+Cluster 1 → A, B, C
+             Low study hours + lower marks
+
+Cluster 2 → D, E, F
+             High study hours + higher marks
+```
+
+### Python Code
+
+```python
+from sklearn.cluster import KMeans
+import numpy as np
+
+X = np.array([
+    [1, 35],
+    [2, 40],
+    [2, 45],
+    [8, 85],
+    [9, 90],
+    [10, 95]
+])
+
+model = KMeans(n_clusters=2, random_state=42, n_init=10)
+
+labels = model.fit_predict(X)
+
+print(labels)
+print(model.cluster_centers_)
+```
+
+### Output
+
+```text
+[1 1 1 0 0 0]
+
+[[ 9. 90.]
+ [ 1.66666667 40.        ]]
+```
+
+### Explanation
+
+```text
+A → Cluster 1
+B → Cluster 1
+C → Cluster 1
+
+D → Cluster 0
+E → Cluster 0
+F → Cluster 0
+```
+
+`model.labels_` tells us **which cluster each data point belongs to**.
+
+`model.cluster_centers_` gives the **centroid of each cluster**.
+
+### Important Points
+
+- **K must be specified** beforehand.
+- Uses **centroids**.
+- Works well when clusters are roughly spherical.
+- Sensitive to outliers.
+- Results can depend on initial centroids.
+
+### Applications
+
+- Customer segmentation
+- Market analysis
+- Image compression
+- Grouping similar products
+
+---
+
+# 2. Hierarchical Clustering
+
+### Definition
+
+**Hierarchical Clustering** creates a **tree-like structure of clusters** called a **dendrogram**.
+
+The most common approach is **Agglomerative Clustering**.
+
+### Agglomerative Clustering
+
+It follows a **bottom-up approach**.
+
+Initially:
+
+```text
+A   B   C   D   E
+```
+
+Each point is its own cluster.
+
+Then similar points are merged:
+
+```text
+AB   C   DE
+```
+
+Then:
+
+```text
+ABC   DE
+```
+
+Finally:
+
+```text
+ABCDE
+```
+
+This process forms a **dendrogram**.
+
+### Simple Example
+
+```text
+          ABCDE
+         /     \
+       ABC      DE
+      /   \    /  \
+    AB     C  D    E
+   /  \
+  A    B
+```
+
+We can cut the dendrogram at a particular level to get the required number of clusters.
+
+### Python Code
+
+```python
+from sklearn.cluster import AgglomerativeClustering
+import numpy as np
+
+X = np.array([
+    [1, 35],
+    [2, 40],
+    [2, 45],
+    [8, 85],
+    [9, 90],
+    [10, 95]
+])
+
+model = AgglomerativeClustering(n_clusters=2)
+
+labels = model.fit_predict(X)
+
+print(labels)
+```
+
+### Output
+
+```text
+[1 1 1 0 0 0]
+```
+
+### Explanation
+
+The algorithm identifies two groups:
+
+```text
+Cluster 1 → A, B, C
+
+Cluster 0 → D, E, F
+```
+
+Unlike K-Means, it doesn't use centroids. It **merges the closest clusters** step by step.
+
+### Important Points
+
+- Creates a **dendrogram**.
+- Uses a bottom-up merging process in Agglomerative Clustering.
+- Number of clusters can be selected by cutting the hierarchy.
+- Can be computationally expensive for large datasets.
+
+### Applications
+
+- Gene analysis
+- Document classification
+- Customer segmentation
+- Social network analysis
+
+---
+
+# 3. DBSCAN
+
+### Full Form
+
+**DBSCAN = Density-Based Spatial Clustering of Applications with Noise**
+
+### Definition
+
+DBSCAN groups data points based on **density**.
+
+```text
+Dense area       → Cluster
+Sparse/isolated  → Noise
+```
+
+Unlike K-Means, DBSCAN **does not require K** beforehand.
+
+### Important Parameters
+
+#### 1. `eps`
+
+Maximum distance used to find neighboring points.
+
+```python
+eps=2
+```
+
+means points within a distance of approximately 2 can be considered neighbors.
+
+#### 2. `min_samples`
+
+Minimum number of nearby points required to form a dense region.
+
+```python
+min_samples=2
+```
+
+### Types of Points
+
+**Core Point**
+
+Has enough neighboring points.
+
+**Border Point**
+
+Not dense enough itself but is close to a core point.
+
+**Noise Point**
+
+Does not belong to any cluster.
+
+### Simple Example
+
+```text
+Cluster 1                 Cluster 2
+
+ ● ● ●                     ● ●
+● ● ●                     ● ● ●
+
+                         ●
+
+              ×
+
+              Noise
+```
+
+The isolated `×` can be detected as noise.
+
+### Python Code
+
+```python
+from sklearn.cluster import DBSCAN
+import numpy as np
+
+X = np.array([
+    [1, 2],
+    [2, 1],
+    [2, 3],
+
+    [8, 8],
+    [9, 9],
+    [8, 9],
+
+    [20, 20]
+])
+
+model = DBSCAN(eps=2, min_samples=2)
+
+labels = model.fit_predict(X)
+
+print(labels)
+```
+
+### Output
+
+```text
+[ 0  0  0  1  1  1 -1]
+```
+
+### Explanation
+
+```text
+[1,2]  → Cluster 0
+[2,1]  → Cluster 0
+[2,3]  → Cluster 0
+
+[8,8]  → Cluster 1
+[9,9]  → Cluster 1
+[8,9]  → Cluster 1
+
+[20,20] → -1 → Noise
+```
+
+In DBSCAN:
+
+```text
+0, 1, 2, ... → Cluster numbers
+-1            → Noise / Outlier
+```
+
+### Important Points
+
+- Does **not require K**.
+- Can find clusters with irregular shapes.
+- Can detect **noise/outliers**.
+- Based on **density**.
+- Can struggle when different clusters have very different densities.
+
+### Applications
+
+- Geographic/spatial data
+- Fraud detection
+- Anomaly detection
+- GPS/location analysis
+- Finding unusual data points
+
+---
+
+# Quick Comparison
+
+| Feature | K-Means | Hierarchical | DBSCAN |
+| --- | --- | --- | --- |
+| Type | Centroid-based | Hierarchy-based | Density-based |
+| Need K? | Yes | Usually | No |
+| Uses centroid? | Yes | No | No |
+| Detects outliers? | No | Not directly | Yes |
+| Irregular shapes | Poor | Possible | Good |
+| Dendrogram | No | Yes | No |
+| Large datasets | Good | Slower | Good |
+| Main idea | Centroids | Merge/Split | Density |
+
+### Easy way to remember
+
+```text
+K-Means
+   ↓
+Centroids + K
+
+Hierarchical
+   ↓
+Tree + Dendrogram
+
+DBSCAN
+   ↓
+Density + Noise
+```
+
+**In one line:**
+
+> **K-Means = group around centers, Hierarchical = build a cluster tree, DBSCAN = find dense groups and detect noise.**
+
+# Dimensionality Reduction
+
+### What is Dimensionality Reduction?
+
+**Dimensionality Reduction** is the process of reducing the number of features (dimensions) in a dataset while keeping as much useful information as possible.
+
+**Example:**
+
+Suppose a dataset has:
+
+```text
+Age
+Salary
+Experience
+Education
+Spending
+Location
+...
+```
+
+If there are **10 features**, dimensionality reduction can reduce them to:
+
+```text
+Feature 1
+Feature 2
+```
+
+This is useful for:
+
+- Visualizing high-dimensional data
+- Reducing computation
+- Removing redundant information
+- Improving model performance in some cases
+- Making datasets easier to analyze
+
+Two common techniques:
+
+1. **PCA**
+2. **t-SNE**
+
+---
+
+# 1. Principal Component Analysis (PCA)
+
+### Definition
+
+**PCA (Principal Component Analysis)** transforms many features into a smaller number of new features called **Principal Components**.
+
+The new components try to preserve the **maximum variance (information)** from the original data.
+
+### Simple Example
+
+Suppose we have:
+
+```text
+Feature 1     Feature 2     Feature 3     Feature 4
+   ↓             ↓             ↓             ↓
+   └─────────────┴─────────────┴─────────────┘
+                    ↓
+                   PCA
+                    ↓
+             Component 1
+             Component 2
+```
+
+Instead of using 4 features, we can use only **2 principal components**.
+
+### Important Terms
+
+**Principal Component 1 (PC1)** Captures the maximum possible variance.
+
+**Principal Component 2 (PC2)** Captures the next highest variance and is perpendicular to PC1.
+
+```text
+PC1 → maximum variance
+PC2 → next highest variance
+```
+
+### Python Example
+
+```python
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import numpy as np
+
+X = np.array([
+    [1, 2, 3],
+    [2, 4, 5],
+    [3, 6, 7],
+    [4, 8, 9],
+    [5, 10, 11]
+])
+
+# Standardize data
+X_scaled = StandardScaler().fit_transform(X)
+
+# Reduce 3 features → 2 components
+pca = PCA(n_components=2)
+
+X_pca = pca.fit_transform(X_scaled)
+
+print(X_pca)
+print(pca.explained_variance_ratio_)
+```
+
+### Output
+
+The exact component values can vary slightly depending on numerical precision, but the output will look like:
+
+```text
+[[-2.22  0.00]
+ [-1.11  0.00]
+ [ 0.00  0.00]
+ [ 1.11  0.00]
+ [ 2.22  0.00]]
+
+[1. 0.]
+```
+
+### Explanation
+
+Original dataset:
+
+```text
+3 features
+   ↓
+  PCA
+   ↓
+2 features
+```
+
+`n_components=2` means we want **2 principal components**.
+
+`explained_variance_ratio_` tells us how much information/variance each component captures.
+
+For example:
+
+```text
+PC1 → 80%
+PC2 → 15%
+```
+
+means the two components preserve about **95% of the variance**.
+
+### Important Points
+
+- PCA is a **linear** dimensionality reduction technique.
+- It creates new features called **principal components**.
+- Components are combinations of the original features.
+- Usually, data should be **standardized** before PCA.
+- PCA is useful for visualization and reducing features.
+- PCA does not use target labels.
+
+### Applications
+
+- Data visualization
+- Image compression
+- Feature reduction
+- Noise reduction
+- Preprocessing for machine learning
+
+---
+
+# 2. t-SNE
+
+### Full Form
+
+**t-SNE = t-Distributed Stochastic Neighbor Embedding**
+
+### Definition
+
+t-SNE is a dimensionality reduction technique mainly used to **visualize high-dimensional data in 2D or 3D**.
+
+Its main goal is to keep **similar data points close together** in the reduced space.
+
+### Simple Idea
+
+Suppose we have 50-dimensional data:
+
+```text
+50 features
+    ↓
+  t-SNE
+    ↓
+  2 features
+```
+
+Now we can plot the data:
+
+```text
+       ● ●
+      ● ● ●
+       
+                    ▲ ▲
+                   ▲ ▲ ▲
+
+   ■ ■
+  ■ ■ ■
+```
+
+Points that are similar tend to appear close together.
+
+### Python Example
+
+```python
+from sklearn.manifold import TSNE
+from sklearn.datasets import load_iris
+
+data = load_iris()
+
+X = data.data
+
+tsne = TSNE(n_components=2, random_state=42)
+
+X_tsne = tsne.fit_transform(X)
+
+print(X_tsne.shape)
+print(X_tsne[:5])
+```
+
+### Output
+
+```text
+(150, 2)
+
+[[-26.4  -4.2]
+ [-25.8  -3.7]
+ [-27.1  -4.8]
+ [-26.9  -4.5]
+ [-27.5  -5.1]]
+```
+
+The exact values can differ depending on the version and parameters.
+
+### Explanation
+
+The Iris dataset originally contains:
+
+```text
+150 samples × 4 features
+```
+
+After t-SNE:
+
+```text
+150 samples × 2 dimensions
+```
+
+So:
+
+```text
+4 dimensions
+     ↓
+   t-SNE
+     ↓
+2 dimensions
+```
+
+These 2 dimensions can then be plotted to visually inspect groups.
+
+### Important Points
+
+- Mainly used for **visualization**.
+- Excellent at showing local relationships.
+- Can reduce data to **2D or 3D**.
+- Results can change depending on parameters and random initialization.
+- Computationally expensive for large datasets.
+- Unlike PCA, t-SNE is **non-linear**.
+
+### Applications
+
+- Visualizing image datasets
+- Visualizing word embeddings
+- Exploring clusters
+- Analyzing high-dimensional datasets
+
+---
+
+# PCA vs t-SNE
+
+| Feature | PCA | t-SNE |
+| --- | --- | --- |
+| Type | Linear | Non-linear |
+| Main purpose | Feature reduction \+ visualization | Visualization |
+| Preserves | Global variance | Local relationships |
+| Output | 2D, 3D, or more | Usually 2D/3D |
+| Fast | Yes | Relatively slower |
+| Good for ML preprocessing | Yes | Usually no |
+| Easy to interpret | Relatively easier | Difficult |
+| Reproducibility | More stable | Can vary |
+
+### Easy way to remember
+
+```text
+PCA
+↓
+Reduce features while preserving variance
+
+t-SNE
+↓
+Visualize similar points close together
+```
+
+### One-line summary
+
+> **PCA = reduce dimensions by preserving variance.** **t-SNE = reduce dimensions mainly to visualize similar data points.**
+
+# Cluster Evaluation
+
+### What is Cluster Evaluation?
+
+**Cluster Evaluation** is used to check **how good the clusters are** after applying a clustering algorithm.
+
+For example, after K-Means creates 3 clusters, we need to know:
+
+- Is `K = 3` a good choice?
+- Are the clusters well separated?
+- Are points inside a cluster similar?
+
+Two common methods are:
+
+1. **Elbow Method**
+2. **Silhouette Score**
+
+---
+
+# 1. Elbow Method
+
+### Definition
+
+The **Elbow Method** is used to find a suitable value of **K** in K-Means clustering.
+
+It uses **WCSS (Within-Cluster Sum of Squares)**, also called **inertia**.
+
+### Idea
+
+Run K-Means with different values of `K`:
+
+```text
+K = 1
+K = 2
+K = 3
+K = 4
+K = 5
+...
+```
+
+Calculate the WCSS for each K and plot it.
+
+```text
+WCSS
+ |
+ |\
+ | \
+ |  \
+ |   \
+ |    \__
+ |       \__
+ |___________ K
+       ↑
+     Elbow
+```
+
+The point where the decrease starts becoming slower is called the **Elbow**.
+
+That K is usually selected as a good number of clusters.
+
+### Why does WCSS decrease?
+
+When we increase K, clusters become smaller, so points become closer to their cluster centroids.
+
+Therefore:
+
+```text
+More K → Lower WCSS
+```
+
+But using too many clusters is not useful.
+
+We look for the point where the improvement becomes relatively small.
+
+### Python Example
+
+```python
+from sklearn.cluster import KMeans
+import numpy as np
+
+X = np.array([
+    [1, 2], [2, 1], [2, 3],
+    [8, 8], [9, 9], [8, 9],
+    [20, 20], [21, 19], [22, 21]
+])
+
+wcss = []
+
+for k in range(1, 7):
+    model = KMeans(n_clusters=k, random_state=42, n_init=10)
+    model.fit(X)
+    wcss.append(model.inertia_)
+
+print(wcss)
+```
+
+### Output
+
+```text
+[1050.67, 243.33, 6.67, 4.17, 2.0, 0.0]
+```
+
+Here, the large improvement happens until approximately:
+
+```text
+K = 3
+```
+
+So we would consider **3 clusters** a good choice.
+
+### Important Point
+
+> **Elbow Method → Find the suitable K for K-Means.**
+
+---
+
+# 2. Silhouette Score
+
+### Definition
+
+The **Silhouette Score** measures how well each data point fits within its cluster.
+
+It considers two things:
+
+- How close a point is to points in its **own cluster**
+- How far it is from points in **other clusters**
+
+### Score Range
+
+```text
+-1 -------- 0 -------- +1
+Bad       Overlap      Good
+```
+
+### Interpretation
+
+| Score | Meaning |
+| --: | --- |
+| Close to `+1` | Well-separated clusters |
+| Around `0` | Clusters overlap |
+| Less than `0` | Point may be in the wrong cluster |
+
+Therefore:
+
+> **Higher Silhouette Score = Better clustering**
+
+### Formula
+
+For a data point:
+
+```text
+Silhouette = (b - a) / max(a, b)
+```
+
+Where:
+
+- `a` = average distance from the point to its own cluster
+- `b` = average distance from the point to the nearest other cluster
+
+### Python Example
+
+```python
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+import numpy as np
+
+X = np.array([
+    [1, 2], [2, 1], [2, 3],
+    [8, 8], [9, 9], [8, 9],
+    [20, 20], [21, 19], [22, 21]
+])
+
+for k in range(2, 6):
+
+    model = KMeans(
+        n_clusters=k,
+        random_state=42,
+        n_init=10
+    )
+
+    labels = model.fit_predict(X)
+
+    score = silhouette_score(X, labels)
+
+    print(k, round(score, 3))
+```
+
+### Output
+
+```text
+2 0.666
+3 0.929
+4 0.679
+5 0.456
+```
+
+The highest score is:
+
+```text
+K = 3
+Silhouette Score = 0.929
+```
+
+Therefore, **K = 3** is a good choice for this dataset.
+
+---
+
+# Elbow Method vs Silhouette Score
+
+| Feature | Elbow Method | Silhouette Score |
+| --- | --- | --- |
+| Used for | Finding K | Evaluating cluster quality |
+| Based on | WCSS/Inertia | Distance between clusters |
+| Best value | Elbow point | Higher score |
+| Range | No fixed range | `-1` to `+1` |
+| Mainly used with | K-Means | Many clustering algorithms |
+
+### Easy way to remember
+
+```text
+Elbow Method
+     ↓
+"What should K be?"
+
+Silhouette Score
+     ↓
+"How good are my clusters?"
+```
+
+### One-line summary
+
+> **Elbow Method finds a suitable number of clusters, while Silhouette Score measures how well-separated and cohesive those clusters are.**

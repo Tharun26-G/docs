@@ -209,6 +209,14 @@
             "pages": [
               "supervised-model-eval"
             ]
+          },
+          {
+            "group": "Day 20",
+            "pages": [
+              "unsupervised-learning",
+              "Feature-engineering",
+              "untitled-page-2"
+            ]
           }
         ]
       }

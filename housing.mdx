@@ -1,0 +1,1392 @@
+---
+title: "Mini Poject"
+---
+
+# California Housing - End-to-End Machine Learning Pipeline
+
+## Project Overview
+
+This project demonstrates a complete **machine learning workflow for tabular regression** using the California Housing dataset.
+
+### What we will build
+
+```text
+Dataset
+   ↓
+Data Exploration
+   ↓
+Feature Engineering
+   ↓
+Train/Test Split
+   ↓
+Preprocessing Pipeline
+   ↓
+Multiple Regression Models
+   ↓
+Model Comparison
+   ↓
+Hyperparameter Tuning
+   ↓
+Final Evaluation
+   ↓
+Evaluation Plots
+   ↓
+Save Model
+```
+
+### Technologies
+
+- Python
+- NumPy
+- Pandas
+- Matplotlib
+- Scikit-learn
+- Joblib
+- Jupyter Notebook
+
+---
+
+# Step 1 — Import Libraries
+
+### Purpose
+
+Import all libraries required for data processing, visualization, machine learning, evaluation, and model persistence.
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.datasets import fetch_california_housing
+
+from sklearn.model_selection import train_test_split, GridSearchCV
+
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+
+from sklearn.base import BaseEstimator, TransformerMixin
+
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import (
+    RandomForestRegressor,
+    GradientBoostingRegressor
+)
+
+from sklearn.metrics import (
+    mean_absolute_error,
+    mean_squared_error,
+    r2_score
+)
+
+import joblib
+```
+
+### Key libraries
+
+| Library | Purpose |
+| --- | --- |
+| NumPy | Numerical operations |
+| Pandas | Data manipulation |
+| Matplotlib | Visualization |
+| Scikit-learn | Machine learning |
+| Joblib | Saving/loading models |
+
+---
+
+# Step 2 — Load California Housing Dataset
+
+### Purpose
+
+Load the California Housing dataset provided by scikit-learn.
+
+```python
+housing = fetch_california_housing(as_frame=True)
+
+df = housing.frame
+
+print("Dataset shape:", df.shape)
+```
+
+### Expected output
+
+```text
+Dataset shape: (20640, 9)
+```
+
+The dataset contains:
+
+- 20,640 observations
+- 8 input features
+- 1 target variable
+
+---
+
+# Step 3 — View the Dataset
+
+### Purpose
+
+Inspect the first few rows to understand the structure of the dataset.
+
+```python
+df.head()
+```
+
+### Important columns
+
+| Column | Description |
+| --- | --- |
+| `MedInc` | Median income |
+| `HouseAge` | Median house age |
+| `AveRooms` | Average rooms |
+| `AveBedrms` | Average bedrooms |
+| `Population` | Population |
+| `AveOccup` | Average occupancy |
+| `Latitude` | Geographic latitude |
+| `Longitude` | Geographic longitude |
+| `MedHouseVal` | Target house value |
+
+---
+
+# Step 4 — Inspect Dataset Information
+
+### Purpose
+
+Check data types, number of entries, and memory usage.
+
+```python
+df.info()
+```
+
+### Why?
+
+Before building a model, we need to know:
+
+```text
+Rows
+Columns
+Data types
+Missing values
+```
+
+---
+
+# Step 5 — Statistical Summary
+
+### Purpose
+
+Understand the distribution of numerical features.
+
+```python
+df.describe()
+```
+
+This provides:
+
+- Mean
+- Standard deviation
+- Minimum
+- 25th percentile
+- Median
+- 75th percentile
+- Maximum
+
+---
+
+# Step 6 — Check Missing Values
+
+### Purpose
+
+Identify missing values before preprocessing.
+
+```python
+print(df.isnull().sum())
+```
+
+If a column contains missing values, our pipeline will handle them using:
+
+```python
+SimpleImputer(strategy="median")
+```
+
+---
+
+# Step 7 — Separate Features and Target
+
+### Purpose
+
+Separate input variables from the value we want to predict.
+
+```python
+X = df.drop("MedHouseVal", axis=1)
+
+y = df["MedHouseVal"]
+
+print("Features shape:", X.shape)
+print("Target shape:", y.shape)
+```
+
+### Concept
+
+```text
+X → Features / Inputs
+y → Target / Output
+```
+
+For this project:
+
+```text
+X = 8 features
+y = MedHouseVal
+```
+
+---
+
+# Step 8 — Visualize Target Distribution
+
+### Purpose
+
+Understand how the target variable is distributed.
+
+```python
+plt.figure(figsize=(8, 5))
+
+plt.hist(y, bins=50)
+
+plt.xlabel("Median House Value")
+plt.ylabel("Frequency")
+plt.title("Distribution of House Values")
+
+plt.show()
+```
+
+### Why?
+
+Visualization helps identify:
+
+- Skewness
+- Extreme values
+- Distribution patterns
+
+---
+
+# Step 9 — Create Feature Engineering Transformer
+
+### Purpose
+
+Create additional features that may help the model learn relationships in the data.
+
+We create:
+
+```text
+RoomsPerOccupant
+BedroomsPerRoom
+PopulationPerRoom
+```
+
+```python
+class FeatureEngineering(BaseEstimator, TransformerMixin):
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        X = X.copy()
+
+        X["RoomsPerOccupant"] = (
+            X["AveRooms"] / X["AveOccup"]
+        )
+
+        X["BedroomsPerRoom"] = (
+            X["AveBedrms"] / X["AveRooms"]
+        )
+
+        X["PopulationPerRoom"] = (
+            X["Population"] / X["AveRooms"]
+        )
+
+        return X
+```
+
+### Why use a transformer?
+
+Instead of manually modifying data, feature engineering becomes part of the ML pipeline.
+
+```text
+Raw Data
+   ↓
+Feature Engineering
+   ↓
+Preprocessing
+   ↓
+Model
+```
+
+---
+
+# Step 10 — Split Training and Testing Data
+
+### Purpose
+
+Separate data used for learning from data used for final evaluation.
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+print("Training data:", X_train.shape)
+print("Testing data:", X_test.shape)
+```
+
+### Split
+
+```text
+80% → Training
+20% → Testing
+```
+
+`random_state=42` makes the split reproducible.
+
+---
+
+# Step 11 — Apply Feature Engineering Temporarily
+
+### Purpose
+
+Determine which columns exist after feature engineering.
+
+```python
+feature_engineering = FeatureEngineering()
+
+X_train_engineered = feature_engineering.fit_transform(
+    X_train
+)
+
+print(X_train_engineered.columns.tolist())
+```
+
+The original 8 features become 11 features.
+
+---
+
+# Step 12 — Identify Numerical Features
+
+### Purpose
+
+Tell the preprocessing pipeline which columns require numerical preprocessing.
+
+```python
+numeric_features = X_train_engineered.columns.tolist()
+
+print(numeric_features)
+```
+
+These include:
+
+```text
+MedInc
+HouseAge
+AveRooms
+AveBedrms
+Population
+AveOccup
+Latitude
+Longitude
+RoomsPerOccupant
+BedroomsPerRoom
+PopulationPerRoom
+```
+
+---
+
+# Step 13 — Create Numerical Preprocessing Pipeline
+
+### Purpose
+
+Build reusable preprocessing for numerical data.
+
+```python
+numeric_pipeline = Pipeline([
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", StandardScaler())
+])
+```
+
+### Pipeline
+
+```text
+Missing Values
+      ↓
+Median Imputation
+      ↓
+StandardScaler
+```
+
+---
+
+# Step 14 — Create ColumnTransformer
+
+### Purpose
+
+Apply the numerical preprocessing pipeline to the numerical columns.
+
+```python
+preprocessor = ColumnTransformer([
+    (
+        "numeric",
+        numeric_pipeline,
+        numeric_features
+    )
+])
+```
+
+`ColumnTransformer` is useful when different groups of features need different preprocessing.
+
+---
+
+# Step 15 — Build Linear Regression Pipeline
+
+### Purpose
+
+Create the first regression model.
+
+```python
+linear_pipeline = Pipeline([
+    ("feature_engineering", FeatureEngineering()),
+    ("preprocessing", preprocessor),
+    ("model", LinearRegression())
+])
+```
+
+### Pipeline structure
+
+```text
+Raw Data
+   ↓
+Feature Engineering
+   ↓
+Preprocessing
+   ↓
+Linear Regression
+```
+
+---
+
+# Step 16 — Train Linear Regression
+
+### Purpose
+
+Fit the Linear Regression model using training data.
+
+```python
+linear_pipeline.fit(
+    X_train,
+    y_train
+)
+```
+
+The model learns the relationship between:
+
+```text
+Housing Features → House Value
+```
+
+---
+
+# Step 17 — Generate Linear Regression Predictions
+
+### Purpose
+
+Use the trained model to predict values for unseen test data.
+
+```python
+linear_predictions = linear_pipeline.predict(
+    X_test
+)
+```
+
+These predictions will be compared against:
+
+```python
+y_test
+```
+
+---
+
+# Step 18 — Evaluate Linear Regression
+
+### Purpose
+
+Measure the performance of Linear Regression.
+
+```python
+linear_mae = mean_absolute_error(
+    y_test,
+    linear_predictions
+)
+
+linear_rmse = np.sqrt(
+    mean_squared_error(
+        y_test,
+        linear_predictions
+    )
+)
+
+linear_r2 = r2_score(
+    y_test,
+    linear_predictions
+)
+
+print("Linear Regression")
+print("-----------------")
+print("MAE :", linear_mae)
+print("RMSE:", linear_rmse)
+print("R²  :", linear_r2)
+```
+
+### Metrics
+
+| Metric | Better |
+| --- | --- |
+| MAE | Lower |
+| RMSE | Lower |
+| R² | Higher |
+
+---
+
+# Step 19 — Create Random Forest Pipeline
+
+### Purpose
+
+Train a nonlinear ensemble model.
+
+```python
+rf_pipeline = Pipeline([
+    ("feature_engineering", FeatureEngineering()),
+    ("preprocessing", preprocessor),
+    (
+        "model",
+        RandomForestRegressor(
+            n_estimators=100,
+            random_state=42,
+            n_jobs=-1
+        )
+    )
+])
+```
+
+### Why Random Forest?
+
+Random Forest can capture nonlinear relationships that Linear Regression may miss.
+
+---
+
+# Step 20 — Train Random Forest
+
+```python
+rf_pipeline.fit(
+    X_train,
+    y_train
+)
+```
+
+The model creates multiple decision trees and combines their predictions.
+
+---
+
+# Step 21 — Generate Random Forest Predictions
+
+```python
+rf_predictions = rf_pipeline.predict(
+    X_test
+)
+```
+
+The model predicts house values for the test set.
+
+---
+
+# Step 22 — Evaluate Random Forest
+
+```python
+rf_mae = mean_absolute_error(
+    y_test,
+    rf_predictions
+)
+
+rf_rmse = np.sqrt(
+    mean_squared_error(
+        y_test,
+        rf_predictions
+    )
+)
+
+rf_r2 = r2_score(
+    y_test,
+    rf_predictions
+)
+
+print("Random Forest")
+print("-------------")
+print("MAE :", rf_mae)
+print("RMSE:", rf_rmse)
+print("R²  :", rf_r2)
+```
+
+---
+
+# Step 23 — Create Gradient Boosting Pipeline
+
+### Purpose
+
+Add another powerful regression algorithm for comparison.
+
+```python
+gradient_pipeline = Pipeline([
+    ("feature_engineering", FeatureEngineering()),
+    ("preprocessing", preprocessor),
+    (
+        "model",
+        GradientBoostingRegressor(
+            random_state=42
+        )
+    )
+])
+```
+
+Gradient Boosting builds models sequentially, with later models focusing on previous errors.
+
+---
+
+# Step 24 — Train Gradient Boosting
+
+```python
+gradient_pipeline.fit(
+    X_train,
+    y_train
+)
+```
+
+---
+
+# Step 25 — Generate Gradient Boosting Predictions
+
+```python
+gradient_predictions = gradient_pipeline.predict(
+    X_test
+)
+```
+
+---
+
+# Step 26 — Evaluate Gradient Boosting
+
+```python
+gradient_mae = mean_absolute_error(
+    y_test,
+    gradient_predictions
+)
+
+gradient_rmse = np.sqrt(
+    mean_squared_error(
+        y_test,
+        gradient_predictions
+    )
+)
+
+gradient_r2 = r2_score(
+    y_test,
+    gradient_predictions
+)
+
+print("Gradient Boosting")
+print("-----------------")
+print("MAE :", gradient_mae)
+print("RMSE:", gradient_rmse)
+print("R²  :", gradient_r2)
+```
+
+---
+
+# Step 27 — Create Model Comparison Table
+
+### Purpose
+
+Compare all three models in one table.
+
+```python
+results = pd.DataFrame({
+    "Model": [
+        "Linear Regression",
+        "Random Forest",
+        "Gradient Boosting"
+    ],
+    "MAE": [
+        linear_mae,
+        rf_mae,
+        gradient_mae
+    ],
+    "RMSE": [
+        linear_rmse,
+        rf_rmse,
+        gradient_rmse
+    ],
+    "R2": [
+        linear_r2,
+        rf_r2,
+        gradient_r2
+    ]
+})
+
+results
+```
+
+### Decision rule
+
+```text
+MAE  → Lower is better
+RMSE → Lower is better
+R²   → Higher is better
+```
+
+---
+
+# Step 28 — Select Candidate for Tuning
+
+### Purpose
+
+Choose the strongest model based on the comparison table.
+
+For this project, we will tune:
+
+```text
+Random Forest
+```
+
+Why?
+
+Random Forest typically provides strong performance on tabular data and gives us several useful hyperparameters to optimize.
+
+---
+
+# Step 29 — Define Hyperparameter Grid
+
+### Purpose
+
+Define combinations of Random Forest parameters that GridSearchCV will test.
+
+```python
+param_grid = {
+    "model__n_estimators": [
+        100,
+        200
+    ],
+    "model__max_depth": [
+        10,
+        20,
+        None
+    ],
+    "model__min_samples_split": [
+        2,
+        5
+    ]
+}
+```
+
+### Important
+
+Because the model is inside a pipeline:
+
+```text
+model__parameter
+```
+
+is used.
+
+For example:
+
+```text
+model__n_estimators
+```
+
+means:
+
+```text
+Pipeline
+   ↓
+model
+   ↓
+n_estimators
+```
+
+---
+
+# Step 30 — Create GridSearchCV
+
+### Purpose
+
+Automatically search through different hyperparameter combinations.
+
+```python
+grid_search = GridSearchCV(
+    estimator=rf_pipeline,
+    param_grid=param_grid,
+    cv=5,
+    scoring="neg_root_mean_squared_error",
+    n_jobs=-1,
+    verbose=1
+)
+```
+
+### Configuration
+
+| Parameter | Meaning |
+| --- | --- |
+| `estimator` | Pipeline being tuned |
+| `param_grid` | Parameters to test |
+| `cv=5` | 5-fold cross-validation |
+| `scoring` | RMSE-based scoring |
+| `n_jobs=-1` | Use available CPU cores |
+| `verbose=1` | Show progress |
+
+---
+
+# Step 31 — Run GridSearchCV
+
+### Purpose
+
+Train and evaluate all parameter combinations.
+
+```python
+grid_search.fit(
+    X_train,
+    y_train
+)
+```
+
+GridSearchCV performs:
+
+```text
+Parameter Combination
+        ↓
+5-Fold Cross Validation
+        ↓
+Calculate Score
+        ↓
+Compare Scores
+        ↓
+Select Best Combination
+```
+
+---
+
+# Step 32 — Get Best Parameters
+
+### Purpose
+
+Find the hyperparameters that performed best during cross-validation.
+
+```python
+print("Best Parameters:")
+print(grid_search.best_params_)
+```
+
+Example:
+
+```text
+{
+    'model__max_depth': 20,
+    'model__min_samples_split': 2,
+    'model__n_estimators': 200
+}
+```
+
+The actual result depends on the run.
+
+---
+
+# Step 33 — Get Best Cross-Validation Score
+
+```python
+print(
+    "Best CV RMSE:",
+    -grid_search.best_score_
+)
+```
+
+The negative sign is required because scikit-learn represents loss/error scoring as negative values when using `neg_root_mean_squared_error`.
+
+---
+
+# Step 34 — Extract Best Model
+
+### Purpose
+
+Retrieve the complete tuned pipeline.
+
+```python
+best_model = grid_search.best_estimator_
+
+print(best_model)
+```
+
+The resulting object includes:
+
+```text
+Feature Engineering
+        ↓
+Preprocessing
+        ↓
+Tuned Random Forest
+```
+
+---
+
+# Step 35 — Generate Final Predictions
+
+### Purpose
+
+Use the optimized model on the test dataset.
+
+```python
+final_predictions = best_model.predict(
+    X_test
+)
+```
+
+The test set has not been used to select the hyperparameters, making it suitable for final evaluation.
+
+---
+
+# Step 36 — Calculate Final MAE
+
+```python
+final_mae = mean_absolute_error(
+    y_test,
+    final_predictions
+)
+
+print("Final MAE:", final_mae)
+```
+
+### Interpretation
+
+MAE tells us the average absolute prediction error.
+
+Lower MAE is better.
+
+---
+
+# Step 37 — Calculate Final RMSE and R²
+
+```python
+final_rmse = np.sqrt(
+    mean_squared_error(
+        y_test,
+        final_predictions
+    )
+)
+
+final_r2 = r2_score(
+    y_test,
+    final_predictions
+)
+
+print("Final RMSE:", final_rmse)
+print("Final R²:", final_r2)
+```
+
+---
+
+# Step 38 — Final Evaluation Summary
+
+### Purpose
+
+Display all final metrics together.
+
+```python
+print("Final Model Performance")
+print("=======================")
+print(f"MAE : {final_mae:.4f}")
+print(f"RMSE: {final_rmse:.4f}")
+print(f"R²  : {final_r2:.4f}")
+```
+
+### Interpretation
+
+```text
+MAE  → Average absolute error
+RMSE → Penalizes larger errors
+R²   → Explained variance
+```
+
+---
+
+# Step 39 — Actual vs Predicted Plot
+
+### Purpose
+
+Visually compare real house values against predictions.
+
+```python
+plt.figure(figsize=(8, 6))
+
+plt.scatter(
+    y_test,
+    final_predictions,
+    alpha=0.4
+)
+
+plt.plot(
+    [y_test.min(), y_test.max()],
+    [y_test.min(), y_test.max()],
+    linestyle="--"
+)
+
+plt.xlabel("Actual House Value")
+plt.ylabel("Predicted House Value")
+plt.title("Actual vs Predicted House Values")
+
+plt.tight_layout()
+
+plt.savefig(
+    "actual_vs_predicted.png",
+    dpi=300
+)
+
+plt.show()
+```
+
+### Interpretation
+
+The closer the points are to the diagonal line, the better the predictions.
+
+---
+
+# Step 40 — Calculate Residuals
+
+### Purpose
+
+Calculate prediction errors.
+
+```python
+residuals = y_test - final_predictions
+
+print(residuals.head())
+```
+
+Formula:
+
+```text
+Residual = Actual - Predicted
+```
+
+---
+
+# Step 41 — Residual Plot
+
+### Purpose
+
+Check whether prediction errors have an obvious pattern.
+
+```python
+plt.figure(figsize=(8, 6))
+
+plt.scatter(
+    final_predictions,
+    residuals,
+    alpha=0.4
+)
+
+plt.axhline(
+    0,
+    linestyle="--"
+)
+
+plt.xlabel("Predicted House Value")
+plt.ylabel("Residual")
+plt.title("Residual Plot")
+
+plt.tight_layout()
+
+plt.savefig(
+    "residual_plot.png",
+    dpi=300
+)
+
+plt.show()
+```
+
+### Good residual plot
+
+Ideally:
+
+```text
+Residual
+   |
+ + | .   .    .
+ 0 |----------------
+ - |   .   .    .
+   |
+   +----------------
+       Predicted
+```
+
+Residuals should be reasonably scattered around zero.
+
+---
+
+# Step 42 — Model RMSE Comparison Plot
+
+### Purpose
+
+Visually compare model errors.
+
+```python
+plt.figure(figsize=(9, 6))
+
+plt.bar(
+    results["Model"],
+    results["RMSE"]
+)
+
+plt.xlabel("Model")
+plt.ylabel("RMSE")
+plt.title("Model Comparison - RMSE")
+
+plt.xticks(rotation=15)
+
+plt.tight_layout()
+
+plt.savefig(
+    "model_comparison_rmse.png",
+    dpi=300
+)
+
+plt.show()
+```
+
+### Interpretation
+
+Lower RMSE indicates better performance.
+
+---
+
+# Step 43 — Model R² Comparison Plot
+
+### Purpose
+
+Compare the explained variance of each model.
+
+```python
+plt.figure(figsize=(9, 6))
+
+plt.bar(
+    results["Model"],
+    results["R2"]
+)
+
+plt.xlabel("Model")
+plt.ylabel("R²")
+plt.title("Model Comparison - R²")
+
+plt.xticks(rotation=15)
+
+plt.tight_layout()
+
+plt.savefig(
+    "model_comparison_r2.png",
+    dpi=300
+)
+
+plt.show()
+```
+
+Higher R² indicates better performance.
+
+---
+
+# Step 44 — Save the Final Model
+
+### Purpose
+
+Save the trained pipeline so it can be reused without retraining.
+
+```python
+joblib.dump(
+    best_model,
+    "housing_model.pkl"
+)
+
+print("Model saved successfully.")
+```
+
+This creates:
+
+```text
+housing_model.pkl
+```
+
+Because feature engineering and preprocessing are inside the pipeline, the saved model contains the complete workflow.
+
+---
+
+# Step 45 — Load the Saved Model
+
+### Purpose
+
+Verify that the saved model can be loaded successfully.
+
+```python
+loaded_model = joblib.load(
+    "housing_model.pkl"
+)
+
+print("Model loaded successfully.")
+```
+
+---
+
+# Step 46 — Test the Loaded Model
+
+### Purpose
+
+Make sure the saved model produces predictions correctly.
+
+```python
+loaded_predictions = loaded_model.predict(
+    X_test
+)
+
+loaded_r2 = r2_score(
+    y_test,
+    loaded_predictions
+)
+
+print("Loaded Model R²:", loaded_r2)
+```
+
+The loaded model should produce the same predictions as the original `best_model`.
+
+You can verify:
+
+```python
+print(
+    np.allclose(
+        final_predictions,
+        loaded_predictions
+    )
+)
+```
+
+Expected:
+
+```text
+True
+```
+
+---
+
+# Step 47 — Final Results and Project Summary
+
+### Final metrics table
+
+```python
+final_results = pd.DataFrame({
+    "Metric": [
+        "MAE",
+        "RMSE",
+        "R²"
+    ],
+    "Score": [
+        final_mae,
+        final_rmse,
+        final_r2
+    ]
+})
+
+final_results
+```
+
+### Project conclusion
+
+Add this as a **Markdown cell**:
+
+```markdown
+## Conclusion
+
+This project implemented an end-to-end machine learning workflow for California house value prediction.
+
+### Workflow
+
+1. Loaded the California Housing dataset.
+2. Explored the dataset and checked for missing values.
+3. Created additional features using feature engineering.
+4. Split the data into training and testing sets.
+5. Built preprocessing pipelines using imputation and standardization.
+6. Trained Linear Regression, Random Forest, and Gradient Boosting models.
+7. Compared the models using MAE, RMSE, and R².
+8. Selected Random Forest as the candidate model for tuning.
+9. Used GridSearchCV with 5-fold cross-validation to find better hyperparameters.
+10. Evaluated the final model on the unseen test set.
+11. Created actual-vs-predicted and residual plots.
+12. Saved the complete trained pipeline using Joblib.
+
+### Final Model
+
+The final model is saved as:
+
+`housing_model.pkl`
+
+The saved pipeline contains feature engineering, preprocessing, and the trained regression model, allowing the complete workflow to be reused for future predictions.
+```
+
+## Model Selection
+
+Models were compared using:
+
+| Metric | Goal |
+| --- | --- |
+| MAE | Lower |
+| RMSE | Lower |
+| R² | Higher |
+
+Random Forest was selected for hyperparameter tuning using GridSearchCV.
+
+## Results
+
+| Model | MAE | RMSE | R² |
+| --- | --: | --: | --: |
+| Linear Regression | ... | ... | ... |
+| Random Forest | ... | ... | ... |
+| Gradient Boosting | ... | ... | ... |
+| Tuned Random Forest | ... | ... | ... |
+
+## Project Files
+
+```text
+housing_pipeline.ipynb
+housing_model.pkl
+actual_vs_predicted.png
+residual_plot.png
+model_comparison_rmse.png
+model_comparison_r2.png
+```
+
+## Installation
+
+```bash
+pip install numpy pandas matplotlib scikit-learn joblib
+```
+
+## Run
+
+```bash
+jupyter notebook housing_pipeline.ipynb
+```

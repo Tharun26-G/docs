@@ -1,0 +1,1719 @@
+---
+title: "Neural Network Fundamentals"
+---
+
+## Learning Objectives
+
+By the end of this lesson, you should understand:
+
+- Neurons, weights, and biases
+- Input, hidden, and output layers
+- Activation functions
+  - ReLU
+  - Sigmoid
+  - Softmax
+- Forward propagation
+- Loss functions
+- Backpropagation
+- Gradient descent
+- Learning rate
+- Epochs, batches, and iterations
+- Overfitting and underfitting
+- Basic neural-network implementation in Python
+
+---
+
+# 1. What is a Neural Network?
+
+A **neural network** is a machine-learning model made up of interconnected neurons arranged in layers.
+
+A typical neural network looks like:
+
+```text
+Input Layer
+     ↓
+Hidden Layer 1
+     ↓
+Hidden Layer 2
+     ↓
+Output Layer
+```
+
+Example:
+
+```text
+                 Neural Network
+
+Age ───────────────┐
+Income ────────────┤
+Experience ────────┤──→ Hidden Layers ──→ Prediction
+Education ─────────┘
+```
+
+The network learns by adjusting its **weights and biases** so that its predictions become more accurate.
+
+---
+
+# 2. Artificial Neuron
+
+A neuron receives inputs and performs three main operations:
+
+1. Multiply inputs by weights
+2. Add the bias
+3. Apply an activation function
+
+The mathematical representation is:
+
+$$
+z = w_1x_1 + w_2x_2 + \cdots + w_nx_n + b
+$$
+
+Then:
+
+$$
+a = f(z)
+$$
+
+Where:
+
+| Symbol | Meaning |
+| --- | --- |
+| $$x$$ | Input |
+| $$w$$ | Weight |
+| $$b$$ | Bias |
+| $$z$$ | Weighted sum |
+| $$f$$ | Activation function |
+| $$a$$ | Output |
+
+## Simple Example
+
+```python
+x1 = 2
+x2 = 3
+
+w1 = 0.5
+w2 = 0.2
+
+b = 1
+
+z = (x1 * w1) + (x2 * w2) + b
+
+print(z)
+```
+
+Output:
+
+```text
+2.6
+```
+
+So the neuron first calculates:
+
+```text
+z = 2.6
+```
+
+The activation function then processes `2.6`.
+
+---
+
+# 3. Weights
+
+A **weight controls how strongly an input influences a neuron**.
+
+For example:
+
+```text
+Input       Weight
+
+Income  ──── 0.8 ───┐
+Age     ──── 0.2 ───┤──→ Neuron
+Experience ─ 0.6 ───┘
+```
+
+The network learns these weights during training.
+
+A weight can be:
+
+```text
+Positive → increases contribution
+Negative → decreases contribution
+Near 0   → weak contribution
+```
+
+---
+
+# 4. Bias
+
+A **bias is an additional learnable parameter added to the weighted sum**.
+
+```text
+z = wx + b
+```
+
+Example:
+
+```python
+x = 5
+w = 2
+b = 3
+
+z = (w * x) + b
+
+print(z)
+```
+
+Output:
+
+```text
+13
+```
+
+Without bias:
+
+```text
+z = 2 × 5
+z = 10
+```
+
+With bias:
+
+```text
+z = 2 × 5 + 3
+z = 13
+```
+
+The bias gives the neuron additional flexibility.
+
+---
+
+# 5. Input, Hidden, and Output Layers
+
+A neural network consists of different types of layers.
+
+```text
+Input Layer
+     ↓
+Hidden Layer
+     ↓
+Hidden Layer
+     ↓
+Output Layer
+```
+
+## Input Layer
+
+The input layer receives the features.
+
+For example, a house-price model may have:
+
+```text
+Area
+Bedrooms
+Bathrooms
+Age
+Location
+```
+
+Therefore:
+
+```text
+Number of input features = Number of input neurons
+```
+
+## Hidden Layer
+
+Hidden layers perform learned transformations.
+
+Example:
+
+```text
+Input
+  ↓
+[Neuron] [Neuron] [Neuron]
+  ↓
+[Neuron] [Neuron] [Neuron]
+  ↓
+Output
+```
+
+The neurons in hidden layers usually use activation functions such as ReLU.
+
+## Output Layer
+
+The output layer produces the final prediction.
+
+Examples:
+
+### Regression
+
+```text
+Input → Neural Network → 85.6
+```
+
+### Binary Classification
+
+```text
+Input → Neural Network → 0.92
+```
+
+### Multi-Class Classification
+
+```text
+Input → Neural Network
+
+Class A = 0.10
+Class B = 0.75
+Class C = 0.15
+```
+
+---
+
+# 6. Neural Network Architecture Example
+
+A simple binary-classification network:
+
+```text
+4 Input Features
+       ↓
+Input Layer
+4 neurons
+       ↓
+Hidden Layer
+8 neurons
+ReLU
+       ↓
+Hidden Layer
+4 neurons
+ReLU
+       ↓
+Output Layer
+1 neuron
+Sigmoid
+       ↓
+Probability
+```
+
+In code, this can be represented as:
+
+```python
+Input(4)
+   ↓
+Dense(8, ReLU)
+   ↓
+Dense(4, ReLU)
+   ↓
+Dense(1, Sigmoid)
+```
+
+---
+
+# 7. Activation Functions
+
+Activation functions determine the output of a neuron after the weighted sum.
+
+They introduce **non-linearity** into the neural network.
+
+Without activation functions, multiple linear layers would still behave as one linear transformation.
+
+Important activation functions:
+
+- ReLU
+- Sigmoid
+- Softmax
+
+---
+
+# 8. ReLU
+
+ReLU stands for **Rectified Linear Unit**.
+
+$$
+ReLU(x) = \max(0,x)
+$$
+
+```python
+def relu(x):
+    return max(0, x)
+
+print(relu(-5))
+print(relu(3))
+```
+
+Output:
+
+```text
+0
+3
+```
+
+Examples:
+
+| Input | ReLU |
+| --: | --: |
+| -5 | 0 |
+| -2 | 0 |
+| 0 | 0 |
+| 2 | 2 |
+| 5 | 5 |
+
+ReLU is commonly used in hidden layers.
+
+---
+
+# 9. Implementing ReLU with NumPy
+
+```python
+import numpy as np
+
+x = np.array([-3, -1, 0, 2, 5])
+
+result = np.maximum(0, x)
+
+print(result)
+```
+
+Output:
+
+```text
+[0 0 0 2 5]
+```
+
+---
+
+# 10. Sigmoid
+
+The sigmoid function converts a value into the range `(0, 1)`.
+
+$$
+\sigma(x) = \frac{1}{1 + e^{-x}}
+$$
+
+Python implementation:
+
+```python
+import numpy as np
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+print(sigmoid(0))
+print(sigmoid(2))
+print(sigmoid(-2))
+```
+
+Output:
+
+```text
+0.5
+0.880797
+0.119203
+```
+
+Sigmoid is commonly used in the output layer for **binary classification**.
+
+Example:
+
+```text
+Output = 0.92
+```
+
+can be interpreted as approximately:
+
+```text
+92% probability of class 1
+```
+
+---
+
+# 11. Softmax
+
+Softmax converts multiple scores into probabilities.
+
+$$
+softmax(z_i) =
+\frac{e^{z_i}}
+{\sum_j e^{z_j}}
+$$
+
+Example:
+
+```python
+import numpy as np
+
+def softmax(x):
+    exp_x = np.exp(x - np.max(x))
+    return exp_x / np.sum(exp_x)
+
+scores = np.array([2.0, 4.0, 1.0])
+
+probabilities = softmax(scores)
+
+print(probabilities)
+print(probabilities.sum())
+```
+
+Example output:
+
+```text
+[0.1141952  0.84379473 0.04201007]
+1.0
+```
+
+Therefore:
+
+```text
+Class 0 → 11.4%
+Class 1 → 84.4%
+Class 2 → 4.2%
+```
+
+Prediction:
+
+```text
+Class 1
+```
+
+Softmax is commonly used for **multi-class classification**.
+
+---
+
+# 12. Activation Function Comparison
+
+| Activation | Range | Common Use |
+| --- | --- | --- |
+| ReLU | `[0, ∞)` | Hidden layers |
+| Sigmoid | `(0, 1)` | Binary classification |
+| Softmax | `(0, 1)` | Multi-class classification |
+
+Typical architecture:
+
+```text
+Hidden Layer → ReLU
+
+Binary Output → Sigmoid
+
+Multi-Class Output → Softmax
+```
+
+---
+
+# 13. Forward Propagation
+
+**Forward propagation** is the process of passing input data through the network to produce a prediction.
+
+```text
+Input
+  ↓
+Weighted Sum
+  ↓
+Activation
+  ↓
+Hidden Layer
+  ↓
+Weighted Sum
+  ↓
+Activation
+  ↓
+Output
+  ↓
+Prediction
+```
+
+For a single neuron:
+
+```python
+import numpy as np
+
+x = np.array([2, 3])
+w = np.array([0.5, 0.2])
+b = 1
+
+z = np.dot(x, w) + b
+
+print("Weighted sum:", z)
+```
+
+Output:
+
+```text
+Weighted sum: 2.6
+```
+
+Applying ReLU:
+
+```python
+activation = np.maximum(0, z)
+
+print("Activation:", activation)
+```
+
+Output:
+
+```text
+Activation: 2.6
+```
+
+---
+
+# 14. Forward Propagation Through a Small Network
+
+Consider:
+
+```text
+Input
+  ↓
+Hidden Layer
+  ↓
+Output
+```
+
+Python:
+
+```python
+import numpy as np
+
+# Input
+x = np.array([2.0, 3.0])
+
+# Hidden layer parameters
+W1 = np.array([
+    [0.5, 0.2],
+    [0.4, 0.3]
+])
+
+b1 = np.array([1.0, 1.0])
+
+# Hidden layer
+z1 = np.dot(x, W1) + b1
+
+# ReLU
+a1 = np.maximum(0, z1)
+
+print("Hidden output:", a1)
+```
+
+The hidden output becomes the input to the next layer.
+
+```text
+Input
+  ↓
+W1, b1
+  ↓
+z1
+  ↓
+ReLU
+  ↓
+a1
+```
+
+This process continues until the output layer produces the final prediction.
+
+---
+
+# 15. Loss Function
+
+A loss function measures how different the prediction is from the actual target.
+
+```text
+Actual Value
+     ↓
+   Loss
+     ↑
+Prediction
+```
+
+The goal of training is to **minimize the loss**.
+
+```text
+High Loss
+   ↓
+Training
+   ↓
+Lower Loss
+```
+
+---
+
+# 16. Mean Squared Error
+
+MSE is commonly used for regression.
+
+$$
+MSE =
+\frac{1}{n}
+\sum_{i=1}^{n}
+(y_i-\hat{y}_i)^2
+$$
+
+Where:
+
+```text
+y  = actual value
+ŷ  = predicted value
+n  = number of samples
+```
+
+Python:
+
+```python
+import numpy as np
+
+actual = np.array([100, 200, 300])
+predicted = np.array([90, 210, 280])
+
+mse = np.mean((actual - predicted) ** 2)
+
+print(mse)
+```
+
+Output:
+
+```text
+166.66666666666666
+```
+
+---
+
+# 17. Binary Cross-Entropy
+
+Binary cross-entropy is commonly used for binary classification.
+
+$$
+L =
+-\left[
+y\log(\hat y)
++
+(1-y)\log(1-\hat y)
+\right]
+$$
+
+Python:
+
+```python
+import numpy as np
+
+y = 1
+prediction = 0.9
+
+loss = -(
+    y * np.log(prediction)
+    + (1 - y) * np.log(1 - prediction)
+)
+
+print(loss)
+```
+
+Output:
+
+```text
+0.10536051565782628
+```
+
+A confident correct prediction generally produces a low loss.
+
+---
+
+# 18. Backpropagation
+
+After calculating the loss, the neural network needs to determine:
+
+> Which parameters caused the error?
+
+This is done using **backpropagation**.
+
+The training process becomes:
+
+```text
+Forward Propagation
+        ↓
+Prediction
+        ↓
+Loss
+        ↓
+Backpropagation
+        ↓
+Gradients
+        ↓
+Update Weights
+```
+
+Backpropagation uses the **chain rule** to calculate gradients efficiently.
+
+For a weight:
+
+$$
+\frac{\partial L}{\partial w}
+$$
+
+This represents how the loss changes when the weight changes.
+
+---
+
+# 19. Gradient Descent
+
+Gradient descent is an optimization method used to reduce the loss.
+
+The basic update rule is:
+
+$$
+w_{new}
+=======
+
+## w_{old}
+
+\eta
+\frac{\partial L}{\partial w}
+$$
+
+Where:
+
+```text
+w = weight
+η = learning rate
+∂L/∂w = gradient
+```
+
+The basic idea:
+
+```text
+Calculate Loss
+      ↓
+Calculate Gradient
+      ↓
+Move in direction that reduces Loss
+      ↓
+Update Parameters
+      ↓
+Repeat
+```
+
+---
+
+# 20. Simple Gradient Descent Example
+
+Suppose:
+
+```python
+weight = 5.0
+gradient = 2.0
+learning_rate = 0.1
+
+new_weight = weight - learning_rate * gradient
+
+print(new_weight)
+```
+
+Output:
+
+```text
+4.8
+```
+
+The weight moved from:
+
+```text
+5.0 → 4.8
+```
+
+because the gradient was positive.
+
+---
+
+# 21. Learning Rate
+
+The learning rate determines the size of parameter updates.
+
+```python
+learning_rate = 0.01
+```
+
+### Very small learning rate
+
+```text
+Small updates
+    ↓
+Slow training
+```
+
+### Very large learning rate
+
+```text
+Large updates
+    ↓
+May overshoot
+    ↓
+Training can become unstable
+```
+
+### Good learning rate
+
+```text
+Reasonable updates
+    ↓
+Stable convergence
+```
+
+---
+
+# 22. Epochs
+
+An **epoch** means one complete pass through the training dataset.
+
+Example:
+
+```text
+Dataset = 10,000 samples
+Epochs = 20
+```
+
+The model sees the training dataset 20 times.
+
+```text
+Epoch 1
+Epoch 2
+Epoch 3
+...
+Epoch 20
+```
+
+---
+
+# 23. Batches
+
+A batch is a subset of the training dataset.
+
+Example:
+
+```text
+Dataset = 10,000 samples
+Batch Size = 100
+```
+
+The model processes:
+
+```text
+Batch 1 → 100 samples
+Batch 2 → 100 samples
+Batch 3 → 100 samples
+...
+```
+
+Using batches avoids processing the entire dataset at every parameter update.
+
+---
+
+# 24. Iterations
+
+An iteration is generally **one parameter update using one batch**.
+
+Example:
+
+```text
+Dataset = 10,000
+Batch Size = 100
+```
+
+Iterations per epoch:
+
+```text
+10,000 / 100 = 100
+```
+
+Therefore:
+
+```text
+1 Epoch = 100 Iterations
+```
+
+For 20 epochs:
+
+```text
+20 × 100 = 2,000 iterations
+```
+
+---
+
+# 25. Epoch vs Batch vs Iteration
+
+| Concept | Meaning |
+| --- | --- |
+| Epoch | One complete pass through the dataset |
+| Batch | Subset of training samples |
+| Iteration | One update using one batch |
+
+Example:
+
+```text
+10,000 samples
+Batch size = 100
+Epochs = 5
+
+Iterations per epoch = 100
+
+Total iterations = 5 × 100
+                  = 500
+```
+
+---
+
+# 26. Complete Neural Network Training Cycle
+
+```text
+             Training Data
+                   ↓
+          Forward Propagation
+                   ↓
+              Prediction
+                   ↓
+             Loss Function
+                   ↓
+                 Loss
+                   ↓
+           Backpropagation
+                   ↓
+              Gradients
+                   ↓
+           Gradient Descent
+                   ↓
+        Update Weights/Biases
+                   ↓
+              Next Batch
+                   ↓
+              Next Epoch
+                   ↓
+               Repeat
+```
+
+This is the core learning mechanism of a neural network.
+
+---
+
+# 27. Overfitting
+
+**Overfitting** happens when a model learns the training data too closely and performs poorly on unseen data.
+
+Example:
+
+```text
+Training Accuracy   = 99%
+Validation Accuracy = 75%
+```
+
+The model performs extremely well on training data but poorly on validation data.
+
+Typical pattern:
+
+```text
+Training Loss
+     ↓↓↓↓↓
+
+Validation Loss
+     ↓↓↓
+       ↑
+       ↑
+```
+
+The validation loss starts increasing while training loss continues decreasing.
+
+---
+
+# 28. Underfitting
+
+**Underfitting** occurs when the model is too simple or has not learned enough from the data.
+
+Example:
+
+```text
+Training Accuracy   = 65%
+Validation Accuracy = 63%
+```
+
+Both are poor.
+
+Possible causes:
+
+- Model too simple
+- Too few training epochs
+- Poor features
+- Excessive regularization
+
+---
+
+# 29. Overfitting vs Underfitting
+
+| Property | Underfitting | Good Fit | Overfitting |
+| --- | --- | --- | --- |
+| Model complexity | Too low | Appropriate | Too high |
+| Training error | High | Low | Very low |
+| Validation error | High | Low | High |
+| Generalization | Poor | Good | Poor |
+
+Conceptually:
+
+```text
+Underfitting
+    ↓
+Model is too simple
+
+Good Fit
+    ↓
+Learns useful patterns
+
+Overfitting
+    ↓
+Learns training-specific patterns
+```
+
+---
+
+# 30. How to Reduce Overfitting
+
+Common techniques:
+
+## 1. More Training Data
+
+```text
+More representative data
+        ↓
+Better generalization
+```
+
+## 2. Dropout
+
+Randomly disables neurons during training.
+
+```text
+Neuron → Active
+Neuron → Disabled
+Neuron → Active
+Neuron → Active
+```
+
+## 3. Regularization
+
+Common methods:
+
+```text
+L1 Regularization
+L2 Regularization
+```
+
+These add penalties to the objective to discourage overly complex parameter values.
+
+## 4. Early Stopping
+
+Stop training when validation performance stops improving.
+
+## 5. Reduce Model Complexity
+
+For example:
+
+```text
+Fewer layers
+Fewer neurons
+```
+
+when the network is unnecessarily large.
+
+---
+
+# 31. Complete Neural Network Example with Scikit-Learn
+
+We can use the `MLPClassifier` from scikit-learn to build a simple neural network.
+
+## Step 1: Import Libraries
+
+```python
+import numpy as np
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score, classification_report
+```
+
+---
+
+# 32. Load Dataset
+
+We will use the Iris dataset.
+
+```python
+iris = load_iris()
+
+X = iris.data
+y = iris.target
+
+print("X shape:", X.shape)
+print("y shape:", y.shape)
+```
+
+Output:
+
+```text
+X shape: (150, 4)
+y shape: (150,)
+```
+
+The dataset contains:
+
+```text
+150 samples
+4 features
+3 classes
+```
+
+---
+
+# 33. Split the Dataset
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+print("Training samples:", X_train.shape[0])
+print("Testing samples:", X_test.shape[0])
+```
+
+Output:
+
+```text
+Training samples: 120
+Testing samples: 30
+```
+
+---
+
+# 34. Feature Scaling
+
+Neural networks generally benefit from appropriately scaled input features.
+
+```python
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+```
+
+Important:
+
+```text
+fit_transform()
+```
+
+is used only on training data.
+
+```text
+transform()
+```
+
+is used on test data.
+
+This prevents information from the test set from influencing preprocessing.
+
+---
+
+# 35. Build the Neural Network
+
+```python
+model = MLPClassifier(
+    hidden_layer_sizes=(8, 4),
+    activation="relu",
+    solver="adam",
+    learning_rate_init=0.001,
+    max_iter=500,
+    random_state=42
+)
+```
+
+Architecture:
+
+```text
+Input
+4 features
+   ↓
+Hidden Layer
+8 neurons
+ReLU
+   ↓
+Hidden Layer
+4 neurons
+ReLU
+   ↓
+Output
+3 classes
+```
+
+For multiclass classification, the classifier internally handles the appropriate output representation and loss.
+
+---
+
+# 36. Train the Model
+
+```python
+model.fit(X_train, y_train)
+```
+
+During training, the model repeatedly performs the conceptual cycle:
+
+```text
+Forward Propagation
+       ↓
+Loss Calculation
+       ↓
+Backpropagation
+       ↓
+Parameter Update
+       ↓
+Repeat
+```
+
+---
+
+# 37. Make Predictions
+
+```python
+y_pred = model.predict(X_test)
+
+print(y_pred)
+```
+
+Example:
+
+```text
+[1 0 2 1 1 0 2 ...]
+```
+
+---
+
+# 38. Evaluate Accuracy
+
+```python
+accuracy = accuracy_score(y_test, y_pred)
+
+print("Accuracy:", accuracy)
+```
+
+Example output:
+
+```text
+Accuracy: 0.9667
+```
+
+The exact result can vary depending on the implementation and random state.
+
+---
+
+# 39. Classification Report
+
+```python
+print(classification_report(y_test, y_pred))
+```
+
+The report includes:
+
+```text
+precision
+recall
+f1-score
+support
+```
+
+Example structure:
+
+```text
+              precision    recall    f1-score
+
+Class 0          1.00       1.00       1.00
+Class 1          0.94       0.94       0.94
+Class 2          0.94       0.94       0.94
+```
+
+---
+
+# 40. Complete Code
+
+The entire example can be written as:
+
+```python
+import numpy as np
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+
+# Load dataset
+iris = load_iris()
+
+X = iris.data
+y = iris.target
+
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+
+# Scale features
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+
+# Create neural network
+model = MLPClassifier(
+    hidden_layer_sizes=(8, 4),
+    activation="relu",
+    solver="adam",
+    learning_rate_init=0.001,
+    max_iter=500,
+    random_state=42
+)
+
+
+# Train
+model.fit(X_train, y_train)
+
+
+# Predict
+y_pred = model.predict(X_test)
+
+
+# Evaluate
+accuracy = accuracy_score(y_test, y_pred)
+
+print("Accuracy:", accuracy)
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+```
+
+---
+
+# 41. Understanding the Code
+
+The important parameters are:
+
+```python
+MLPClassifier(
+    hidden_layer_sizes=(8, 4),
+    activation="relu",
+    solver="adam",
+    learning_rate_init=0.001,
+    max_iter=500
+)
+```
+
+### `hidden_layer_sizes`
+
+```python
+hidden_layer_sizes=(8, 4)
+```
+
+Means:
+
+```text
+Hidden Layer 1 → 8 neurons
+Hidden Layer 2 → 4 neurons
+```
+
+### `activation`
+
+```python
+activation="relu"
+```
+
+Uses ReLU in the hidden layers.
+
+### `solver`
+
+```python
+solver="adam"
+```
+
+Uses the Adam optimization algorithm.
+
+### `learning_rate_init`
+
+```python
+learning_rate_init=0.001
+```
+
+Initial learning rate.
+
+### `max_iter`
+
+```python
+max_iter=500
+```
+
+Maximum number of optimization iterations used by the estimator.
+
+---
+
+# 42. Viewing Training Loss
+
+`MLPClassifier` stores the training loss history in `loss_curve_`.
+
+```python
+import matplotlib.pyplot as plt
+
+plt.plot(model.loss_curve_)
+
+plt.xlabel("Iteration")
+plt.ylabel("Loss")
+plt.title("Training Loss")
+
+plt.show()
+```
+
+The expected behavior is generally:
+
+```text
+Loss
+│\
+│ \
+│  \
+│   \
+│    \____
+│
+└──────────── Iterations
+```
+
+A decreasing loss indicates that the optimization process is reducing the training objective.
+
+---
+
+# 43. Predict Probabilities
+
+For classification, we can also obtain class probabilities.
+
+```python
+probabilities = model.predict_proba(X_test)
+
+print(probabilities[:5])
+```
+
+Example:
+
+```text
+[[0.01 0.96 0.03]
+ [0.98 0.01 0.01]
+ [0.02 0.04 0.94]]
+```
+
+Each row represents:
+
+```text
+Class 0 probability
+Class 1 probability
+Class 2 probability
+```
+
+The probabilities in each row sum to approximately `1`.
+
+---
+
+# 44. Architecture Summary
+
+For our Iris model:
+
+```text
+             Iris Features
+                   │
+                   ▼
+          ┌─────────────────┐
+          │   Input Layer   │
+          │    4 features   │
+          └────────┬────────┘
+                   │
+                   ▼
+          ┌─────────────────┐
+          │ Hidden Layer 1  │
+          │    8 neurons    │
+          │      ReLU       │
+          └────────┬────────┘
+                   │
+                   ▼
+          ┌─────────────────┐
+          │ Hidden Layer 2  │
+          │    4 neurons    │
+          │      ReLU       │
+          └────────┬────────┘
+                   │
+                   ▼
+          ┌─────────────────┐
+          │  Output Layer   │
+          │    3 classes    │
+          └─────────────────┘
+                   │
+                   ▼
+              Prediction
+```
+
+---
+
+# 45. Important Formulas
+
+## Neuron
+
+$$
+z = \sum_i w_i x_i + b
+$$
+
+## ReLU
+
+$$
+ReLU(x)=\max(0,x)
+$$
+
+## Sigmoid
+
+$$
+\sigma(x)=\frac{1}{1+e^{-x}}
+$$
+
+## Softmax
+
+$$
+softmax(z_i)=
+\frac{e^{z_i}}
+{\sum_j e^{z_j}}
+$$
+
+## MSE
+
+$$
+MSE =
+\frac{1}{n}
+\sum_{i=1}^{n}
+(y_i-\hat y_i)^2
+$$
+
+## Gradient Descent
+
+$$
+w_{new}
+=======
+
+## w_{old}
+
+\eta
+\frac{\partial L}{\partial w}
+$$
+
+---
+
+# 46. Neural Network Training Pipeline
+
+```text
+                 Dataset
+                    ↓
+             Train/Test Split
+                    ↓
+               Preprocessing
+                    ↓
+             Neural Network
+                    ↓
+          ┌─────────────────┐
+          │ Forward Pass    │
+          └────────┬────────┘
+                   ↓
+              Prediction
+                   ↓
+             Loss Function
+                   ↓
+          ┌─────────────────┐
+          │ Backpropagation │
+          └────────┬────────┘
+                   ↓
+               Gradients
+                   ↓
+           Optimizer/Update
+                   ↓
+               Next Batch
+                   ↓
+              Next Epoch
+                   ↓
+                Evaluate
+```
+
+---
+
+# 47. Quick Revision
+
+| Concept | Remember |
+| --- | --- |
+| Neuron | Weighted sum \+ bias \+ activation |
+| Weight | Controls input contribution |
+| Bias | Learnable offset |
+| Input Layer | Receives features |
+| Hidden Layer | Learns intermediate representations |
+| Output Layer | Produces prediction |
+| ReLU | Common hidden-layer activation |
+| Sigmoid | Common binary output activation |
+| Softmax | Common multi-class output activation |
+| Forward Propagation | Input → Prediction |
+| Loss | Measures prediction error |
+| Backpropagation | Computes gradients |
+| Gradient Descent | Updates parameters |
+| Learning Rate | Controls update size |
+| Epoch | Complete pass through dataset |
+| Batch | Subset of training data |
+| Iteration | One update using a batch |
+| Overfitting | Good training, poor validation |
+| Underfitting | Poor training and validation |
+
+---
+
+# 48. Day 22 Mental Model
+
+The entire concept can be remembered with this flow:
+
+```text
+INPUT
+  ↓
+WEIGHTS + BIAS
+  ↓
+ACTIVATION
+  ↓
+HIDDEN LAYERS
+  ↓
+OUTPUT
+  ↓
+PREDICTION
+  ↓
+LOSS
+  ↓
+BACKPROPAGATION
+  ↓
+GRADIENTS
+  ↓
+GRADIENT DESCENT
+  ↓
+UPDATE WEIGHTS
+  ↓
+NEXT BATCH
+  ↓
+NEXT EPOCH
+  ↓
+REPEAT
+```
+
+> **Core idea:** A neural network learns by making predictions, measuring its errors, calculating gradients through backpropagation, and updating its parameters to reduce the loss.

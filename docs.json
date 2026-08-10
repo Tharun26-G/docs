@@ -223,6 +223,12 @@
             "pages": [
               "housing"
             ]
+          },
+          {
+            "group": "Day 22",
+            "pages": [
+              "neural-networks"
+            ]
           }
         ]
       }

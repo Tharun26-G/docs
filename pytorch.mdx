@@ -1,0 +1,4980 @@
+---
+title: "Pytorch"
+---
+
+# 1. What is PyTorch?
+
+**PyTorch** is an open-source machine-learning and deep-learning framework. It provides tools for creating, training, evaluating, and deploying neural networks.
+
+PyTorch is especially popular because it provides:
+
+- Easy-to-use tensor operations
+- Automatic differentiation
+- GPU acceleration
+- Neural-network building blocks
+- Flexible training loops
+- Support for CNNs, RNNs, Transformers, and generative models
+- Strong research and production ecosystem
+
+### Main PyTorch components
+
+```text
+PyTorch
+│
+├── Tensors
+├── Autograd
+├── torch.nn
+├── Loss Functions
+├── Optimizers
+├── Dataset / DataLoader
+├── CUDA / GPU
+├── CNN
+├── RNN / LSTM / GRU
+├── Attention / Transformers
+├── Model Saving
+└── Deployment
+```
+
+### Installation
+
+```bash
+pip install torch torchvision torchaudio
+```
+
+Check the installation:
+
+```python
+import torch
+
+print(torch.__version__)
+```
+
+### Why learn PyTorch?
+
+If you want to work in:
+
+- Deep Learning
+- Computer Vision
+- NLP
+- Generative AI
+- LLMs
+- Research
+- AI engineering
+
+then PyTorch is one of the most important frameworks to understand.
+
+---
+
+# 2. Importing PyTorch
+
+The basic import is:
+
+```python
+import torch
+```
+
+For neural networks:
+
+```python
+import torch.nn as nn
+```
+
+For optimizers:
+
+```python
+import torch.optim as optim
+```
+
+For datasets and batching:
+
+```python
+from torch.utils.data import Dataset, DataLoader
+```
+
+For computer vision:
+
+```python
+import torchvision
+import torchvision.transforms as transforms
+```
+
+### What does `nn` mean?
+
+`torch.nn` contains the building blocks used to construct neural networks.
+
+For example:
+
+```python
+nn.Linear()
+nn.ReLU()
+nn.Conv2d()
+nn.Dropout()
+nn.BatchNorm1d()
+```
+
+---
+
+# 3. What is a Tensor?
+
+A **tensor** is the fundamental data structure in PyTorch.
+
+You can think of tensors as generalized arrays.
+
+```text
+Scalar → 0-dimensional tensor
+Vector → 1-dimensional tensor
+Matrix → 2-dimensional tensor
+3D Tensor → e.g. image
+4D Tensor → e.g. batch of images
+```
+
+### Scalar
+
+```python
+x = torch.tensor(10)
+
+print(x)
+print(x.shape)
+```
+
+A scalar contains one value.
+
+Its shape is:
+
+```text
+torch.Size([])
+```
+
+### Vector
+
+```python
+x = torch.tensor([1, 2, 3, 4])
+
+print(x)
+print(x.shape)
+```
+
+Shape:
+
+```text
+[4]
+```
+
+### Matrix
+
+```python
+x = torch.tensor([
+    [1, 2, 3],
+    [4, 5, 6]
+])
+
+print(x)
+print(x.shape)
+```
+
+Shape:
+
+```text
+[2, 3]
+```
+
+That means:
+
+```text
+2 rows
+3 columns
+```
+
+### Why are tensors important?
+
+Almost everything in a neural network is represented using tensors:
+
+```text
+Input data → Tensor
+Weights → Tensor
+Biases → Tensor
+Prediction → Tensor
+Loss → Tensor
+Gradients → Tensor
+```
+
+Understanding tensor **shape, dtype, and device** is one of the most important PyTorch skills.
+
+---
+
+# 4. Creating Tensors
+
+## `torch.zeros()`
+
+Creates a tensor filled with zeros.
+
+```python
+x = torch.zeros(3, 4)
+
+print(x)
+```
+
+This creates:
+
+```text
+3 rows × 4 columns
+```
+
+Useful when initializing values.
+
+---
+
+## `torch.ones()`
+
+```python
+x = torch.ones(2, 3)
+
+print(x)
+```
+
+Creates a tensor containing only ones.
+
+---
+
+## `torch.rand()`
+
+Creates random numbers between 0 and 1.
+
+```python
+x = torch.rand(3, 3)
+
+print(x)
+```
+
+---
+
+## `torch.randn()`
+
+Generates random values approximately following a standard normal distribution.
+
+```python
+x = torch.randn(3, 3)
+
+print(x)
+```
+
+This is frequently used for testing neural networks and creating synthetic data.
+
+---
+
+## `torch.randint()`
+
+Creates random integers.
+
+```python
+x = torch.randint(
+    0,
+    10,
+    (3, 3)
+)
+
+print(x)
+```
+
+This generates values from 0 through 9.
+
+---
+
+## `torch.arange()`
+
+Creates a sequence.
+
+```python
+x = torch.arange(0, 10)
+
+print(x)
+```
+
+Output:
+
+```text
+tensor([0, 1, 2, ..., 9])
+```
+
+---
+
+# 5. Tensor Data Types
+
+Every tensor has a data type.
+
+```python
+x = torch.tensor([1, 2, 3])
+
+print(x.dtype)
+```
+
+Common data types include:
+
+```text
+torch.float32
+torch.float64
+torch.int32
+torch.int64
+torch.bool
+```
+
+For example:
+
+```python
+x = torch.tensor(
+    [1, 2, 3],
+    dtype=torch.float32
+)
+
+print(x.dtype)
+```
+
+### Why does dtype matter?
+
+Neural networks normally perform calculations using floating-point numbers.
+
+For example:
+
+```python
+x = torch.tensor([1, 2, 3])
+
+x = x.float()
+```
+
+Now:
+
+```text
+torch.int64 → torch.float32
+```
+
+For classification labels, however, `torch.int64` is commonly required by `CrossEntropyLoss`.
+
+So dtype depends on what the tensor represents.
+
+---
+
+# 6. Tensor Shape
+
+Shape tells us the dimensions of a tensor.
+
+```python
+x = torch.randn(2, 3, 4)
+
+print(x.shape)
+print(x.ndim)
+```
+
+Output:
+
+```text
+torch.Size([2, 3, 4])
+3
+```
+
+This means:
+
+```text
+dimension 1 = 2
+dimension 2 = 3
+dimension 3 = 4
+```
+
+### Number of elements
+
+```python
+print(x.numel())
+```
+
+For a `[2, 3, 4]` tensor:
+
+```text
+2 × 3 × 4 = 24
+```
+
+So `numel()` returns 24.
+
+---
+
+# 7. Tensor Indexing
+
+PyTorch indexing works similarly to NumPy.
+
+```python
+x = torch.tensor([
+    [10, 20, 30],
+    [40, 50, 60]
+])
+```
+
+First row:
+
+```python
+print(x[0])
+```
+
+Output:
+
+```text
+tensor([10, 20, 30])
+```
+
+Specific element:
+
+```python
+print(x[0, 1])
+```
+
+Output:
+
+```text
+tensor(20)
+```
+
+### Slicing
+
+```python
+print(x[:, 1])
+```
+
+The `:` means "all rows".
+
+So this means:
+
+```text
+all rows, column 1
+```
+
+Result:
+
+```text
+tensor([20, 50])
+```
+
+---
+
+# 8. Tensor Arithmetic
+
+Given:
+
+```python
+a = torch.tensor([1, 2, 3])
+b = torch.tensor([4, 5, 6])
+```
+
+Addition:
+
+```python
+print(a + b)
+```
+
+Subtraction:
+
+```python
+print(a - b)
+```
+
+Element-wise multiplication:
+
+```python
+print(a * b)
+```
+
+Division:
+
+```python
+print(a / b)
+```
+
+Power:
+
+```python
+print(a ** 2)
+```
+
+Important distinction:
+
+```python
+a * b
+```
+
+means **element-wise multiplication**.
+
+It does NOT mean matrix multiplication.
+
+---
+
+# 9. Matrix Multiplication
+
+Consider:
+
+```python
+a = torch.tensor([
+    [1, 2],
+    [3, 4]
+])
+
+b = torch.tensor([
+    [5, 6],
+    [7, 8]
+])
+```
+
+Element-wise multiplication:
+
+```python
+a * b
+```
+
+gives:
+
+```text
+[[5, 12],
+ [21, 32]]
+```
+
+Matrix multiplication:
+
+```python
+torch.matmul(a, b)
+```
+
+or:
+
+```python
+a @ b
+```
+
+gives:
+
+```text
+[[19, 22],
+ [43, 50]]
+```
+
+### Important interview question
+
+What is the difference between:
+
+```python
+a * b
+```
+
+and:
+
+```python
+a @ b
+```
+
+Answer:
+
+```text
+*  → element-wise multiplication
+@  → matrix multiplication
+```
+
+---
+
+# 10. Useful Tensor Functions
+
+PyTorch provides many mathematical operations.
+
+```python
+x = torch.tensor([1., 2., 3., 4.])
+
+print(torch.sum(x))
+print(torch.mean(x))
+print(torch.max(x))
+print(torch.min(x))
+```
+
+Other useful operations:
+
+```python
+torch.abs(x)
+torch.sqrt(x)
+torch.exp(x)
+torch.log(x)
+torch.argmax(x)
+torch.argmin(x)
+```
+
+### `argmax()`
+
+`argmax()` returns the **index** of the largest value.
+
+```python
+x = torch.tensor([10., 30., 20.])
+
+index = torch.argmax(x)
+
+print(index)
+print(x[index])
+```
+
+Result:
+
+```text
+index = 1
+value = 30
+```
+
+This is frequently used for classification predictions.
+
+---
+
+# 11. Reshaping Tensors
+
+Neural networks often require data in a particular shape.
+
+Suppose:
+
+```python
+x = torch.arange(12)
+```
+
+Current shape:
+
+```text
+[12]
+```
+
+We can reshape it:
+
+```python
+x = x.reshape(3, 4)
+
+print(x)
+```
+
+Now:
+
+```text
+[3, 4]
+```
+
+The number of elements must remain the same:
+
+```text
+12 = 3 × 4
+```
+
+---
+
+## `view()`
+
+Another way:
+
+```python
+x = torch.arange(12)
+
+x = x.view(3, 4)
+```
+
+`view()` has stricter memory-layout requirements than `reshape()`, so `reshape()` is often the more convenient choice.
+
+---
+
+## `flatten()`
+
+```python
+x = torch.randn(2, 3, 4)
+
+x = x.flatten()
+
+print(x.shape)
+```
+
+This converts:
+
+```text
+[2, 3, 4]
+```
+
+into:
+
+```text
+[24]
+```
+
+Flattening is particularly important when connecting CNN features to fully connected layers.
+
+---
+
+# 12. `unsqueeze()` and `squeeze()`
+
+These operations add and remove dimensions.
+
+Suppose:
+
+```python
+x = torch.tensor([1, 2, 3])
+
+print(x.shape)
+```
+
+Shape:
+
+```text
+[3]
+```
+
+Add a dimension:
+
+```python
+x = x.unsqueeze(0)
+
+print(x.shape)
+```
+
+Now:
+
+```text
+[1, 3]
+```
+
+This is useful when a model expects a batch dimension.
+
+For example:
+
+```text
+Single sample:
+[3]
+
+Batch containing one sample:
+[1, 3]
+```
+
+Remove a dimension:
+
+```python
+x = x.squeeze()
+
+print(x.shape)
+```
+
+---
+
+# 13. Concatenation and Stacking
+
+## `torch.cat()`
+
+Concatenates tensors along an existing dimension.
+
+```python
+a = torch.tensor([1, 2])
+b = torch.tensor([3, 4])
+
+x = torch.cat([a, b])
+
+print(x)
+```
+
+Result:
+
+```text
+tensor([1, 2, 3, 4])
+```
+
+---
+
+## `torch.stack()`
+
+Creates a new dimension.
+
+```python
+x = torch.stack([a, b])
+
+print(x)
+print(x.shape)
+```
+
+Result shape:
+
+```text
+[2, 2]
+```
+
+### Difference
+
+```text
+cat
+ ↓
+joins existing dimensions
+
+stack
+ ↓
+creates a new dimension
+```
+
+---
+
+# 14. NumPy and PyTorch
+
+PyTorch works closely with NumPy.
+
+NumPy → PyTorch:
+
+```python
+import numpy as np
+import torch
+
+arr = np.array([1, 2, 3])
+
+x = torch.from_numpy(arr)
+
+print(x)
+```
+
+PyTorch → NumPy:
+
+```python
+arr = x.numpy()
+
+print(arr)
+```
+
+When possible, these objects can share the same underlying memory.
+
+Therefore, changing one can affect the other.
+
+---
+
+# 15. CPU and GPU
+
+Deep-learning training can be much faster on GPUs.
+
+Check whether CUDA is available:
+
+```python
+print(torch.cuda.is_available())
+```
+
+Select a device:
+
+```python
+device = torch.device(
+    "cuda" if torch.cuda.is_available()
+    else "cpu"
+)
+
+print(device)
+```
+
+Move a tensor:
+
+```python
+x = torch.randn(3, 3)
+
+x = x.to(device)
+```
+
+Move the model:
+
+```python
+model = model.to(device)
+```
+
+During training, both inputs and model parameters must generally be on compatible devices:
+
+```python
+X = X.to(device)
+y = y.to(device)
+```
+
+### Important rule
+
+You cannot normally do:
+
+```text
+Model → GPU
+Input → CPU
+```
+
+and expect the operation to work.
+
+Both need to be on compatible devices.
+
+---
+
+# 16. Autograd
+
+One of PyTorch's most important features is **automatic differentiation**.
+
+Suppose:
+
+```text
+y = x²
+```
+
+Mathematically:
+
+```text
+dy/dx = 2x
+```
+
+If:
+
+```text
+x = 2
+```
+
+then:
+
+```text
+dy/dx = 4
+```
+
+PyTorch can calculate this automatically.
+
+```python
+x = torch.tensor(
+    2.0,
+    requires_grad=True
+)
+
+y = x ** 2
+
+y.backward()
+
+print(x.grad)
+```
+
+Output:
+
+```text
+tensor(4.)
+```
+
+### What happened?
+
+```text
+x
+↓
+x²
+↓
+y
+↓
+backward()
+↓
+gradient stored in x.grad
+```
+
+This mechanism is the foundation of neural-network training.
+
+---
+
+# 17. Gradient Descent
+
+Suppose our model is:
+
+```text
+y = wx + b
+```
+
+The model has parameters:
+
+```text
+w
+b
+```
+
+During training:
+
+```text
+Input
+ ↓
+Model
+ ↓
+Prediction
+ ↓
+Loss
+ ↓
+Gradients
+ ↓
+Parameter update
+ ↓
+Repeat
+```
+
+Example:
+
+```python
+x = torch.tensor(2.0)
+
+w = torch.tensor(
+    1.0,
+    requires_grad=True
+)
+
+y = w * x
+
+loss = (y - 10) ** 2
+
+loss.backward()
+
+print(w.grad)
+```
+
+The gradient tells us how changing `w` would affect the loss.
+
+The optimizer uses this information to update `w`.
+
+---
+
+# 18. Why `zero_grad()`?
+
+PyTorch gradients accumulate by default.
+
+For example:
+
+```python
+x = torch.tensor(
+    2.0,
+    requires_grad=True
+)
+
+y = x ** 2
+y.backward()
+
+print(x.grad)
+
+y = x ** 2
+y.backward()
+
+print(x.grad)
+```
+
+The second backward pass adds to the existing gradient.
+
+Therefore, during normal training we use:
+
+```python
+optimizer.zero_grad()
+```
+
+The standard sequence is:
+
+```python
+optimizer.zero_grad()
+
+loss.backward()
+
+optimizer.step()
+```
+
+Meaning:
+
+```text
+zero_grad()
+    ↓
+remove old gradients
+
+backward()
+    ↓
+calculate new gradients
+
+step()
+    ↓
+update parameters
+```
+
+---
+
+# 19. `nn.Module`
+
+Neural networks normally inherit from:
+
+```python
+nn.Module
+```
+
+Example:
+
+```python
+import torch
+import torch.nn as nn
+
+class SimpleModel(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.linear = nn.Linear(2, 1)
+
+    def forward(self, x):
+        return self.linear(x)
+```
+
+Create the model:
+
+```python
+model = SimpleModel()
+
+print(model)
+```
+
+### Two important methods
+
+`__init__()` defines the layers.
+
+```python
+def __init__(self):
+```
+
+`forward()` defines how data flows through the model.
+
+```python
+def forward(self, x):
+```
+
+When you write:
+
+```python
+output = model(x)
+```
+
+PyTorch internally calls the model's forward logic.
+
+---
+
+# 20. `nn.Linear`
+
+A linear layer performs:
+
+```text
+y = xWᵀ + b
+```
+
+Example:
+
+```python
+layer = nn.Linear(
+    in_features=3,
+    out_features=2
+)
+
+x = torch.randn(5, 3)
+
+y = layer(x)
+
+print(y.shape)
+```
+
+Output:
+
+```text
+[5, 2]
+```
+
+Why?
+
+```text
+5 = batch size
+3 = input features
+2 = output features
+```
+
+So:
+
+```text
+[5, 3]
+    ↓
+Linear(3, 2)
+    ↓
+[5, 2]
+```
+
+---
+
+# 21. Activation Functions
+
+A neural network containing only linear operations is still effectively a linear transformation.
+
+Activation functions introduce non-linearity.
+
+---
+
+## ReLU
+
+```python
+relu = nn.ReLU()
+
+x = torch.tensor([
+    -2., -1., 0., 1., 2.
+])
+
+print(relu(x))
+```
+
+Mathematically:
+
+```text
+ReLU(x) = max(0, x)
+```
+
+Therefore:
+
+```text
+-2 → 0
+-1 → 0
+ 0 → 0
+ 1 → 1
+ 2 → 2
+```
+
+ReLU is one of the most commonly used hidden-layer activations.
+
+---
+
+## Sigmoid
+
+```python
+sigmoid = nn.Sigmoid()
+
+x = torch.tensor([
+    -2., 0., 2.
+])
+
+print(sigmoid(x))
+```
+
+Output values lie between:
+
+```text
+0 and 1
+```
+
+It is commonly useful for binary probabilities, although modern PyTorch training often uses `BCEWithLogitsLoss` directly on logits rather than explicitly applying sigmoid before the loss.
+
+---
+
+## Tanh
+
+```python
+tanh = nn.Tanh()
+
+print(tanh(x))
+```
+
+Output range:
+
+```text
+-1 to 1
+```
+
+---
+
+## Softmax
+
+Softmax converts logits into a probability distribution across classes.
+
+```python
+softmax = nn.Softmax(dim=1)
+
+x = torch.tensor([
+    [1., 2., 3.]
+])
+
+print(softmax(x))
+```
+
+The probabilities approximately sum to:
+
+```text
+1
+```
+
+However, when using:
+
+```python
+nn.CrossEntropyLoss()
+```
+
+you normally pass the raw logits directly rather than applying Softmax first.
+
+---
+
+# 22. Building a Neural Network
+
+```python
+class NeuralNetwork(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.network = nn.Sequential(
+            nn.Linear(4, 16),
+            nn.ReLU(),
+
+            nn.Linear(16, 8),
+            nn.ReLU(),
+
+            nn.Linear(8, 2)
+        )
+
+    def forward(self, x):
+        return self.network(x)
+```
+
+The architecture is:
+
+```text
+4 input features
+      ↓
+16 neurons
+      ↓
+ReLU
+      ↓
+8 neurons
+      ↓
+ReLU
+      ↓
+2 outputs
+```
+
+The final `2` might represent two output classes.
+
+---
+
+# 23. `nn.Sequential`
+
+`nn.Sequential` allows you to define layers in order.
+
+Instead of:
+
+```python
+x = self.layer1(x)
+x = self.relu(x)
+x = self.layer2(x)
+```
+
+you can write:
+
+```python
+self.layers = nn.Sequential(
+    nn.Linear(10, 32),
+    nn.ReLU(),
+    nn.Linear(32, 16),
+    nn.ReLU(),
+    nn.Linear(16, 3)
+)
+```
+
+Then:
+
+```python
+def forward(self, x):
+    return self.layers(x)
+```
+
+It is excellent for simple feed-forward architectures.
+
+For complicated architectures with branches or multiple inputs, explicit `forward()` logic is usually preferable.
+
+---
+
+# 24. Loss Functions
+
+A loss function measures how different the model prediction is from the target.
+
+Conceptually:
+
+```text
+Prediction
+     ↓
+Loss Function
+     ↓
+How wrong?
+```
+
+The optimizer then uses the gradient of this loss to improve the model.
+
+---
+
+## MSE Loss
+
+Mean Squared Error is commonly used for regression.
+
+```python
+loss_fn = nn.MSELoss()
+
+prediction = torch.tensor([
+    2., 4., 6.
+])
+
+target = torch.tensor([
+    1., 5., 6.
+])
+
+loss = loss_fn(
+    prediction,
+    target
+)
+
+print(loss)
+```
+
+Conceptually:
+
+```text
+MSE = average((prediction - target)²)
+```
+
+---
+
+## Cross Entropy
+
+Used very commonly for multi-class classification.
+
+```python
+loss_fn = nn.CrossEntropyLoss()
+
+logits = torch.tensor([
+    [2.0, 1.0, 0.1],
+    [0.2, 0.3, 2.0]
+])
+
+targets = torch.tensor([
+    0,
+    2
+])
+
+loss = loss_fn(
+    logits,
+    targets
+)
+```
+
+Important:
+
+```text
+CrossEntropyLoss expects raw logits.
+```
+
+Do not normally do:
+
+```python
+softmax(logits)
+```
+
+before passing them to `CrossEntropyLoss`.
+
+---
+
+## BCEWithLogitsLoss
+
+For binary classification:
+
+```python
+loss_fn = nn.BCEWithLogitsLoss()
+```
+
+This combines sigmoid behavior with binary cross entropy in a numerically stable way.
+
+Therefore it is generally preferred over:
+
+```python
+Sigmoid()
++
+BCELoss()
+```
+
+as a training setup.
+
+---
+
+# 25. Optimizers
+
+The optimizer changes the model parameters using gradients.
+
+Common optimizers:
+
+```text
+SGD
+Adam
+AdamW
+RMSprop
+```
+
+### SGD
+
+```python
+optimizer = torch.optim.SGD(
+    model.parameters(),
+    lr=0.01
+)
+```
+
+### Adam
+
+```python
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+```
+
+### AdamW
+
+```python
+optimizer = torch.optim.AdamW(
+    model.parameters(),
+    lr=0.001,
+    weight_decay=0.01
+)
+```
+
+### What is learning rate?
+
+Learning rate controls how large each parameter update is.
+
+Very large:
+
+```text
+Updates may become unstable.
+```
+
+Very small:
+
+```text
+Training may become extremely slow.
+```
+
+The learning rate is one of the most important hyperparameters.
+
+---
+
+# 26. Complete Training Loop
+
+The training loop is arguably the most important PyTorch pattern to understand.
+
+```python
+for epoch in range(10):
+
+    model.train()
+
+    for X, y in train_loader:
+
+        X = X.to(device)
+        y = y.to(device)
+
+        predictions = model(X)
+
+        loss = loss_fn(
+            predictions,
+            y
+        )
+
+        optimizer.zero_grad()
+
+        loss.backward()
+
+        optimizer.step()
+```
+
+Understand every line:
+
+### 1. `model.train()`
+
+```python
+model.train()
+```
+
+Tells PyTorch that the model is in training mode.
+
+This matters for layers such as:
+
+- Dropout
+- BatchNorm
+
+### 2. Move data
+
+```python
+X = X.to(device)
+y = y.to(device)
+```
+
+Moves data to CPU or GPU.
+
+### 3. Forward pass
+
+```python
+predictions = model(X)
+```
+
+The model generates predictions.
+
+### 4. Calculate loss
+
+```python
+loss = loss_fn(predictions, y)
+```
+
+Measures prediction error.
+
+### 5. Clear old gradients
+
+```python
+optimizer.zero_grad()
+```
+
+### 6. Backpropagation
+
+```python
+loss.backward()
+```
+
+Calculates gradients.
+
+### 7. Update parameters
+
+```python
+optimizer.step()
+```
+
+Updates model weights.
+
+The entire process is:
+
+```text
+Data
+ ↓
+Model
+ ↓
+Prediction
+ ↓
+Loss
+ ↓
+zero_grad()
+ ↓
+backward()
+ ↓
+step()
+ ↓
+Updated model
+```
+
+---
+
+# 27. Dataset
+
+A Dataset defines how your data is accessed.
+
+```python
+from torch.utils.data import Dataset
+
+class MyDataset(Dataset):
+
+    def __init__(self):
+
+        self.X = torch.tensor([
+            [1., 2.],
+            [3., 4.],
+            [5., 6.]
+        ])
+
+        self.y = torch.tensor([
+            0,
+            1,
+            0
+        ])
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, index):
+        return self.X[index], self.y[index]
+```
+
+There are three important parts.
+
+### `__init__()`
+
+Stores or prepares the data.
+
+### `__len__()`
+
+Returns the number of samples.
+
+### `__getitem__()`
+
+Returns one sample.
+
+For example:
+
+```python
+dataset = MyDataset()
+
+print(len(dataset))
+print(dataset[0])
+```
+
+---
+
+# 28. DataLoader
+
+A Dataset gives individual samples.
+
+A DataLoader creates batches.
+
+```python
+from torch.utils.data import DataLoader
+
+loader = DataLoader(
+    dataset,
+    batch_size=2,
+    shuffle=True
+)
+```
+
+Then:
+
+```python
+for X, y in loader:
+
+    print(X)
+    print(y)
+```
+
+### Why use DataLoader?
+
+Instead of processing:
+
+```text
+1 sample
+1 sample
+1 sample
+...
+```
+
+we process:
+
+```text
+batch
+batch
+batch
+...
+```
+
+This makes training more efficient.
+
+Important parameters include:
+
+```python
+DataLoader(
+    dataset,
+    batch_size=32,
+    shuffle=True,
+    num_workers=2
+)
+```
+
+---
+
+# 29. Training, Validation and Test Sets
+
+A common structure is:
+
+```text
+Dataset
+│
+├── Training
+├── Validation
+└── Test
+```
+
+### Training set
+
+Used to update model parameters.
+
+### Validation set
+
+Used during development to make decisions such as:
+
+- Which model is better?
+- Which hyperparameters should we use?
+- When should training stop?
+
+### Test set
+
+Used for final evaluation.
+
+Example:
+
+```python
+from torch.utils.data import random_split
+
+train_size = int(
+    0.8 * len(dataset)
+)
+
+test_size = (
+    len(dataset) - train_size
+)
+
+train_dataset, test_dataset = random_split(
+    dataset,
+    [train_size, test_size]
+)
+```
+
+For real projects, validation should usually be kept separate from the final test set.
+
+---
+
+# 30. Evaluation
+
+During evaluation:
+
+```python
+model.eval()
+```
+
+Then disable gradient calculation:
+
+```python
+with torch.no_grad():
+
+    predictions = model(X)
+```
+
+Why?
+
+During inference we don't need gradients.
+
+This saves:
+
+- Memory
+- Computation
+- Time
+
+---
+
+# 31. Classification Accuracy
+
+Example:
+
+```python
+model.eval()
+
+correct = 0
+total = 0
+
+with torch.no_grad():
+
+    for X, y in test_loader:
+
+        X = X.to(device)
+        y = y.to(device)
+
+        outputs = model(X)
+
+        predictions = outputs.argmax(
+            dim=1
+        )
+
+        correct += (
+            predictions == y
+        ).sum().item()
+
+        total += y.size(0)
+
+accuracy = correct / total
+
+print("Accuracy:", accuracy)
+```
+
+Suppose:
+
+```text
+95 predictions correct
+100 total predictions
+```
+
+Then:
+
+```text
+accuracy = 95 / 100
+         = 0.95
+         = 95%
+```
+
+---
+
+# 32. `model.train()` vs `model.eval()`
+
+This distinction is extremely important.
+
+Training:
+
+```python
+model.train()
+```
+
+Evaluation:
+
+```python
+model.eval()
+```
+
+Why does this matter?
+
+Because some layers behave differently during training and evaluation.
+
+Most importantly:
+
+```text
+Dropout
+Batch Normalization
+```
+
+For example, Dropout randomly removes activations during training but should not randomly remove them during evaluation.
+
+---
+
+# 33. Dropout
+
+Dropout is a regularization technique.
+
+It randomly disables some activations during training.
+
+```python
+nn.Dropout(0.5)
+```
+
+Approximately 50% of eligible activations are dropped during training.
+
+Example:
+
+```python
+class Model(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.network = nn.Sequential(
+            nn.Linear(10, 64),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(64, 2)
+        )
+
+    def forward(self, x):
+        return self.network(x)
+```
+
+### Why use Dropout?
+
+It can reduce overfitting.
+
+Without regularization:
+
+```text
+Training performance → very high
+Validation performance → poor
+```
+
+This suggests the model may be memorizing training data.
+
+---
+
+# 34. Batch Normalization
+
+Batch normalization normalizes activations using batch statistics during training.
+
+Example:
+
+```python
+self.network = nn.Sequential(
+    nn.Linear(10, 64),
+    nn.BatchNorm1d(64),
+    nn.ReLU(),
+    nn.Linear(64, 2)
+)
+```
+
+It can help stabilize optimization and sometimes speed up training.
+
+During evaluation, BatchNorm uses stored running statistics, which is another reason `model.eval()` matters.
+
+---
+
+# 35. Weight Initialization
+
+Neural-network layers receive default parameter initialization from PyTorch.
+
+You can customize it.
+
+Xavier initialization:
+
+```python
+layer = nn.Linear(10, 5)
+
+nn.init.xavier_uniform_(
+    layer.weight
+)
+
+nn.init.zeros_(
+    layer.bias
+)
+```
+
+Kaiming initialization:
+
+```python
+nn.init.kaiming_normal_(
+    layer.weight,
+    nonlinearity="relu"
+)
+```
+
+Good initialization can help optimization, especially in deeper networks.
+
+---
+
+# 36. CNN — Convolutional Neural Network
+
+CNNs are designed particularly for spatial data such as images.
+
+Typical architecture:
+
+```text
+Image
+ ↓
+Convolution
+ ↓
+ReLU
+ ↓
+Pooling
+ ↓
+Convolution
+ ↓
+ReLU
+ ↓
+Pooling
+ ↓
+Flatten
+ ↓
+Linear
+ ↓
+Prediction
+```
+
+A CNN learns features progressively.
+
+Early layers may learn:
+
+```text
+Edges
+```
+
+Middle layers may learn:
+
+```text
+Textures / shapes
+```
+
+Deeper layers may learn:
+
+```text
+Objects / semantic patterns
+```
+
+---
+
+# 37. `Conv2d`
+
+Example:
+
+```python
+conv = nn.Conv2d(
+    in_channels=3,
+    out_channels=32,
+    kernel_size=3,
+    stride=1,
+    padding=1
+)
+```
+
+For an RGB image:
+
+```text
+in_channels = 3
+```
+
+The 32 output channels mean the layer learns 32 filters.
+
+Input:
+
+```python
+x = torch.randn(
+    8, 3, 32, 32
+)
+```
+
+Meaning:
+
+```text
+8  → batch size
+3  → channels
+32 → height
+32 → width
+```
+
+---
+
+# 38. Pooling
+
+Max pooling reduces spatial dimensions.
+
+```python
+pool = nn.MaxPool2d(
+    kernel_size=2
+)
+
+x = torch.randn(
+    8, 32, 32, 32
+)
+
+y = pool(x)
+
+print(y.shape)
+```
+
+Spatial dimensions change:
+
+```text
+32 × 32
+    ↓
+16 × 16
+```
+
+Pooling reduces spatial resolution and can make representations more compact.
+
+---
+
+# 39. Complete CNN
+
+```python
+class CNN(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.features = nn.Sequential(
+
+            nn.Conv2d(
+                3, 32,
+                kernel_size=3,
+                padding=1
+            ),
+
+            nn.ReLU(),
+
+            nn.MaxPool2d(2),
+
+            nn.Conv2d(
+                32, 64,
+                kernel_size=3,
+                padding=1
+            ),
+
+            nn.ReLU(),
+
+            nn.MaxPool2d(2)
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(
+                64 * 8 * 8,
+                10
+            )
+        )
+
+    def forward(self, x):
+
+        x = self.features(x)
+
+        return self.classifier(x)
+```
+
+If the input is:
+
+```text
+3 × 32 × 32
+```
+
+after two `2×2` pooling operations:
+
+```text
+32 × 32
+ ↓
+16 × 16
+ ↓
+8 × 8
+```
+
+So the feature map becomes:
+
+```text
+64 × 8 × 8
+```
+
+That explains:
+
+```python
+nn.Linear(64 * 8 * 8, 10)
+```
+
+---
+
+# 40. Image Dataset with Torchvision
+
+PyTorch provides datasets through `torchvision`.
+
+Example using MNIST:
+
+```python
+from torchvision import datasets
+from torchvision import transforms
+
+transform = transforms.ToTensor()
+
+train_dataset = datasets.MNIST(
+    root="./data",
+    train=True,
+    download=True,
+    transform=transform
+)
+```
+
+Create a DataLoader:
+
+```python
+train_loader = DataLoader(
+    train_dataset,
+    batch_size=64,
+    shuffle=True
+)
+```
+
+---
+
+# 41. Image Transformations
+
+Transforms preprocess and augment images.
+
+Convert image to tensor:
+
+```python
+transforms.ToTensor()
+```
+
+Resize:
+
+```python
+transforms.Resize(
+    (224, 224)
+)
+```
+
+Normalize:
+
+```python
+transforms.Normalize(
+    mean=[0.485, 0.456, 0.406],
+    std=[0.229, 0.224, 0.225]
+)
+```
+
+Data augmentation:
+
+```python
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(10),
+    transforms.ToTensor()
+])
+```
+
+### Why augmentation?
+
+Instead of showing the model exactly the same images repeatedly, we create slightly modified versions.
+
+Examples:
+
+```text
+Original image
+      ↓
+Flip
+Rotate
+Crop
+Resize
+Color changes
+```
+
+This can improve generalization.
+
+---
+
+# 42. Transfer Learning
+
+Training a large image model from scratch requires a lot of data and computation.
+
+Transfer learning starts with a model that has already learned useful visual features.
+
+Example:
+
+```python
+from torchvision.models import (
+    resnet18,
+    ResNet18_Weights
+)
+
+model = resnet18(
+    weights=ResNet18_Weights.DEFAULT
+)
+```
+
+Replace the final layer:
+
+```python
+model.fc = nn.Linear(
+    model.fc.in_features,
+    10
+)
+```
+
+If your dataset has 10 classes, the final layer needs 10 outputs.
+
+---
+
+## Freezing the pretrained layers
+
+```python
+for param in model.parameters():
+    param.requires_grad = False
+```
+
+Then enable training for the classifier:
+
+```python
+for param in model.fc.parameters():
+    param.requires_grad = True
+```
+
+This is called **feature extraction**.
+
+Later, you can optionally unfreeze some pretrained layers and fine-tune them.
+
+---
+
+# 43. RNN
+
+RNN stands for **Recurrent Neural Network**.
+
+RNNs process sequential information.
+
+Examples:
+
+```text
+Text
+Speech
+Time series
+Sensor data
+```
+
+Example:
+
+```python
+rnn = nn.RNN(
+    input_size=10,
+    hidden_size=20,
+    batch_first=True
+)
+
+x = torch.randn(
+    32,
+    5,
+    10
+)
+
+output, hidden = rnn(x)
+
+print(output.shape)
+```
+
+Shape:
+
+```text
+[batch, sequence, features]
+```
+
+Here:
+
+```text
+32 → batch
+5  → sequence length
+10 → input features
+```
+
+---
+
+# 44. LSTM
+
+LSTM means **Long Short-Term Memory**.
+
+It was designed to better preserve useful information over longer sequences than a basic RNN.
+
+```python
+lstm = nn.LSTM(
+    input_size=10,
+    hidden_size=32,
+    num_layers=2,
+    batch_first=True
+)
+
+x = torch.randn(
+    16,
+    20,
+    10
+)
+
+output, (hidden, cell) = lstm(x)
+
+print(output.shape)
+```
+
+LSTM maintains:
+
+```text
+Hidden state
++
+Cell state
+```
+
+These allow information to persist through the sequence.
+
+---
+
+# 45. GRU
+
+GRU means **Gated Recurrent Unit**.
+
+It is another recurrent architecture.
+
+```python
+gru = nn.GRU(
+    input_size=10,
+    hidden_size=32,
+    batch_first=True
+)
+
+x = torch.randn(
+    16,
+    20,
+    10
+)
+
+output, hidden = gru(x)
+
+print(output.shape)
+```
+
+Compared with LSTM, GRU has a simpler gating structure and does not maintain a separate cell state.
+
+---
+
+# 46. Transformer
+
+Transformers became fundamental to modern NLP and generative AI.
+
+A Transformer uses attention to determine which parts of a sequence are important to each other.
+
+Example:
+
+```python
+encoder_layer = nn.TransformerEncoderLayer(
+    d_model=512,
+    nhead=8,
+    batch_first=True
+)
+
+transformer = nn.TransformerEncoder(
+    encoder_layer,
+    num_layers=6
+)
+
+x = torch.randn(
+    32,
+    100,
+    512
+)
+
+output = transformer(x)
+
+print(output.shape)
+```
+
+Conceptually:
+
+```text
+Input
+ ↓
+Embedding
+ ↓
+Positional Information
+ ↓
+Self-Attention
+ ↓
+Feed Forward Network
+ ↓
+Normalization
+ ↓
+Output
+```
+
+Transformers are the foundation of many modern language models.
+
+---
+
+# 47. Attention
+
+Attention answers a basic question:
+
+> "Which other pieces of information should this token pay attention to?"
+
+The mathematical form is:
+
+```text
+Attention(Q,K,V)
+=
+softmax(QKᵀ / √d)V
+```
+
+Where:
+
+```text
+Q = Query
+K = Key
+V = Value
+```
+
+PyTorch implementation:
+
+```python
+attention = nn.MultiheadAttention(
+    embed_dim=512,
+    num_heads=8,
+    batch_first=True
+)
+
+x = torch.randn(
+    32,
+    100,
+    512
+)
+
+output, weights = attention(
+    x, x, x
+)
+
+print(output.shape)
+```
+
+When:
+
+```text
+Q = K = V
+```
+
+this is self-attention.
+
+---
+
+# 48. Embeddings
+
+Neural networks cannot directly understand words such as:
+
+```text
+cat
+dog
+computer
+```
+
+They are represented as token IDs.
+
+For example:
+
+```text
+cat → 17
+dog → 42
+```
+
+An embedding converts these IDs into dense vectors.
+
+```python
+embedding = nn.Embedding(
+    num_embeddings=10000,
+    embedding_dim=128
+)
+
+tokens = torch.tensor([
+    [1, 20, 300],
+    [4, 50, 600]
+])
+
+output = embedding(tokens)
+
+print(output.shape)
+```
+
+Shape:
+
+```text
+[2, 3, 128]
+```
+
+Meaning:
+
+```text
+2 sentences
+3 tokens per sentence
+128-dimensional embedding
+```
+
+---
+
+# 49. Simple NLP Model
+
+```python
+class TextClassifier(nn.Module):
+
+    def __init__(
+        self,
+        vocab_size,
+        embed_dim,
+        num_classes
+    ):
+        super().__init__()
+
+        self.embedding = nn.Embedding(
+            vocab_size,
+            embed_dim
+        )
+
+        self.fc = nn.Linear(
+            embed_dim,
+            num_classes
+        )
+
+    def forward(self, x):
+
+        x = self.embedding(x)
+
+        x = x.mean(dim=1)
+
+        return self.fc(x)
+```
+
+The flow is:
+
+```text
+Token IDs
+ ↓
+Embedding
+ ↓
+Average token vectors
+ ↓
+Linear layer
+ ↓
+Class prediction
+```
+
+This is a simple educational model, not a modern LLM architecture.
+
+---
+
+# 50. Model Parameters
+
+Every neural network contains parameters such as weights and biases.
+
+View them:
+
+```python
+for name, param in model.named_parameters():
+
+    print(name)
+    print(param.shape)
+```
+
+Count all parameters:
+
+```python
+total = sum(
+    p.numel()
+    for p in model.parameters()
+)
+
+print(total)
+```
+
+Count only trainable parameters:
+
+```python
+trainable = sum(
+    p.numel()
+    for p in model.parameters()
+    if p.requires_grad
+)
+
+print(trainable)
+```
+
+This is particularly useful when comparing model sizes.
+
+---
+
+# 51. Saving a Model
+
+The recommended approach is usually to save the model's `state_dict`.
+
+```python
+torch.save(
+    model.state_dict(),
+    "model.pth"
+)
+```
+
+Later:
+
+```python
+model = NeuralNetwork()
+
+model.load_state_dict(
+    torch.load(
+        "model.pth",
+        weights_only=True
+    )
+)
+
+model.eval()
+```
+
+### What is `state_dict()`?
+
+It is essentially a dictionary containing the model's learned parameters and buffers.
+
+---
+
+# 52. Saving a Checkpoint
+
+If training takes hours or days, save checkpoints.
+
+```python
+checkpoint = {
+    "epoch": epoch,
+    "model_state": model.state_dict(),
+    "optimizer_state": optimizer.state_dict(),
+    "loss": loss.item()
+}
+
+torch.save(
+    checkpoint,
+    "checkpoint.pth"
+)
+```
+
+Load:
+
+```python
+checkpoint = torch.load(
+    "checkpoint.pth",
+    weights_only=False
+)
+
+model.load_state_dict(
+    checkpoint["model_state"]
+)
+
+optimizer.load_state_dict(
+    checkpoint["optimizer_state"]
+)
+
+epoch = checkpoint["epoch"]
+```
+
+A checkpoint allows you to continue training instead of starting from zero.
+
+---
+
+# 53. Learning Rate Scheduler
+
+A learning-rate scheduler changes the learning rate during training.
+
+Example:
+
+```python
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+
+scheduler = torch.optim.lr_scheduler.StepLR(
+    optimizer,
+    step_size=10,
+    gamma=0.1
+)
+```
+
+Then:
+
+```python
+for epoch in range(30):
+
+    # training code
+
+    scheduler.step()
+```
+
+Conceptually:
+
+```text
+Initial LR
+   ↓
+Train
+   ↓
+Reduce LR
+   ↓
+Train
+   ↓
+Reduce LR
+```
+
+Other schedulers include:
+
+```text
+CosineAnnealingLR
+ReduceLROnPlateau
+OneCycleLR
+LinearLR
+```
+
+---
+
+# 54. Early Stopping
+
+Sometimes validation performance stops improving.
+
+Instead of continuing forever, we can stop training.
+
+Concept:
+
+```text
+Validation loss improves
+        ↓
+Continue training
+
+Validation loss does not improve
+        ↓
+Increase patience counter
+
+Counter reaches patience
+        ↓
+Stop training
+```
+
+Example:
+
+```python
+best_loss = float("inf")
+
+patience = 3
+counter = 0
+
+for epoch in range(100):
+
+    val_loss = validate()
+
+    if val_loss < best_loss:
+
+        best_loss = val_loss
+        counter = 0
+
+        torch.save(
+            model.state_dict(),
+            "best_model.pth"
+        )
+
+    else:
+
+        counter += 1
+
+        if counter >= patience:
+            print("Early stopping")
+            break
+```
+
+The important idea is to save the **best** model, not necessarily the model from the final epoch.
+
+---
+
+# 55. Mixed Precision
+
+Modern GPUs can perform some operations efficiently using lower-precision numerical formats.
+
+Mixed precision can provide:
+
+- Faster training
+- Lower GPU memory usage
+- Better hardware utilization
+
+Example:
+
+```python
+from torch.amp import autocast, GradScaler
+
+scaler = GradScaler("cuda")
+
+for X, y in train_loader:
+
+    X = X.to(device)
+    y = y.to(device)
+
+    optimizer.zero_grad()
+
+    with autocast("cuda"):
+
+        output = model(X)
+
+        loss = loss_fn(
+            output,
+            y
+        )
+
+    scaler.scale(
+        loss
+    ).backward()
+
+    scaler.step(
+        optimizer
+    )
+
+    scaler.update()
+```
+
+This is especially useful for large neural networks and GPU training.
+
+---
+
+# 56. Gradient Clipping
+
+Sometimes gradients become extremely large.
+
+This is called **exploding gradients**.
+
+Gradient clipping limits their magnitude.
+
+```python
+loss.backward()
+
+torch.nn.utils.clip_grad_norm_(
+    model.parameters(),
+    max_norm=1.0
+)
+
+optimizer.step()
+```
+
+It is particularly useful in some recurrent-network training scenarios.
+
+---
+
+# 57. Freezing Parameters
+
+Sometimes you don't want to train every layer.
+
+```python
+for param in model.parameters():
+    param.requires_grad = False
+```
+
+Now those parameters will not receive normal gradient-based updates.
+
+To train a specific layer:
+
+```python
+for param in model.fc.parameters():
+    param.requires_grad = True
+```
+
+This is heavily used in transfer learning and fine-tuning.
+
+---
+
+# 58. `torch.no_grad()`
+
+For inference:
+
+```python
+model.eval()
+
+with torch.no_grad():
+
+    output = model(X)
+```
+
+`no_grad()` tells autograd that gradients are not needed.
+
+Benefits:
+
+```text
+Less memory
+Less computation
+Faster inference
+```
+
+Remember:
+
+```text
+model.eval()
+```
+
+and:
+
+```python
+with torch.no_grad():
+```
+
+serve different purposes.
+
+`eval()` changes model behavior.
+
+`no_grad()` disables gradient tracking.
+
+You commonly use both during inference.
+
+---
+
+# 59. `detach()`
+
+Suppose:
+
+```python
+x = torch.tensor(
+    2.0,
+    requires_grad=True
+)
+
+y = x ** 2
+
+z = y.detach()
+
+print(z.requires_grad)
+```
+
+Output:
+
+```text
+False
+```
+
+`detach()` creates a tensor that is disconnected from the current computation graph.
+
+For example:
+
+```python
+output = model(X)
+
+output = (
+    output
+    .detach()
+    .cpu()
+    .numpy()
+)
+```
+
+This is useful when you want to take model outputs outside PyTorch's gradient computation.
+
+---
+
+# 60. Random Seeds
+
+For reproducibility:
+
+```python
+torch.manual_seed(42)
+```
+
+For CUDA:
+
+```python
+torch.cuda.manual_seed(42)
+```
+
+However, a seed does not automatically guarantee perfect reproducibility in every environment.
+
+Results can also depend on:
+
+- GPU hardware
+- CUDA version
+- Backend algorithms
+- Parallelism
+- Other libraries
+
+---
+
+# 61. Classification Example
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+class Classifier(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.model = nn.Sequential(
+            nn.Linear(4, 16),
+            nn.ReLU(),
+            nn.Linear(16, 8),
+            nn.ReLU(),
+            nn.Linear(8, 3)
+        )
+
+    def forward(self, x):
+        return self.model(x)
+
+
+model = Classifier()
+
+loss_fn = nn.CrossEntropyLoss()
+
+optimizer = optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+```
+
+Training:
+
+```python
+for epoch in range(100):
+
+    X = torch.randn(32, 4)
+
+    y = torch.randint(
+        0,
+        3,
+        (32,)
+    )
+
+    output = model(X)
+
+    loss = loss_fn(
+        output,
+        y
+    )
+
+    optimizer.zero_grad()
+
+    loss.backward()
+
+    optimizer.step()
+
+    if epoch % 10 == 0:
+
+        print(
+            epoch,
+            loss.item()
+        )
+```
+
+The model receives:
+
+```text
+32 samples
+4 features each
+```
+
+and predicts one of:
+
+```text
+3 classes
+```
+
+---
+
+# 62. Regression Example
+
+Regression predicts continuous values.
+
+Suppose:
+
+```text
+y = 3x + 2
+```
+
+We can create synthetic training data:
+
+```python
+X = torch.randn(100, 1)
+
+y = 3 * X + 2
+```
+
+Model:
+
+```python
+model = nn.Linear(1, 1)
+```
+
+Loss:
+
+```python
+loss_fn = nn.MSELoss()
+```
+
+Optimizer:
+
+```python
+optimizer = torch.optim.SGD(
+    model.parameters(),
+    lr=0.01
+)
+```
+
+Training:
+
+```python
+for epoch in range(1000):
+
+    prediction = model(X)
+
+    loss = loss_fn(
+        prediction,
+        y
+    )
+
+    optimizer.zero_grad()
+
+    loss.backward()
+
+    optimizer.step()
+
+    if epoch % 100 == 0:
+
+        print(
+            epoch,
+            loss.item()
+        )
+```
+
+The model should learn parameters close to:
+
+```text
+weight ≈ 3
+bias ≈ 2
+```
+
+---
+
+# 63. Binary Classification
+
+For binary classification, the model can produce one logit per sample.
+
+```python
+class BinaryClassifier(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.network = nn.Sequential(
+            nn.Linear(4, 16),
+            nn.ReLU(),
+            nn.Linear(16, 1)
+        )
+
+    def forward(self, x):
+        return self.network(x)
+```
+
+Loss:
+
+```python
+loss_fn = nn.BCEWithLogitsLoss()
+```
+
+Training:
+
+```python
+logits = model(X)
+
+loss = loss_fn(
+    logits,
+    y.float().unsqueeze(1)
+)
+```
+
+Convert logits to probabilities:
+
+```python
+probability = torch.sigmoid(logits)
+```
+
+Convert probabilities to binary predictions:
+
+```python
+prediction = (
+    probability > 0.5
+).float()
+```
+
+Important distinction:
+
+```text
+Logit
+ ↓ sigmoid
+Probability
+ ↓ threshold
+Class prediction
+```
+
+---
+
+# 64. Multi-Class Classification
+
+Suppose the classes are:
+
+```text
+Cat
+Dog
+Horse
+```
+
+Then the output layer needs three outputs:
+
+```python
+nn.Linear(
+    hidden_size,
+    3
+)
+```
+
+The model returns logits:
+
+```python
+output = model(X)
+```
+
+Choose the class with the highest logit:
+
+```python
+prediction = output.argmax(
+    dim=1
+)
+```
+
+Loss:
+
+```python
+loss_fn = nn.CrossEntropyLoss()
+```
+
+Targets should normally be class indices:
+
+```python
+tensor([
+    0,
+    2,
+    1,
+    0
+])
+```
+
+rather than one-hot vectors.
+
+---
+
+# 65. Autoencoder
+
+An autoencoder learns to reconstruct its input.
+
+Architecture:
+
+```text
+Input
+ ↓
+Encoder
+ ↓
+Latent Representation
+ ↓
+Decoder
+ ↓
+Reconstructed Input
+```
+
+Example:
+
+```python
+class Autoencoder(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.encoder = nn.Sequential(
+            nn.Linear(784, 128),
+            nn.ReLU(),
+            nn.Linear(128, 32)
+        )
+
+        self.decoder = nn.Sequential(
+            nn.Linear(32, 128),
+            nn.ReLU(),
+            nn.Linear(128, 784),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+
+        latent = self.encoder(x)
+
+        reconstruction = (
+            self.decoder(latent)
+        )
+
+        return reconstruction
+```
+
+Loss:
+
+```python
+loss_fn = nn.MSELoss()
+```
+
+The model attempts to make:
+
+```text
+reconstruction ≈ original input
+```
+
+---
+
+# 66. GAN Basics
+
+GAN means **Generative Adversarial Network**.
+
+It contains two networks:
+
+```text
+Generator
+    ↓
+Fake Data
+    ↓
+Discriminator
+    ↓
+Real or Fake?
+```
+
+The Generator tries to create convincing fake samples.
+
+The Discriminator tries to distinguish real samples from generated samples.
+
+Generator:
+
+```python
+class Generator(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.model = nn.Sequential(
+            nn.Linear(100, 256),
+            nn.ReLU(),
+            nn.Linear(256, 784),
+            nn.Tanh()
+        )
+
+    def forward(self, z):
+        return self.model(z)
+```
+
+Discriminator:
+
+```python
+class Discriminator(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.model = nn.Sequential(
+            nn.Linear(784, 256),
+            nn.LeakyReLU(0.2),
+            nn.Linear(256, 1)
+        )
+
+    def forward(self, x):
+        return self.model(x)
+```
+
+GAN training is more complicated than ordinary supervised training because two networks are optimized against each other.
+
+---
+
+# 67. Custom Loss Function
+
+You can create your own loss.
+
+```python
+class MyLoss(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(
+        self,
+        prediction,
+        target
+    ):
+
+        return torch.mean(
+            (prediction - target) ** 2
+        )
+```
+
+Use it:
+
+```python
+loss_fn = MyLoss()
+
+loss = loss_fn(
+    prediction,
+    target
+)
+```
+
+This is useful when the problem requires a specialized objective.
+
+---
+
+# 68. Custom Layer
+
+PyTorch also allows custom neural-network layers.
+
+```python
+class MyLayer(nn.Module):
+
+    def __init__(
+        self,
+        input_size,
+        output_size
+    ):
+        super().__init__()
+
+        self.weight = nn.Parameter(
+            torch.randn(
+                input_size,
+                output_size
+            )
+        )
+
+        self.bias = nn.Parameter(
+            torch.zeros(output_size)
+        )
+
+    def forward(self, x):
+
+        return (
+            x @ self.weight
+            + self.bias
+        )
+```
+
+### Why `nn.Parameter`?
+
+`nn.Parameter` tells PyTorch:
+
+> "This tensor is a learnable model parameter."
+
+Therefore it appears in:
+
+```python
+model.parameters()
+```
+
+and can be updated by the optimizer.
+
+---
+
+# 69. Hooks
+
+Hooks allow you to inspect intermediate values.
+
+Example:
+
+```python
+def hook_fn(
+    module,
+    input,
+    output
+):
+
+    print(
+        "Output shape:",
+        output.shape
+    )
+
+handle = model.fc.register_forward_hook(
+    hook_fn
+)
+```
+
+Run the model:
+
+```python
+output = model(X)
+```
+
+The hook executes automatically.
+
+Remove it:
+
+```python
+handle.remove()
+```
+
+Hooks are useful for:
+
+- Debugging
+- Inspecting activations
+- Visualizing intermediate layers
+- Model analysis
+
+---
+
+# 70. Profiling
+
+When a model is slow, profiling helps identify bottlenecks.
+
+Example:
+
+```python
+with torch.profiler.profile(
+    activities=[
+        torch.profiler.ProfilerActivity.CPU
+    ]
+) as prof:
+
+    output = model(X)
+
+print(
+    prof.key_averages()
+)
+```
+
+Profiling can help answer:
+
+```text
+Which operation is slow?
+Which layer uses the most time?
+Where is the performance bottleneck?
+```
+
+---
+
+# 71. Important Tensor Shapes
+
+Understanding tensor shapes is critical.
+
+## Tabular data
+
+Usually:
+
+```text
+[batch, features]
+```
+
+Example:
+
+```text
+[32, 10]
+```
+
+Meaning:
+
+```text
+32 samples
+10 features
+```
+
+---
+
+## Images
+
+Usually:
+
+```text
+[batch, channels, height, width]
+```
+
+Example:
+
+```text
+[32, 3, 224, 224]
+```
+
+Meaning:
+
+```text
+32 images
+3 channels
+224 height
+224 width
+```
+
+---
+
+## Sequences
+
+Often:
+
+```text
+[batch, sequence_length, features]
+```
+
+Example:
+
+```text
+[32, 100, 512]
+```
+
+Meaning:
+
+```text
+32 sequences
+100 tokens/time steps
+512 features
+```
+
+### Interview tip
+
+When debugging a PyTorch model, always print:
+
+```python
+print(x.shape)
+```
+
+Shape errors are among the most common problems in deep learning.
+
+---
+
+# 72. Common PyTorch Errors
+
+## Shape mismatch
+
+Example:
+
+```text
+mat1 and mat2 shapes cannot be multiplied
+```
+
+Check:
+
+```python
+print(x.shape)
+print(layer.weight.shape)
+```
+
+Make sure the input feature dimension matches the layer's expected `in_features`.
+
+---
+
+## CPU/GPU mismatch
+
+Incorrect:
+
+```python
+model = model.to("cuda")
+
+output = model(X)
+```
+
+if `X` is still on CPU.
+
+Correct:
+
+```python
+model = model.to(device)
+
+X = X.to(device)
+
+output = model(X)
+```
+
+---
+
+## Incorrect target dtype
+
+For `CrossEntropyLoss`, targets should generally be integer class indices with dtype:
+
+```text
+torch.int64
+```
+
+You can use:
+
+```python
+target = target.long()
+```
+
+---
+
+# 73. Debugging Checklist
+
+When your PyTorch model fails, check:
+
+```python
+print(X.shape)
+print(X.dtype)
+print(X.device)
+
+print(y.shape)
+print(y.dtype)
+
+print(
+    next(model.parameters()).device
+)
+```
+
+Check for invalid values:
+
+```python
+print(
+    torch.isnan(X).any()
+)
+
+print(
+    torch.isinf(X).any()
+)
+```
+
+Check gradients:
+
+```python
+for name, param in model.named_parameters():
+
+    if param.grad is not None:
+
+        print(
+            name,
+            param.grad.abs().mean()
+        )
+```
+
+This can help identify:
+
+```text
+NaN gradients
+Zero gradients
+Exploding gradients
+Wrong devices
+Wrong shapes
+Wrong dtypes
+```
+
+---
+
+# 74. Overfitting
+
+Overfitting means the model performs very well on training data but poorly on unseen data.
+
+Example:
+
+```text
+Training accuracy → 99%
+Validation accuracy → 70%
+```
+
+Possible solutions:
+
+```text
+More training data
+Data augmentation
+Dropout
+Weight decay
+Early stopping
+Smaller model
+Transfer learning
+```
+
+Example:
+
+```python
+optimizer = torch.optim.AdamW(
+    model.parameters(),
+    lr=0.001,
+    weight_decay=0.01
+)
+```
+
+---
+
+# 75. Underfitting
+
+Underfitting means the model cannot even perform well on the training data.
+
+Example:
+
+```text
+Training accuracy → 60%
+Validation accuracy → 58%
+```
+
+Possible solutions:
+
+```text
+Increase model capacity
+Train longer
+Improve features
+Adjust learning rate
+Reduce excessive regularization
+Use a better architecture
+```
+
+---
+
+# 76. Learning Rate
+
+The learning rate determines the size of parameter updates.
+
+Conceptually:
+
+```text
+New parameter
+=
+Old parameter
+-
+Learning rate × Gradient
+```
+
+Too high:
+
+```text
+Training may oscillate
+or diverge
+```
+
+Too low:
+
+```text
+Training can be extremely slow
+```
+
+Typical starting points can be:
+
+```text
+Adam  → 0.001
+SGD   → 0.01 or 0.1
+```
+
+These are only starting points. The appropriate value depends on the model, data, optimizer, and training setup.
+
+---
+
+# 77. Batch Size
+
+Suppose:
+
+```text
+Dataset = 10,000 samples
+Batch size = 100
+```
+
+Then:
+
+```text
+10,000 / 100
+= 100 batches per epoch
+```
+
+Large batch sizes can provide:
+
+```text
+Better hardware utilization
+More stable gradient estimates
+```
+
+but require:
+
+```text
+More memory
+```
+
+Small batch sizes require less memory but can result in noisier gradients and potentially slower hardware utilization.
+
+---
+
+# 78. Epoch
+
+An epoch means:
+
+> One complete pass through the training dataset.
+
+Example:
+
+```python
+for epoch in range(10):
+
+    for X, y in train_loader:
+
+        ...
+```
+
+This means the model processes the training dataset ten times.
+
+---
+
+# 79. Iteration
+
+An iteration usually refers to one batch/optimizer update.
+
+For example:
+
+```text
+10,000 samples
+Batch size = 100
+```
+
+gives:
+
+```text
+100 iterations per epoch
+```
+
+For:
+
+```text
+10 epochs
+```
+
+you get approximately:
+
+```text
+100 × 10
+= 1,000 iterations
+```
+
+---
+
+# 80. `state_dict`
+
+PyTorch stores model parameters in a `state_dict`.
+
+```python
+print(
+    model.state_dict()
+)
+```
+
+You can inspect a particular parameter:
+
+```python
+print(
+    model.state_dict()["fc.weight"]
+)
+```
+
+Save:
+
+```python
+torch.save(
+    model.state_dict(),
+    "weights.pth"
+)
+```
+
+Load:
+
+```python
+model.load_state_dict(
+    torch.load(
+        "weights.pth",
+        weights_only=True
+    )
+)
+```
+
+---
+
+# 81. Inference
+
+Inference means using a trained model to make predictions.
+
+Standard pattern:
+
+```python
+model.eval()
+
+with torch.no_grad():
+
+    output = model(X)
+
+    prediction = output.argmax(
+        dim=1
+    )
+
+print(prediction)
+```
+
+Remember:
+
+```text
+Training:
+model.train()
+
+Inference:
+model.eval()
++
+torch.no_grad()
+```
+
+---
+
+# 82. Clean PyTorch Project Structure
+
+A real project may be organized like this:
+
+```text
+my_project/
+│
+├── data/
+│
+├── models/
+│   └── model.py
+│
+├── dataset/
+│   └── dataset.py
+│
+├── train.py
+│
+├── evaluate.py
+│
+├── inference.py
+│
+├── config.py
+│
+├── checkpoints/
+│
+└── requirements.txt
+```
+
+This makes the project easier to maintain than putting everything into one huge Python file.
+
+---
+
+# 83. Complete PyTorch Workflow
+
+A typical machine-learning project follows:
+
+```text
+Collect Data
+      ↓
+Clean / Preprocess
+      ↓
+Create Dataset
+      ↓
+Create DataLoader
+      ↓
+Define Model
+      ↓
+Select Device
+      ↓
+Define Loss
+      ↓
+Define Optimizer
+      ↓
+Train
+      ↓
+Validate
+      ↓
+Save Best Model
+      ↓
+Test
+      ↓
+Inference
+      ↓
+Deploy
+```
+
+The most important thing is to understand what happens at every stage.
+
+---
+
+# 84. Complete Training Template
+
+Here is a practical template:
+
+```python
+import torch
+import torch.nn as nn
+
+
+# -----------------------
+# Device
+# -----------------------
+
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "cpu"
+)
+
+
+# -----------------------
+# Model
+# -----------------------
+
+class Model(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.network = nn.Sequential(
+            nn.Linear(10, 64),
+            nn.ReLU(),
+
+            nn.Linear(64, 32),
+            nn.ReLU(),
+
+            nn.Linear(32, 3)
+        )
+
+    def forward(self, x):
+
+        return self.network(x)
+
+
+model = Model().to(device)
+
+
+# -----------------------
+# Loss
+# -----------------------
+
+loss_fn = nn.CrossEntropyLoss()
+
+
+# -----------------------
+# Optimizer
+# -----------------------
+
+optimizer = torch.optim.AdamW(
+    model.parameters(),
+    lr=0.001,
+    weight_decay=0.01
+)
+
+
+# -----------------------
+# Training
+# -----------------------
+
+for epoch in range(10):
+
+    model.train()
+
+    for X, y in train_loader:
+
+        X = X.to(device)
+        y = y.to(device)
+
+        # Forward pass
+
+        output = model(X)
+
+        # Calculate loss
+
+        loss = loss_fn(
+            output,
+            y
+        )
+
+        # Clear old gradients
+
+        optimizer.zero_grad()
+
+        # Backpropagation
+
+        loss.backward()
+
+        # Update parameters
+
+        optimizer.step()
+
+    print(
+        f"Epoch {epoch + 1}: "
+        f"Loss = {loss.item():.4f}"
+    )
+
+
+# -----------------------
+# Evaluation
+# -----------------------
+
+model.eval()
+
+correct = 0
+total = 0
+
+with torch.no_grad():
+
+    for X, y in test_loader:
+
+        X = X.to(device)
+        y = y.to(device)
+
+        output = model(X)
+
+        prediction = output.argmax(
+            dim=1
+        )
+
+        correct += (
+            prediction == y
+        ).sum().item()
+
+        total += y.size(0)
+
+
+accuracy = correct / total
+
+print(
+    "Accuracy:",
+    accuracy
+)
+
+
+# -----------------------
+# Save model
+# -----------------------
+
+torch.save(
+    model.state_dict(),
+    "model.pth"
+)
+```
+
+The most important sequence is:
+
+```text
+Data
+ ↓
+model(X)
+ ↓
+prediction
+ ↓
+loss_fn(prediction, target)
+ ↓
+optimizer.zero_grad()
+ ↓
+loss.backward()
+ ↓
+optimizer.step()
+```
+
+---
+
+# 85. What You Should Memorize for Interviews
+
+Don't try to memorize every PyTorch function.
+
+Understand these concepts deeply.
+
+## Level 1 — Tensors
+
+Know:
+
+```python
+torch.tensor()
+torch.zeros()
+torch.ones()
+torch.randn()
+
+x.shape
+x.dtype
+x.device
+
+reshape()
+view()
+flatten()
+
+unsqueeze()
+squeeze()
+```
+
+You should be able to explain:
+
+> What is a tensor and why are tensor shapes important?
+
+---
+
+## Level 2 — Autograd
+
+Know:
+
+```python
+requires_grad=True
+loss.backward()
+tensor.grad
+detach()
+torch.no_grad()
+```
+
+Understand:
+
+```text
+Forward pass
+ ↓
+Loss
+ ↓
+Backward pass
+ ↓
+Gradients
+```
+
+---
+
+## Level 3 — Neural Networks
+
+Know:
+
+```python
+nn.Module
+nn.Linear
+nn.Sequential
+nn.ReLU
+nn.Sigmoid
+nn.Softmax
+```
+
+You should understand what happens inside:
+
+```python
+model(X)
+```
+
+---
+
+## Level 4 — Training
+
+Know:
+
+```python
+loss_fn
+optimizer
+optimizer.zero_grad()
+loss.backward()
+optimizer.step()
+```
+
+This is the core of PyTorch training.
+
+---
+
+## Level 5 — Data
+
+Know:
+
+```python
+Dataset
+DataLoader
+batch_size
+shuffle
+transforms
+```
+
+Understand why batching is needed.
+
+---
+
+## Level 6 — Computer Vision
+
+Know:
+
+```python
+Conv2d
+MaxPool2d
+BatchNorm
+Dropout
+CNN
+Transfer Learning
+```
+
+Understand image tensor shape:
+
+```text
+[batch, channels, height, width]
+```
+
+---
+
+## Level 7 — Advanced Deep Learning
+
+Know the concepts:
+
+```text
+RNN
+LSTM
+GRU
+Attention
+Transformer
+Mixed Precision
+Gradient Clipping
+Learning-rate Scheduling
+Transfer Learning
+Distributed Training
+Model Optimization
+Deployment
+```
+
+---
+
+# 86. PyTorch Cheat Sheet
+
+```python
+# -----------------------
+# Import
+# -----------------------
+
+import torch
+import torch.nn as nn
+
+
+# -----------------------
+# Tensor
+# -----------------------
+
+x = torch.tensor([
+    1,
+    2,
+    3
+])
+
+
+# -----------------------
+# Random Tensor
+# -----------------------
+
+x = torch.randn(
+    3,
+    4
+)
+
+
+# -----------------------
+# Shape
+# -----------------------
+
+print(x.shape)
+
+
+# -----------------------
+# Reshape
+# -----------------------
+
+x = x.reshape(
+    2,
+    6
+)
+
+
+# -----------------------
+# Device
+# -----------------------
+
+device = torch.device(
+    "cuda"
+    if torch.cuda.is_available()
+    else "cpu"
+)
+
+x = x.to(device)
+
+
+# -----------------------
+# Model
+# -----------------------
+
+model = nn.Linear(
+    10,
+    2
+)
+
+
+# -----------------------
+# Loss
+# -----------------------
+
+loss_fn = nn.CrossEntropyLoss()
+
+
+# -----------------------
+# Optimizer
+# -----------------------
+
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+
+
+# -----------------------
+# Training
+# -----------------------
+
+model.train()
+
+output = model(x)
+
+loss = loss_fn(
+    output,
+    target
+)
+
+optimizer.zero_grad()
+
+loss.backward()
+
+optimizer.step()
+
+
+# -----------------------
+# Evaluation
+# -----------------------
+
+model.eval()
+
+with torch.no_grad():
+
+    output = model(x)
+
+
+# -----------------------
+# Save
+# -----------------------
+
+torch.save(
+    model.state_dict(),
+    "model.pth"
+)
+
+
+# -----------------------
+# Load
+# -----------------------
+
+model.load_state_dict(
+    torch.load(
+        "model.pth",
+        weights_only=True
+    )
+)
+```
+
+---
+
+# 87. Recommended Learning Order
+
+Don't try to learn everything simultaneously.
+
+Follow this progression:
+
+```text
+Python
+  ↓
+NumPy
+  ↓
+PyTorch tensors
+  ↓
+Tensor operations
+  ↓
+Tensor shapes
+  ↓
+Autograd
+  ↓
+nn.Module
+  ↓
+Linear Regression
+  ↓
+Classification
+  ↓
+Loss Functions
+  ↓
+Optimizers
+  ↓
+Dataset
+  ↓
+DataLoader
+  ↓
+Training Loop
+  ↓
+Validation / Testing
+  ↓
+CNN
+  ↓
+Transfer Learning
+  ↓
+RNN
+  ↓
+LSTM / GRU
+  ↓
+Attention
+  ↓
+Transformers
+  ↓
+Mixed Precision
+  ↓
+Distributed Training
+  ↓
+Model Optimization
+  ↓
+Deployment
+```
+
+---
+
+# 88. The Core PyTorch Mental Model
+
+If you remember only one thing, remember this:
+
+```text
+                 DATA
+                   ↓
+              DataLoader
+                   ↓
+              Batch X, y
+                   ↓
+                MODEL
+                   ↓
+             Prediction
+                   ↓
+             LOSS FUNCTION
+                   ↓
+                 Loss
+                   ↓
+          optimizer.zero_grad()
+                   ↓
+             loss.backward()
+                   ↓
+           Gradients calculated
+                   ↓
+           optimizer.step()
+                   ↓
+          Parameters updated
+                   ↓
+               Repeat
+```
+
+The model is essentially learning:
+
+```text
+Input
+  ↓
+Weights
+  ↓
+Prediction
+  ↓
+Error
+  ↓
+Gradient
+  ↓
+Better weights
+```
+
+After thousands or millions of updates, the model ideally learns parameters that produce useful predictions.
+
+---
+
+# 89. The Most Important PyTorch Concepts
+
+For practical work and interviews, prioritize these concepts:
+
+### 1. Tensor
+
+Understand:
+
+```text
+Shape
+Dtype
+Device
+Operations
+```
+
+### 2. Autograd
+
+Understand:
+
+```text
+Gradient
+Backward pass
+Computation graph
+```
+
+### 3. `nn.Module`
+
+Understand how neural networks are constructed.
+
+### 4. Forward pass
+
+```python
+prediction = model(X)
+```
+
+### 5. Loss
+
+```python
+loss = loss_fn(
+    prediction,
+    target
+)
+```
+
+### 6. Backpropagation
+
+```python
+loss.backward()
+```
+
+### 7. Optimizer
+
+```python
+optimizer.step()
+```
+
+### 8. Dataset/DataLoader
+
+Understand how data reaches the model.
+
+### 9. Training vs evaluation
+
+```python
+model.train()
+model.eval()
+```
+
+### 10. GPU
+
+```python
+model.to(device)
+X.to(device)
+```
+
+### 11. CNN
+
+Understand image processing.
+
+### 12. Attention/Transformer
+
+Understand the architecture behind many modern NLP and generative-AI systems.
+
+---
+
+# 90. Final PyTorch Pattern to Memorize
+
+The most important PyTorch code pattern is:
+
+```python
+model.train()
+
+for X, y in train_loader:
+
+    X = X.to(device)
+    y = y.to(device)
+
+    optimizer.zero_grad()
+
+    prediction = model(X)
+
+    loss = loss_fn(
+        prediction,
+        y
+    )
+
+    loss.backward()
+
+    optimizer.step()
+```
+
+Understand what each line means:
+
+```text
+model.train()
+→ Put model into training mode.
+
+X, y
+→ Get a batch of input data and labels.
+
+X.to(device)
+→ Move input to CPU/GPU.
+
+optimizer.zero_grad()
+→ Remove gradients from the previous update.
+
+model(X)
+→ Forward pass.
+
+loss_fn(...)
+→ Measure prediction error.
+
+loss.backward()
+→ Calculate gradients using backpropagation.
+
+optimizer.step()
+→ Update model parameters.
+```
+
+Then evaluation:
+
+```python
+model.eval()
+
+with torch.no_grad():
+
+    prediction = model(X)
+```
+
+So the complete mental model is:
+
+```text
+TENSORS
+   ↓
+AUTOGRAD
+   ↓
+nn.Module
+   ↓
+FORWARD PASS
+   ↓
+LOSS
+   ↓
+BACKPROPAGATION
+   ↓
+OPTIMIZER
+   ↓
+UPDATED PARAMETERS
+   ↓
+DATASET + DATALOADER
+   ↓
+TRAINING LOOP
+   ↓
+CNN / RNN / TRANSFORMER
+   ↓
+TRAINED MODEL
+   ↓
+INFERENCE
+   ↓
+DEPLOYMENT
+```

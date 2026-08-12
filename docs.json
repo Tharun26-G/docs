@@ -236,6 +236,13 @@
               "pytorch",
               "pytorch-important"
             ]
+          },
+          {
+            "group": "Day 24",
+            "pages": [
+              "pytroch-mnist",
+              "mnist-detail"
+            ]
           }
         ]
       }

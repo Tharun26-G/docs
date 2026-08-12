@@ -1,0 +1,615 @@
+---
+title: "PyTorch MNIST"
+---
+
+## 1. Import libraries
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+```
+
+- `torch` → main PyTorch library
+- `nn` → neural-network layers
+- `optim` → optimizers like Adam
+- `DataLoader` → creates batches
+- `datasets` → provides MNIST
+- `transforms` → image preprocessing
+
+---
+
+## 2. Select device
+
+```python
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+```
+
+- Uses **GPU** if available.
+- Otherwise uses **CPU**.
+
+```python
+model.to(device)
+```
+
+moves the model to that device.
+
+---
+
+## 3. Transform images
+
+```python
+transform = transforms.ToTensor()
+```
+
+Converts images into PyTorch tensors.
+
+MNIST pixel values are converted roughly from:
+
+```text
+0–255 → 0–1
+```
+
+---
+
+## 4. Load MNIST
+
+```python
+train_dataset = datasets.MNIST(
+    root="./data",
+    train=True,
+    download=True,
+    transform=transform
+)
+```
+
+- `train=True` → training data
+- MNIST training set → **60,000 images**
+
+```python
+test_dataset = datasets.MNIST(
+    root="./data",
+    train=False,
+    download=True,
+    transform=transform
+)
+```
+
+- `train=False` → testing data
+- MNIST test set → **10,000 images**
+
+---
+
+## 5. Create DataLoader
+
+```python
+train_loader = DataLoader(
+    train_dataset,
+    batch_size=64,
+    shuffle=True
+)
+```
+
+- `batch_size=64` → process 64 images at a time
+- `shuffle=True` → randomly mix training data
+
+```python
+test_loader = DataLoader(
+    test_dataset,
+    batch_size=64,
+    shuffle=False
+)
+```
+
+- Testing doesn't need shuffling.
+
+---
+
+# 6. MNIST image
+
+Each MNIST image is:
+
+```text
+28 × 28
+```
+
+So total pixels:
+
+```text
+28 × 28 = 784
+```
+
+Image tensor:
+
+```text
+1 × 28 × 28
+```
+
+`1` means grayscale channel.
+
+---
+
+# 7. Neural network
+
+```python
+class SimpleNN(nn.Module):
+```
+
+Creates a custom neural network.
+
+### First layer
+
+```python
+self.fc1 = nn.Linear(28*28, 128)
+```
+
+Means:
+
+```text
+784 inputs → 128 neurons
+```
+
+### Second layer
+
+```python
+self.fc2 = nn.Linear(128, 10)
+```
+
+Means:
+
+```text
+128 neurons → 10 outputs
+```
+
+Why 10?
+
+Because MNIST has:
+
+```text
+0 1 2 3 4 5 6 7 8 9
+```
+
+---
+
+# 8. Forward pass
+
+```python
+def forward(self, x):
+
+    x = x.view(x.size(0), -1)
+
+    x = self.fc1(x)
+
+    x = torch.relu(x)
+
+    x = self.fc2(x)
+
+    return x
+```
+
+Flow:
+
+```text
+28 × 28 image
+      ↓
+Flatten
+      ↓
+784
+      ↓
+Linear layer
+      ↓
+128
+      ↓
+ReLU
+      ↓
+10 outputs
+```
+
+---
+
+## 9. Flatten
+
+```python
+x.view(x.size(0), -1)
+```
+
+Converts:
+
+```text
+1 × 28 × 28
+```
+
+into:
+
+```text
+784
+```
+
+For a batch of 64:
+
+```text
+64 × 1 × 28 × 28
+        ↓
+64 × 784
+```
+
+---
+
+# 10. ReLU
+
+```python
+torch.relu(x)
+```
+
+Formula:
+
+```text
+ReLU(x) = max(0, x)
+```
+
+Examples:
+
+```text
+-5 → 0
+-2 → 0
+ 3 → 3
+ 7 → 7
+```
+
+ReLU adds **non-linearity**, allowing the network to learn complex patterns.
+
+---
+
+# 11. Create model
+
+```python
+model = SimpleNN().to(device)
+```
+
+Creates the neural network and moves it to CPU/GPU.
+
+---
+
+# 12. Loss function
+
+```python
+criterion = nn.CrossEntropyLoss()
+```
+
+Loss tells us:
+
+> How wrong is the prediction?
+
+For MNIST classification, `CrossEntropyLoss` is commonly used.
+
+```text
+Low loss  → good prediction
+High loss → bad prediction
+```
+
+---
+
+# 13. Optimizer
+
+```python
+optimizer = optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+```
+
+Adam updates the model's weights.
+
+### Learning rate
+
+```python
+lr=0.001
+```
+
+Controls how big each weight update is.
+
+---
+
+# 14. Epoch
+
+```python
+epochs = 10
+```
+
+One epoch means:
+
+> The model has seen the entire training dataset once.
+
+So:
+
+```text
+10 epochs = 10 complete passes
+```
+
+---
+
+# 15. Training loop
+
+The most important part:
+
+```python
+optimizer.zero_grad()
+
+outputs = model(images)
+
+loss = criterion(outputs, labels)
+
+loss.backward()
+
+optimizer.step()
+```
+
+Remember:
+
+```text
+1. Clear gradients
+       ↓
+2. Make prediction
+       ↓
+3. Calculate loss
+       ↓
+4. Backpropagation
+       ↓
+5. Update weights
+```
+
+---
+
+## 16. `optimizer.zero_grad()`
+
+```python
+optimizer.zero_grad()
+```
+
+Clears old gradients before calculating new ones.
+
+---
+
+## 17. Forward pass
+
+```python
+outputs = model(images)
+```
+
+The images go through the neural network.
+
+```text
+Image
+ ↓
+784
+ ↓
+128
+ ↓
+ReLU
+ ↓
+10 scores
+```
+
+---
+
+## 18. Calculate loss
+
+```python
+loss = criterion(outputs, labels)
+```
+
+Compares:
+
+```text
+Prediction
+   vs
+Correct label
+```
+
+---
+
+## 19. Backpropagation
+
+```python
+loss.backward()
+```
+
+Calculates gradients.
+
+Gradients tell the model how its weights should change to reduce the loss.
+
+---
+
+## 20. Update weights
+
+```python
+optimizer.step()
+```
+
+Adam uses the gradients to update the weights.
+
+This is where the model **learns**.
+
+---
+
+# 21. Training vs Testing
+
+### Training
+
+```python
+model.train()
+```
+
+Used when learning.
+
+The model:
+
+```text
+Input
+ ↓
+Prediction
+ ↓
+Loss
+ ↓
+Backward
+ ↓
+Update weights
+```
+
+### Testing
+
+```python
+model.eval()
+```
+
+Used after training to measure performance.
+
+No weight updates happen.
+
+---
+
+# 22. `torch.no_grad()`
+
+```python
+with torch.no_grad():
+```
+
+During testing, we don't need gradients.
+
+Benefits:
+
+- Uses less memory
+- Faster computation
+- No training happens
+
+---
+
+# 23. Prediction
+
+```python
+_, predicted = torch.max(outputs, 1)
+```
+
+The model produces 10 scores.
+
+Example:
+
+```text
+0 → 0.2
+1 → 1.1
+2 → 0.4
+3 → 7.8  ← highest
+4 → 0.3
+...
+```
+
+Highest score is class `3`.
+
+Therefore:
+
+```text
+Prediction = 3
+```
+
+---
+
+# 24. Accuracy
+
+```python
+accuracy = 100 * correct / total
+```
+
+Example:
+
+```text
+Correct = 9,800
+Total   = 10,000
+```
+
+Then:
+
+```text
+Accuracy = 98%
+```
+
+---
+
+# 25. Important correction
+
+Your original code has:
+
+```python
+print("Test Accuracy: {accuracy: .2f}%")
+```
+
+This is incorrect.
+
+Use:
+
+```python
+print(f"Test Accuracy: {accuracy:.2f}%")
+```
+
+The `f` makes it an **f-string**, so Python replaces `{accuracy}` with its value.
+
+---
+
+# Revision
+
+```text
+MNIST
+ ↓
+60,000 training images
+10,000 testing images
+ ↓
+ToTensor()
+ ↓
+28 × 28 image
+ ↓
+Flatten
+ ↓
+784 pixels
+ ↓
+Linear(784 → 128)
+ ↓
+ReLU
+ ↓
+Linear(128 → 10)
+ ↓
+10 class scores
+ ↓
+CrossEntropyLoss
+ ↓
+loss.backward()
+ ↓
+Adam optimizer
+ ↓
+Update weights
+ ↓
+Repeat for 10 epochs
+ ↓
+Test model
+ ↓
+Calculate accuracy
+```
+
+### Most important 5 lines:
+
+```python
+outputs = model(images)       # Prediction
+
+loss = criterion(outputs, labels)  # Error
+
+loss.backward()               # Calculate gradients
+
+optimizer.step()              # Update weights
+
+optimizer.zero_grad()         # Clear old gradients
+```
+
+**In one sentence:** The neural network takes a `28×28` handwritten digit, converts it into `784` numbers, processes them through `128` neurons, produces `10` class scores, calculates the error, and repeatedly updates its weights until its predictions improve.

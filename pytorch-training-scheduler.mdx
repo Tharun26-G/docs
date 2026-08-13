@@ -371,6 +371,12 @@ scheduler.step()
 import torch
 import torch.nn as nn
 
+# Input data
+X = torch.randn(100, 10)
+
+# Target values
+y = torch.randn(100, 1)
+
 # Model
 model = nn.Sequential(
     nn.Linear(10, 32),

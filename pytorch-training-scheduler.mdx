@@ -1,0 +1,491 @@
+---
+title: "PyTorch Training Loop, Adam Optimizer & Learning-Rate Scheduler"
+---
+
+---
+
+## 1. PyTorch Training Loop
+
+A **training loop** repeatedly:
+
+1. Takes input data.
+2. Makes predictions.
+3. Calculates loss.
+4. Calculates gradients.
+5. Updates model weights.
+6. Repeats for multiple epochs.
+
+### Basic structure
+
+```python
+for epoch in range(epochs):
+
+    # 1. Forward pass
+    predictions = model(X)
+
+    # 2. Calculate loss
+    loss = criterion(predictions, y)
+
+    # 3. Clear old gradients
+    optimizer.zero_grad()
+
+    # 4. Backpropagation
+    loss.backward()
+
+    # 5. Update weights
+    optimizer.step()
+```
+
+### Flow
+
+```text
+Input
+  ↓
+Model
+  ↓
+Prediction
+  ↓
+Loss
+  ↓
+Backward()
+  ↓
+Gradients
+  ↓
+Optimizer.step()
+  ↓
+Updated weights
+  ↓
+Next iteration
+```
+
+---
+
+# 2. What is an Epoch?
+
+An **epoch** means the model has gone through the entire training dataset once.
+
+```python
+epochs = 10
+
+for epoch in range(epochs):
+    ...
+```
+
+Here, the model sees the complete dataset **10 times**.
+
+---
+
+# 3. What is a Batch?
+
+Instead of giving the entire dataset to the model at once, we divide it into smaller groups called **batches**.
+
+Example:
+
+```text
+Dataset = 10,000 samples
+Batch size = 100
+
+10,000 / 100 = 100 batches
+```
+
+The model updates its weights after each batch.
+
+```python
+for X_batch, y_batch in train_loader:
+
+    predictions = model(X_batch)
+    loss = criterion(predictions, y_batch)
+
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+```
+
+---
+
+# 4. `zero_grad()`
+
+PyTorch accumulates gradients by default.
+
+Therefore, we clear the previous gradients before calculating new ones.
+
+```python
+optimizer.zero_grad()
+```
+
+Simple meaning:
+
+```text
+Remove old gradients
+        ↓
+Calculate new gradients
+```
+
+---
+
+# 5. `loss.backward()`
+
+This performs **backpropagation**.
+
+```python
+loss.backward()
+```
+
+It calculates how much each model parameter contributed to the error.
+
+For example:
+
+```text
+Loss
+ ↓
+Gradient calculation
+ ↓
+Weight gradients
+Bias gradients
+```
+
+These gradients are stored in:
+
+```python
+parameter.grad
+```
+
+---
+
+# 6. `optimizer.step()`
+
+This updates the model parameters using the calculated gradients.
+
+```python
+optimizer.step()
+```
+
+Conceptually:
+
+```text
+Old weight
+    ↓
+Gradient
+    ↓
+Optimizer
+    ↓
+New weight
+```
+
+---
+
+# 7. Adam Optimizer
+
+**Adam = Adaptive Moment Estimation**
+
+Adam is one of the most commonly used optimizers in deep learning.
+
+```python
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+```
+
+It automatically adjusts how each parameter is updated using information from previous gradients.
+
+### Why Adam?
+
+Compared with basic SGD, Adam generally:
+
+- Converges quickly
+- Adapts the learning rate for individual parameters
+- Works well for many neural networks
+- Requires relatively little manual tuning
+
+---
+
+# 8. Learning Rate
+
+The **learning rate** controls how much the model changes its weights during each update.
+
+```python
+lr = 0.001
+```
+
+Conceptually:
+
+```text
+Small learning rate
+→ slow learning
+→ potentially more stable
+
+Large learning rate
+→ faster learning
+→ may overshoot the best solution
+```
+
+Example:
+
+```python
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+```
+
+---
+
+# 9. Adam Example
+
+```python
+import torch
+import torch.nn as nn
+
+model = nn.Linear(10, 1)
+
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+
+criterion = nn.MSELoss()
+```
+
+Training:
+
+```python
+for epoch in range(10):
+
+    predictions = model(X)
+
+    loss = criterion(predictions, y)
+
+    optimizer.zero_grad()
+
+    loss.backward()
+
+    optimizer.step()
+
+    print(f"Epoch {epoch + 1}, Loss: {loss.item():.4f}")
+```
+
+---
+
+# 10. Learning-Rate Scheduler
+
+A **learning-rate scheduler** changes the learning rate during training.
+
+Instead of keeping:
+
+```text
+lr = 0.001
+```
+
+for the entire training process, we can gradually reduce it.
+
+Example:
+
+```text
+Epoch 1  → 0.001
+Epoch 10 → 0.0005
+Epoch 20 → 0.00025
+```
+
+This can help the model make smaller updates as it gets closer to a good solution.
+
+---
+
+# 11. StepLR Scheduler
+
+One simple scheduler is `StepLR`.
+
+```python
+scheduler = torch.optim.lr_scheduler.StepLR(
+    optimizer,
+    step_size=10,
+    gamma=0.1
+)
+```
+
+Meaning:
+
+```text
+Every 10 epochs:
+learning rate × 0.1
+```
+
+For example:
+
+```text
+Initial LR = 0.001
+
+After 10 epochs:
+0.001 × 0.1 = 0.0001
+
+After 20 epochs:
+0.0001 × 0.1 = 0.00001
+```
+
+---
+
+# 12. Using Scheduler in Training
+
+```python
+for epoch in range(30):
+
+    predictions = model(X)
+
+    loss = criterion(predictions, y)
+
+    optimizer.zero_grad()
+
+    loss.backward()
+
+    optimizer.step()
+
+    scheduler.step()
+
+    print(
+        f"Epoch {epoch + 1}, "
+        f"Loss: {loss.item():.4f}"
+    )
+```
+
+The important order is:
+
+```text
+Forward pass
+    ↓
+Calculate loss
+    ↓
+zero_grad()
+    ↓
+backward()
+    ↓
+optimizer.step()
+    ↓
+scheduler.step()
+```
+
+---
+
+# 13. Complete Example
+
+```python
+import torch
+import torch.nn as nn
+
+# Model
+model = nn.Sequential(
+    nn.Linear(10, 32),
+    nn.ReLU(),
+    nn.Linear(32, 1)
+)
+
+# Loss function
+criterion = nn.MSELoss()
+
+# Adam optimizer
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+
+# Learning-rate scheduler
+scheduler = torch.optim.lr_scheduler.StepLR(
+    optimizer,
+    step_size=10,
+    gamma=0.1
+)
+
+# Training loop
+for epoch in range(30):
+
+    # Forward pass
+    predictions = model(X)
+
+    # Calculate loss
+    loss = criterion(predictions, y)
+
+    # Clear gradients
+    optimizer.zero_grad()
+
+    # Backpropagation
+    loss.backward()
+
+    # Update weights
+    optimizer.step()
+
+    # Update learning rate
+    scheduler.step()
+
+    print(
+        f"Epoch {epoch + 1} | "
+        f"Loss: {loss.item():.4f} | "
+        f"LR: {optimizer.param_groups[0]['lr']}"
+    )
+```
+
+---
+
+# 14. The Whole Training Process
+
+Think of it as:
+
+```text
+                Training Dataset
+                       ↓
+                  Data Batch
+                       ↓
+                 Forward Pass
+                       ↓
+                  Prediction
+                       ↓
+                 Loss Function
+                       ↓
+                 loss.backward()
+                       ↓
+                   Gradients
+                       ↓
+                Adam Optimizer
+                       ↓
+                Updated Weights
+                       ↓
+              Learning-Rate Scheduler
+                       ↓
+                  Next Batch/Epoch
+```
+
+---
+
+## 15. Important PyTorch Functions
+
+| Code | Purpose |
+| --- | --- |
+| `model(X)` | Forward pass |
+| `criterion(pred, y)` | Calculate loss |
+| `optimizer.zero_grad()` | Clear old gradients |
+| `loss.backward()` | Calculate gradients |
+| `optimizer.step()` | Update weights |
+| `scheduler.step()` | Adjust learning rate |
+| `loss.item()` | Convert loss tensor to number |
+
+---
+
+## 16. One-Line Memory Trick
+
+```text
+zero_grad → backward → optimizer.step → scheduler.step
+```
+
+Meaning:
+
+```text
+Clear gradients
+      ↓
+Calculate gradients
+      ↓
+Update weights
+      ↓
+Adjust learning rate
+```
+
+### Key takeaway
+
+**The training loop teaches the model, Adam updates its weights efficiently, and the learning-rate scheduler controls how aggressively those weights are updated over time.**

@@ -243,6 +243,12 @@
               "pytroch-mnist",
               "mnist-detail"
             ]
+          },
+          {
+            "group": "Day 25",
+            "pages": [
+              "pytorch-training-scheduler"
+            ]
           }
         ]
       }

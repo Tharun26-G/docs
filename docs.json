@@ -249,6 +249,12 @@
             "pages": [
               "pytorch-training-scheduler"
             ]
+          },
+          {
+            "group": "Day 26",
+            "pages": [
+              "cnn"
+            ]
           }
         ]
       }

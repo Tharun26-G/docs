@@ -1,0 +1,908 @@
+---
+title: "CNN Fundamentals"
+---
+
+# Convolution, Padding, Stride, Pooling & Activation
+
+A **Convolutional Neural Network (CNN)** is a neural network designed especially for working with images. CNNs learn visual patterns such as:
+
+**edges → shapes → textures → objects**
+
+A typical CNN looks like:
+
+```text
+Input Image
+    ↓
+Convolution
+    ↓
+Activation (ReLU)
+    ↓
+Pooling
+    ↓
+Convolution
+    ↓
+Activation
+    ↓
+Pooling
+    ↓
+Flatten
+    ↓
+Fully Connected Layer
+    ↓
+Output / Classification
+```
+
+---
+
+## 1. Convolution
+
+### What is convolution?
+
+Convolution is the main operation in a CNN. A small matrix called a **filter/kernel** slides over the image and detects specific patterns.
+
+For example, consider this 3×3 image:
+
+```text
+1  2  3
+4  5  6
+7  8  9
+```
+
+And a 2×2 filter:
+
+```text
+1  0
+0  1
+```
+
+The filter is placed over the first 2×2 region:
+
+```text
+1  2
+4  5
+```
+
+Multiply corresponding values:
+
+```text
+(1×1) + (2×0) + (4×0) + (5×1)
+= 1 + 0 + 0 + 5
+= 6
+```
+
+Move the filter one position:
+
+```text
+2  3
+5  6
+```
+
+Again:
+
+```text
+(2×1) + (3×0) + (5×0) + (6×1)
+= 8
+```
+
+Continuing gives:
+
+```text
+6  8
+12 14
+```
+
+This resulting matrix is called a **feature map**.
+
+### Why is convolution useful?
+
+Different filters learn different features:
+
+```text
+Filter 1 → vertical edges
+Filter 2 → horizontal edges
+Filter 3 → corners
+Filter 4 → textures
+...
+```
+
+During training, the CNN learns the best filter values automatically.
+
+### PyTorch code
+
+```python
+import torch
+import torch.nn as nn
+
+# Input: batch=1, channels=1, height=5, width=5
+x = torch.randn(1, 1, 5, 5)
+
+# Convolution layer
+conv = nn.Conv2d(
+    in_channels=1,
+    out_channels=2,
+    kernel_size=3
+)
+
+output = conv(x)
+
+print("Input shape :", x.shape)
+print("Output shape:", output.shape)
+```
+
+Output:
+
+```text
+Input shape : torch.Size([1, 1, 5, 5])
+Output shape: torch.Size([1, 2, 3, 3])
+```
+
+Why `5 → 3`?
+
+For no padding and stride 1:
+
+\[<br />Output = \\frac\{N-F\+2P\}\{S\}\+1<br />\]
+
+where:
+
+- `N` = input size = 5
+- `F` = filter size = 3
+- `P` = padding = 0
+- `S` = stride = 1
+
+So:
+
+\[<br />\\frac\{5-3\+0\}\{1\}\+1=3<br />\]
+
+---
+
+# 2. Padding
+
+### What is padding?
+
+**Padding means adding extra pixels around the border of an image**, usually with zeros.
+
+Without padding:
+
+```text
+5 × 5 image
+     ↓
+3 × 3 filter
+     ↓
+3 × 3 output
+```
+
+The image becomes smaller after every convolution.
+
+With padding:
+
+```text
+Original:
+
+1 2 3
+4 5 6
+7 8 9
+
+Padding = 1:
+
+0 0 0 0 0
+0 1 2 3 0
+0 4 5 6 0
+0 7 8 9 0
+0 0 0 0 0
+```
+
+Padding is useful because it:
+
+1. Preserves spatial dimensions.
+2. Allows border pixels to participate more fully.
+3. Prevents the image from shrinking too quickly.
+
+### Same padding
+
+For a 3×3 filter, `padding=1` with `stride=1` keeps the size unchanged:
+
+```text
+5 × 5
+  ↓
+3 × 3 filter + padding 1
+  ↓
+5 × 5
+```
+
+### PyTorch code
+
+```python
+import torch
+import torch.nn as nn
+
+x = torch.randn(1, 1, 5, 5)
+
+conv = nn.Conv2d(
+    in_channels=1,
+    out_channels=1,
+    kernel_size=3,
+    padding=1
+)
+
+output = conv(x)
+
+print(x.shape)
+print(output.shape)
+```
+
+Output:
+
+```text
+torch.Size([1, 1, 5, 5])
+torch.Size([1, 1, 5, 5])
+```
+
+So:
+
+```text
+Input     → 5 × 5
+Padding   → 1
+Filter    → 3 × 3
+Output    → 5 × 5
+```
+
+---
+
+# 3. Stride
+
+### What is stride?
+
+**Stride determines how many pixels the filter moves at each step.**
+
+### Stride = 1
+
+The filter moves one pixel at a time:
+
+```text
+→
+→
+→
+```
+
+This produces a larger feature map.
+
+### Stride = 2
+
+The filter jumps two pixels:
+
+```text
+→→
+→→
+```
+
+This produces a smaller feature map.
+
+For example:
+
+```text
+Input = 7 × 7
+Filter = 3 × 3
+Padding = 0
+Stride = 2
+```
+
+Output:
+
+\[<br />\\frac\{7-3\}\{2\}\+1=3<br />\]
+
+So:
+
+```text
+7 × 7 → 3 × 3
+```
+
+### PyTorch code
+
+```python
+import torch
+import torch.nn as nn
+
+x = torch.randn(1, 1, 7, 7)
+
+conv = nn.Conv2d(
+    in_channels=1,
+    out_channels=1,
+    kernel_size=3,
+    stride=2
+)
+
+output = conv(x)
+
+print("Input :", x.shape)
+print("Output:", output.shape)
+```
+
+Output:
+
+```text
+Input : torch.Size([1, 1, 7, 7])
+Output: torch.Size([1, 1, 3, 3])
+```
+
+### Important relationship
+
+The convolution output size is:
+
+\[<br />\\boxed\{<br />\\frac\{N-F\+2P\}\{S\}\+1<br />\}<br />\]
+
+This formula is extremely important for CNNs.
+
+---
+
+# 4. Pooling
+
+Pooling is used to **reduce the spatial size of feature maps**.
+
+It makes the network:
+
+- computationally cheaper
+- less sensitive to small changes
+- able to focus on important features
+
+The two common types are:
+
+### Max Pooling
+
+Take the **largest value** from each region.
+
+Example:
+
+```text
+2  8
+3  4
+```
+
+Max pooling gives:
+
+```text
+8
+```
+
+For:
+
+```text
+1  5  2  3
+4  8  7  6
+2  1  9  3
+5  4  2  8
+```
+
+Using 2×2 max pooling:
+
+```text
+1 5 | 2 3
+4 8 | 7 6
+----+----
+2 1 | 9 3
+5 4 | 2 8
+```
+
+Result:
+
+```text
+8  7
+5  9
+```
+
+### PyTorch code
+
+```python
+import torch
+import torch.nn as nn
+
+x = torch.tensor([
+    [[
+        [1., 5., 2., 3.],
+        [4., 8., 7., 6.],
+        [2., 1., 9., 3.],
+        [5., 4., 2., 8.]
+    ]]
+])
+
+pool = nn.MaxPool2d(
+    kernel_size=2,
+    stride=2
+)
+
+output = pool(x)
+
+print(output)
+```
+
+Result:
+
+```text
+tensor([[[[8., 7.],
+          [5., 9.]]]])
+```
+
+### Average Pooling
+
+Instead of taking the maximum, calculate the average.
+
+```python
+pool = nn.AvgPool2d(
+    kernel_size=2,
+    stride=2
+)
+```
+
+For:
+
+```text
+1 5
+4 8
+```
+
+Average:
+
+\[<br />\\frac\{1\+5\+4\+8\}\{4\}=4.5<br />\]
+
+---
+
+# 5. Activation Function
+
+After convolution, we generally apply an **activation function**.
+
+The most common activation in CNNs is **ReLU**.
+
+## ReLU
+
+ReLU stands for:
+
+**Rectified Linear Unit**
+
+Formula:
+
+\[<br />ReLU(x)=max(0,x)<br />\]
+
+Example:
+
+```text
+Input:
+
+-5  -2   0   3   7
+```
+
+After ReLU:
+
+```text
+ 0   0   0   3   7
+```
+
+So:
+
+```text
+negative → 0
+positive → unchanged
+```
+
+### Why do we need activation?
+
+Without activation functions, stacking many layers would essentially behave like a linear transformation.
+
+Activation functions introduce **non-linearity**, allowing CNNs to learn complex patterns.
+
+### PyTorch code
+
+```python
+import torch
+import torch.nn as nn
+
+x = torch.tensor([-3., -1., 0., 2., 5.])
+
+relu = nn.ReLU()
+
+output = relu(x)
+
+print(output)
+```
+
+Output:
+
+```text
+tensor([0., 0., 0., 2., 5.])
+```
+
+You can also use:
+
+```python
+output = torch.relu(x)
+```
+
+---
+
+# 6. Putting Everything Together
+
+A basic CNN block is often:
+
+```text
+Input
+  ↓
+Convolution
+  ↓
+ReLU
+  ↓
+Pooling
+  ↓
+```
+
+In PyTorch:
+
+```python
+import torch
+import torch.nn as nn
+
+class SimpleCNN(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.features = nn.Sequential(
+
+            # Convolution
+            nn.Conv2d(
+                in_channels=1,
+                out_channels=16,
+                kernel_size=3,
+                padding=1
+            ),
+
+            # Activation
+            nn.ReLU(),
+
+            # Pooling
+            nn.MaxPool2d(
+                kernel_size=2,
+                stride=2
+            ),
+
+            # Second convolution
+            nn.Conv2d(
+                in_channels=16,
+                out_channels=32,
+                kernel_size=3,
+                padding=1
+            ),
+
+            nn.ReLU(),
+
+            nn.MaxPool2d(
+                kernel_size=2,
+                stride=2
+            )
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        return x
+
+
+model = SimpleCNN()
+
+x = torch.randn(1, 1, 28, 28)
+
+output = model(x)
+
+print("Input :", x.shape)
+print("Output:", output.shape)
+```
+
+Shape changes:
+
+```text
+Input
+28 × 28
+   ↓
+Conv 3×3, padding=1
+28 × 28
+   ↓
+ReLU
+28 × 28
+   ↓
+MaxPool 2×2
+14 × 14
+   ↓
+Conv 3×3, padding=1
+14 × 14
+   ↓
+ReLU
+14 × 14
+   ↓
+MaxPool 2×2
+7 × 7
+```
+
+The number of channels changes:
+
+```text
+1 channel
+   ↓ Conv
+16 channels
+   ↓ Pool
+16 channels
+   ↓ Conv
+32 channels
+   ↓ Pool
+32 channels
+```
+
+Therefore the final tensor has shape:
+
+```text
+[batch, channels, height, width]
+
+[1, 32, 7, 7]
+```
+
+---
+
+# 7. A Complete CNN for MNIST
+
+Here's a practical CNN that can classify handwritten digits.
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
+
+# -------------------------
+# 1. Dataset
+# -------------------------
+
+transform = transforms.ToTensor()
+
+train_data = datasets.MNIST(
+    root="./data",
+    train=True,
+    download=True,
+    transform=transform
+)
+
+train_loader = DataLoader(
+    train_data,
+    batch_size=64,
+    shuffle=True
+)
+
+
+# -------------------------
+# 2. CNN Model
+# -------------------------
+
+class CNN(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.conv1 = nn.Conv2d(
+            1, 32,
+            kernel_size=3,
+            padding=1
+        )
+
+        self.conv2 = nn.Conv2d(
+            32, 64,
+            kernel_size=3,
+            padding=1
+        )
+
+        self.pool = nn.MaxPool2d(2, 2)
+
+        self.relu = nn.ReLU()
+
+        self.fc1 = nn.Linear(
+            64 * 7 * 7,
+            128
+        )
+
+        self.fc2 = nn.Linear(
+            128,
+            10
+        )
+
+    def forward(self, x):
+
+        # Convolution → ReLU → Pooling
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.pool(x)
+
+        # Convolution → ReLU → Pooling
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.pool(x)
+
+        # Flatten
+        x = x.view(x.size(0), -1)
+
+        # Fully connected layers
+        x = self.relu(self.fc1(x))
+        x = self.fc2(x)
+
+        return x
+
+
+# -------------------------
+# 3. Create model
+# -------------------------
+
+model = CNN()
+
+criterion = nn.CrossEntropyLoss()
+
+optimizer = optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+
+
+# -------------------------
+# 4. Training
+# -------------------------
+
+for epoch in range(5):
+
+    for images, labels in train_loader:
+
+        # Forward pass
+        predictions = model(images)
+
+        # Calculate loss
+        loss = criterion(
+            predictions,
+            labels
+        )
+
+        # Clear gradients
+        optimizer.zero_grad()
+
+        # Backpropagation
+        loss.backward()
+
+        # Update weights
+        optimizer.step()
+
+    print(
+        f"Epoch {epoch + 1}, "
+        f"Loss: {loss.item():.4f}"
+    )
+```
+
+---
+
+# 8. Understand the Shape Changes
+
+MNIST images are:
+
+```text
+1 × 28 × 28
+```
+
+The first convolution:
+
+```python
+nn.Conv2d(1, 32, 3, padding=1)
+```
+
+means:
+
+```text
+Input channels  = 1
+Output channels = 32
+Filter          = 3×3
+Padding         = 1
+```
+
+Spatial size remains:
+
+```text
+28 × 28
+```
+
+So:
+
+```text
+1 × 28 × 28
+       ↓
+32 × 28 × 28
+```
+
+Then max pooling:
+
+```python
+nn.MaxPool2d(2, 2)
+```
+
+reduces:
+
+```text
+32 × 28 × 28
+       ↓
+32 × 14 × 14
+```
+
+Second convolution:
+
+```text
+32 × 14 × 14
+       ↓
+64 × 14 × 14
+```
+
+Second pooling:
+
+```text
+64 × 14 × 14
+       ↓
+64 × 7 × 7
+```
+
+Then flatten:
+
+```text
+64 × 7 × 7
+```
+
+Number of values:
+
+\[<br />64\\times7\\times7=3136<br />\]
+
+Therefore:
+
+```python
+nn.Linear(64 * 7 * 7, 128)
+```
+
+---
+
+# 9. The Big Picture
+
+Remember these five concepts like this:
+
+| Concept | What it does | Typical example |
+| :-- | :-- | :-- |
+| **Convolution** | Finds features | Edge/texture detection |
+| **Padding** | Adds border pixels | Preserve image size |
+| **Stride** | Controls filter movement | Downsample with stride 2 |
+| **Pooling** | Reduces feature-map size | Max pooling |
+| **Activation** | Adds non-linearity | ReLU |
+
+The basic CNN pattern is:
+
+```text
+          FEATURE EXTRACTION
+                 │
+                 ▼
+Image → Convolution → ReLU → Pooling
+                          │
+                          ▼
+                   Convolution
+                          │
+                          ▼
+                       ReLU
+                          │
+                          ▼
+                      Pooling
+                          │
+                          ▼
+                   Flatten
+                          │
+                          ▼
+                  Fully Connected
+                          │
+                          ▼
+                     Prediction
+```
+
+### One-line intuition
+
+**Convolution finds features, padding controls borders, stride controls movement, pooling reduces size, and activation lets the network learn complex patterns.**

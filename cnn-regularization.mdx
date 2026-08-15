@@ -1,0 +1,616 @@
+---
+title: "CNN - Regularization"
+---
+
+# Regularization
+
+Regularization is a technique used in machine learning to **reduce overfitting**.
+
+Overfitting happens when a model learns the training data too closely but performs poorly on new data.
+
+The main regularization techniques are:
+
+1. Dropout
+2. Weight Decay
+3. Early Stopping
+
+---
+
+## 1. Dropout
+
+Dropout is mainly used in neural networks.
+
+During training, dropout randomly turns off some neurons.
+
+This prevents the model from depending too much on a small number of neurons.
+
+### How Dropout Works
+
+Suppose we have 5 neurons:
+
+```text
+Neuron 1  ✓
+Neuron 2  ✓
+Neuron 3  ✓
+Neuron 4  ✓
+Neuron 5  ✓
+```
+
+With dropout:
+
+```text
+Neuron 1  ✓
+Neuron 2  ✗
+Neuron 3  ✓
+Neuron 4  ✗
+Neuron 5  ✓
+```
+
+Some neurons are temporarily ignored during that training step.
+
+In the next training step, a different set of neurons may be ignored.
+
+### Dropout Rate
+
+The dropout rate tells us how many neuron outputs are randomly dropped.
+
+```text
+Dropout = 0.2  → 20% dropped
+Dropout = 0.3  → 30% dropped
+Dropout = 0.5  → 50% dropped
+```
+
+For example:
+
+```python
+Dropout(0.5)
+```
+
+means approximately 50% of the neuron outputs are dropped during training.
+
+### Why Do We Use Dropout?
+
+Without dropout:
+
+```text
+Model
+  ↓
+Depends heavily on some neurons
+  ↓
+Memorizes training data
+  ↓
+Overfitting
+```
+
+With dropout:
+
+```text
+Model
+  ↓
+Learns using different neurons
+  ↓
+Less dependence on specific neurons
+  ↓
+Better generalization
+```
+
+### Simple Example
+
+Imagine a student who always depends on one friend for answers.
+
+If that friend is not available, the student cannot solve the problem.
+
+Dropout is similar to making the model learn without depending on particular neurons.
+
+```python
+import tensorflow as tf
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+
+model = Sequential([
+    Dense(128, activation="relu", input_shape=(20,)),
+    Dropout(0.5),
+
+    Dense(64, activation="relu"),
+    Dropout(0.3),
+
+    Dense(1, activation="sigmoid")
+])
+
+model.compile(
+    optimizer="adam",
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+
+model.summary()
+```
+
+### Important Point
+
+Dropout is used during training.
+
+During testing or prediction, dropout is automatically turned off.
+
+---
+
+# 2. Weight Decay
+
+Weight decay is a regularization technique that prevents model weights from becoming too large.
+
+A model learns weights while training.
+
+For example:
+
+```text
+Weight 1 = 0.5
+Weight 2 = 2.0
+Weight 3 = 10.5
+Weight 4 = 25.0
+```
+
+Very large weights can make the model more complex and increase the chance of overfitting.
+
+Weight decay encourages the model to keep the weights smaller.
+
+### Basic Idea
+
+```text
+Large Weights
+     ↓
+Penalty
+     ↓
+Smaller Weights
+     ↓
+Simpler Model
+     ↓
+Less Overfitting
+```
+
+### Mathematical Formula
+
+For L2 regularization, the total loss can be written as:
+
+$$
+L = L_{\text{training}} + \lambda \sum_i w_i^2
+$$
+
+Here:
+
+- $$L$$ = total loss
+- $$L_{\text{training}}$$ = training loss
+- $$w_i$$ = model weight
+- $$\lambda$$ = regularization strength
+
+A larger $$\lambda$$ means a stronger penalty.
+
+### Simple Example
+
+Imagine a student trying to remember every tiny detail from a textbook.
+
+Instead of memorizing everything, the student focuses on the important concepts.
+
+Weight decay works in a similar way.
+
+It encourages the model to learn important patterns instead of using very large weights to memorize the training data.
+
+### L2 Regularization with Keras
+
+```python
+import tensorflow as tf
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.regularizers import l2
+
+model = Sequential([
+    Dense(
+        128,
+        activation="relu",
+        kernel_regularizer=l2(0.001),
+        input_shape=(20,)
+    ),
+
+    Dense(
+        64,
+        activation="relu",
+        kernel_regularizer=l2(0.001)
+    ),
+
+    Dense(1, activation="sigmoid")
+])
+
+model.compile(
+    optimizer="adam",
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+```
+
+The important part is:
+
+```python
+kernel_regularizer=l2(0.001)
+```
+
+This adds an L2 penalty to the weights.
+
+### Weight Decay with AdamW
+
+Another common approach is `AdamW`.
+
+```python
+import tensorflow as tf
+
+optimizer = tf.keras.optimizers.AdamW(
+    learning_rate=0.001,
+    weight_decay=0.0001
+)
+```
+
+Then:
+
+```python
+model.compile(
+    optimizer=optimizer,
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+```
+
+### Important Point
+
+Weight decay helps keep model weights under control and can reduce overfitting.
+
+---
+
+# 3. Early Stopping
+
+Early stopping stops training when the model stops improving on validation data.
+
+A model is usually trained for multiple epochs.
+
+For example:
+
+```text
+Epoch 1  → Validation Loss = 0.80
+Epoch 2  → Validation Loss = 0.65
+Epoch 3  → Validation Loss = 0.50
+Epoch 4  → Validation Loss = 0.40
+Epoch 5  → Validation Loss = 0.35
+```
+
+The validation loss is decreasing, so the model is improving.
+
+Later:
+
+```text
+Epoch 10  → Validation Loss = 0.25
+Epoch 20  → Validation Loss = 0.20
+Epoch 30  → Validation Loss = 0.18
+Epoch 40  → Validation Loss = 0.22
+Epoch 50  → Validation Loss = 0.30
+```
+
+Now the validation loss is increasing.
+
+This can mean the model is starting to overfit.
+
+Early stopping can stop training around the best point.
+
+### How It Works
+
+```text
+Training
+   ↓
+Validation Loss Decreases
+   ↓
+Model Improves
+   ↓
+Validation Loss Stops Improving
+   ↓
+Early Stopping
+   ↓
+Use Best Model
+```
+
+### Simple Example
+
+Imagine studying for an exam.
+
+At first:
+
+```text
+More Study
+    ↓
+Better Understanding
+    ↓
+Better Marks
+```
+
+After studying for too long by memorizing practice questions:
+
+```text
+More Study
+    ↓
+Practice Score Improves
+    ↓
+New Question Performance Gets Worse
+```
+
+Early stopping is like stopping when your performance on new questions stops improving.
+
+```python
+import tensorflow as tf
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.callbacks import EarlyStopping
+
+model = Sequential([
+    Dense(128, activation="relu", input_shape=(20,)),
+    Dense(64, activation="relu"),
+    Dense(1, activation="sigmoid")
+])
+
+model.compile(
+    optimizer="adam",
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+
+early_stopping = EarlyStopping(
+    monitor="val_loss",
+    patience=5,
+    restore_best_weights=True
+)
+
+history = model.fit(
+    X_train,
+    y_train,
+    validation_data=(X_val, y_val),
+    epochs=100,
+    callbacks=[early_stopping]
+)
+```
+
+### Important Parameters
+
+#### `monitor`
+
+```python
+monitor="val_loss"
+```
+
+This tells the model to watch the validation loss.
+
+#### `patience`
+
+```python
+patience=5
+```
+
+The model waits for 5 epochs without improvement before stopping.
+
+#### `restore_best_weights`
+
+```python
+restore_best_weights=True
+```
+
+This restores the weights from the best epoch.
+
+---
+
+# Dropout vs Weight Decay vs Early Stopping
+
+| Technique | What It Does | Main Goal |
+| --- | --- | --- |
+| Dropout | Randomly turns off some neurons | Reduce dependence on specific neurons |
+| Weight Decay | Penalizes large weights | Keep the model simple |
+| Early Stopping | Stops training at the right time | Prevent overtraining |
+
+---
+
+# Easy Way to Remember
+
+```text
+Dropout
+   ↓
+Turn off some neurons
+   ↓
+Prevent neuron dependence
+
+
+Weight Decay
+   ↓
+Reduce large weights
+   ↓
+Keep model simple
+
+
+Early Stopping
+   ↓
+Stop training at the right time
+   ↓
+Prevent overfitting
+```
+
+---
+
+# Using All Three Together
+
+We can use dropout, weight decay, and early stopping in the same neural network.
+
+```python
+import tensorflow as tf
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
+
+model = Sequential([
+    Dense(128, activation="relu", input_shape=(20,)),
+    Dropout(0.5),
+
+    Dense(64, activation="relu"),
+    Dropout(0.3),
+
+    Dense(1, activation="sigmoid")
+])
+
+optimizer = tf.keras.optimizers.AdamW(
+    learning_rate=0.001,
+    weight_decay=0.0001
+)
+
+model.compile(
+    optimizer=optimizer,
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+
+early_stopping = EarlyStopping(
+    monitor="val_loss",
+    patience=5,
+    restore_best_weights=True
+)
+
+history = model.fit(
+    X_train,
+    y_train,
+    validation_data=(X_val, y_val),
+    epochs=100,
+    callbacks=[early_stopping]
+)
+```
+
+The three techniques work like this:
+
+```text
+                   Neural Network
+                           |
+          +------------+------------+
+          |                                 |
+       Dropout                     Weight Decay
+          |                         		  |
+    Drop some neurons         	Control weights
+          |                         		  |
+          +------------+------------+
+	                       |
+	                    Training
+	                       |
+	                       ↓
+	              Validation Performance
+	                       |
+	                       ↓
+	                Early Stopping
+	                       |
+	                       ↓
+	                  Best Model
+```
+
+---
+
+# Mathematical View
+
+Without regularization, the model tries to minimize the training loss:
+
+$$
+\min_{\theta} L_{\text{training}}(\theta)
+$$
+
+With L2 regularization:
+
+$$
+\min_{\theta}
+\left(
+L_{\text{training}}(\theta)
++
+\lambda \sum_i \theta_i^2
+\right)
+$$
+
+The idea is simple:
+
+$$
+\text{Total Loss}
+=
+\text{Training Loss}
++
+\text{Regularization Penalty}
+$$
+
+The regularization penalty discourages the model from becoming unnecessarily complex.
+
+---
+
+# Quick Revision
+
+## Dropout
+
+**Meaning:** Randomly turns off some neurons during training.
+
+```python
+Dropout(0.5)
+```
+
+**Purpose:** Reduce overfitting.
+
+**Remember:**<br />**Dropout = Drop some neurons**
+
+---
+
+## Weight Decay
+
+**Meaning:** Penalizes large weights.
+
+```python
+weight_decay=0.0001
+```
+
+**Purpose:** Keep the model simpler and reduce overfitting.
+
+**Remember:**<br />**Weight Decay = Control large weights**
+
+---
+
+## Early Stopping
+
+**Meaning:** Stops training when validation performance stops improving.
+
+```python
+EarlyStopping(
+    monitor="val_loss",
+    patience=5,
+    restore_best_weights=True
+)
+```
+
+**Purpose:** Prevent overtraining.
+
+**Remember:**<br />**Early Stopping = Stop at the right time**
+
+---
+
+# Final Summary
+
+Regularization helps a machine learning model perform well on **new and unseen data**.
+
+```text
+Regularization
+      |
+      +---- Dropout
+      |       ↓
+      |   Drop some neurons
+      |
+      +---- Weight Decay
+      |       ↓
+      |   Control large weights
+      |
+      +---- Early Stopping
+              ↓
+          Stop training
+          at the right time
+```
+
+The easiest way to remember:
+
+> **Dropout drops neurons, Weight Decay controls weights, and Early Stopping stops training.**

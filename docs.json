@@ -255,6 +255,12 @@
             "pages": [
               "cnn"
             ]
+          },
+          {
+            "group": "Day 27",
+            "pages": [
+              "cnn-regularization"
+            ]
           }
         ]
       }

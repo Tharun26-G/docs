@@ -1,0 +1,1683 @@
+---
+title: "CIFAR 10"
+---
+
+# Transfer Learning and Fine-Tuning with ResNet-18 on CIFAR-10
+
+---
+
+## 1. Learning Objectives
+
+By completing this notebook, you will understand:
+
+- How to load the CIFAR-10 dataset using `torchvision`
+- How to preprocess images for a pretrained model
+- How to load a pretrained ResNet-18
+- How to replace the final classification layer
+- How to freeze pretrained layers
+- How to train only the new classifier
+- How to unfreeze a pretrained block
+- How to fine-tune a pretrained model
+- How to evaluate classification accuracy
+- How to inspect model predictions
+
+### Key concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Transfer Learning | Reusing knowledge learned by a pretrained model |
+| Freezing | Preventing selected model parameters from being updated |
+| Fine-Tuning | Updating some pretrained layers for the new dataset |
+| Backbone | The pretrained feature-extraction portion of the model |
+| Classifier | The final layer that produces class predictions |
+
+---
+
+# 2. Project Workflow
+
+The complete workflow is:
+
+```text
+CIFAR-10 Dataset
+      ↓
+Resize + Normalize
+      ↓
+Pretrained ResNet-18
+      ↓
+Replace Final Layer
+      ↓
+Freeze Backbone
+      ↓
+Train Final Classifier
+      ↓
+Unfreeze layer4
+      ↓
+Fine-Tune
+      ↓
+Evaluate
+      ↓
+Make Predictions
+```
+
+---
+
+# 3. Import Libraries
+
+We first import PyTorch, neural-network components, optimizers, datasets, transformations, pretrained models, and data loaders.
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+from torchvision import datasets, transforms, models
+from torch.utils.data import DataLoader
+```
+
+### Explanation
+
+- `torch` provides the main PyTorch functionality.
+- `torch.nn` provides neural-network layers and loss functions.
+- `torch.optim` provides optimizers such as Adam.
+- `datasets` provides datasets such as CIFAR-10.
+- `transforms` provides image preprocessing operations.
+- `models` provides pretrained models such as ResNet-18.
+- `DataLoader` loads data in batches during training.
+
+---
+
+# 4. Select the Device
+
+PyTorch can train the model using either a GPU or CPU.
+
+```python
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+
+print("Using:", device)
+```
+
+### Explanation
+
+```python
+torch.cuda.is_available()
+```
+
+checks whether a CUDA-enabled NVIDIA GPU is available.
+
+If CUDA is available:
+
+```text
+cuda
+```
+
+is selected.
+
+Otherwise:
+
+```text
+cpu
+```
+
+is selected.
+
+### Why this matters
+
+GPU training is usually much faster for deep-learning models.
+
+---
+
+# 5. Define Image Transformations
+
+The pretrained ResNet-18 expects images with a format similar to the images it was originally trained on.
+
+```python
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        [0.485, 0.456, 0.406],
+        [0.229, 0.224, 0.225]
+    )
+])
+```
+
+### Explanation
+
+### `Resize`
+
+```python
+transforms.Resize((224, 224))
+```
+
+CIFAR-10 images are only:
+
+```text
+32 × 32
+```
+
+We resize them to:
+
+```text
+224 × 224
+```
+
+because ResNet-18 was designed around ImageNet-sized inputs.
+
+### `ToTensor`
+
+```python
+transforms.ToTensor()
+```
+
+converts the image into a PyTorch tensor.
+
+It also converts pixel values into approximately:
+
+```text
+0 → 1
+```
+
+### `Normalize`
+
+```python
+transforms.Normalize(
+    [0.485, 0.456, 0.406],
+    [0.229, 0.224, 0.225]
+)
+```
+
+normalizes the RGB channels using the mean and standard deviation commonly used for ImageNet-pretrained models.
+
+### Simple idea
+
+```text
+Raw Image
+   ↓
+Resize
+   ↓
+Tensor
+   ↓
+Normalize
+   ↓
+Model-ready Image
+```
+
+---
+
+# 6. Load CIFAR-10
+
+Now we download and load the training and testing datasets.
+
+```python
+train_data = datasets.CIFAR10(
+    "./data",
+    train=True,
+    download=True,
+    transform=transform
+)
+
+test_data = datasets.CIFAR10(
+    "./data",
+    train=False,
+    download=True,
+    transform=transform
+)
+```
+
+### Explanation
+
+`CIFAR10` contains:
+
+- 50,000 training images
+- 10,000 test images
+- 10 classes
+- RGB color images
+
+The 10 classes are:
+
+```text
+airplane
+automobile
+bird
+cat
+deer
+dog
+frog
+horse
+ship
+truck
+```
+
+### Important parameters
+
+```python
+train=True
+```
+
+loads the training dataset.
+
+```python
+train=False
+```
+
+loads the test dataset.
+
+```python
+download=True
+```
+
+downloads the dataset automatically if it is not already available.
+
+```python
+transform=transform
+```
+
+applies our preprocessing pipeline.
+
+You do **not** need to manually download CIFAR-10.
+
+The dataset will be stored in:
+
+```text
+./data
+```
+
+---
+
+# 7. Create DataLoaders
+
+The dataset is now converted into batches using `DataLoader`.
+
+```python
+train_loader = DataLoader(
+    train_data,
+    batch_size=64,
+    shuffle=True
+)
+
+test_loader = DataLoader(
+    test_data,
+    batch_size=64
+)
+```
+
+### Explanation
+
+### `batch_size=64`
+
+Instead of processing all images at once, the model processes:
+
+```text
+64 images → model → update weights
+```
+
+at a time.
+
+### `shuffle=True`
+
+The training images are shuffled between epochs.
+
+This helps prevent the model from learning based on the original ordering of the dataset.
+
+### Test loader
+
+We normally don't need to shuffle test data because we are only evaluating the model.
+
+### Check dataset size
+
+```python
+print("Train:", len(train_data))
+print("Test:", len(test_data))
+```
+
+Expected output:
+
+```text
+Train: 50000
+Test: 10000
+```
+
+---
+
+# 8. Load Pretrained ResNet-18
+
+This is the main **transfer learning** step.
+
+```python
+model = models.resnet18(weights="DEFAULT")
+```
+
+### What is ResNet-18?
+
+ResNet-18 is a convolutional neural network containing residual blocks.
+
+The pretrained model has already learned useful visual features such as:
+
+```text
+Edges
+  ↓
+Textures
+  ↓
+Shapes
+  ↓
+Objects
+```
+
+Instead of training all these features from scratch, we reuse them.
+
+### What does `weights="DEFAULT"` mean?
+
+It loads pretrained weights rather than randomly initializing the network.
+
+Conceptually:
+
+```text
+ImageNet Training
+       ↓
+Pretrained ResNet-18
+       ↓
+Our CIFAR-10 Dataset
+```
+
+This is called **transfer learning**.
+
+---
+
+# 9. Understand the Original ResNet Output
+
+The original ResNet-18 was trained on ImageNet.
+
+ImageNet classification contains:
+
+```text
+1000 classes
+```
+
+Therefore, the original final layer produces:
+
+```text
+1000 outputs
+```
+
+But CIFAR-10 contains only:
+
+```text
+10 classes
+```
+
+Therefore, we need to replace the final classification layer.
+
+---
+
+# 10. Replace the Final Layer
+
+```python
+model.fc = nn.Linear(
+    model.fc.in_features,
+    10
+)
+```
+
+### Explanation
+
+The original layer is conceptually:
+
+```text
+Features → 1000 classes
+```
+
+We replace it with:
+
+```text
+Features → 10 classes
+```
+
+### `model.fc.in_features`
+
+This gives us the number of input features expected by the original fully connected layer.
+
+We reuse that value instead of manually specifying it.
+
+### `10`
+
+This represents the number of CIFAR-10 classes.
+
+### New architecture
+
+```text
+Input Image
+     ↓
+ResNet Feature Extractor
+     ↓
+Feature Vector
+     ↓
+New Fully Connected Layer
+     ↓
+10 CIFAR-10 Classes
+```
+
+---
+
+# 11. Move the Model to the Device
+
+```python
+model = model.to(device)
+```
+
+### Explanation
+
+This moves the model to either:
+
+```text
+GPU
+```
+
+or:
+
+```text
+CPU
+```
+
+depending on the device selected earlier.
+
+The input tensors must also be moved to the same device during training.
+
+---
+
+# 12. Freeze the Pretrained Layers
+
+Initially, we don't want to modify the pretrained ResNet layers.
+
+```python
+for param in model.parameters():
+    param.requires_grad = False
+```
+
+### Explanation
+
+`requires_grad=False` means:
+
+> Do not calculate/update gradients for this parameter.
+
+So the pretrained ResNet acts as a fixed feature extractor.
+
+Conceptually:
+
+```text
+Pretrained ResNet
+       ↓
+    FROZEN
+       ↓
+Feature Vector
+       ↓
+New Classifier
+       ↓
+    TRAINABLE
+```
+
+---
+
+# 13. Unfreeze the Final Classifier
+
+We need the new final layer to learn the CIFAR-10 classification task.
+
+```python
+for param in model.fc.parameters():
+    param.requires_grad = True
+```
+
+Now:
+
+```text
+ResNet Backbone → Frozen
+Final FC Layer  → Trainable
+```
+
+### Why?
+
+The pretrained backbone already contains useful visual knowledge.
+
+The new classifier has never seen CIFAR-10, so it needs to learn.
+
+---
+
+# 14. Define the Loss Function
+
+For a multi-class classification problem, we use cross-entropy loss.
+
+```python
+criterion = nn.CrossEntropyLoss()
+```
+
+### What does it do?
+
+It compares:
+
+```text
+Model prediction
+        vs
+Correct class
+```
+
+and produces a loss value.
+
+For example:
+
+```text
+Actual:     cat
+Predicted:  dog
+
+→ High loss
+```
+
+If the model predicts the correct class with high confidence:
+
+```text
+Actual:     cat
+Predicted:  cat
+
+→ Low loss
+```
+
+---
+
+# 15. Define the Optimizer
+
+Initially, only the final classifier is trainable.
+
+```python
+optimizer = optim.Adam(
+    model.fc.parameters(),
+    lr=0.001
+)
+```
+
+### Explanation
+
+Adam updates the trainable weights to reduce the loss.
+
+The optimizer receives:
+
+```python
+model.fc.parameters()
+```
+
+because only the final layer is currently trainable.
+
+The learning rate is:
+
+```python
+0.001
+```
+
+### Simple idea
+
+```text
+Prediction
+    ↓
+Calculate Loss
+    ↓
+Backpropagation
+    ↓
+Adam
+    ↓
+Update FC Layer
+```
+
+---
+
+# 16. Train the Final Classifier
+
+We initially train for three epochs.
+
+```python
+for epoch in range(3):
+
+    model.train()
+
+    correct = 0
+    total = 0
+
+    for images, labels in train_loader:
+
+        images = images.to(device)
+        labels = labels.to(device)
+
+        optimizer.zero_grad()
+
+        outputs = model(images)
+
+        loss = criterion(outputs, labels)
+
+        loss.backward()
+
+        optimizer.step()
+
+        predictions = outputs.argmax(1)
+
+        total += labels.size(0)
+
+        correct += (
+            (predictions == labels)
+            .sum()
+            .item()
+        )
+
+    accuracy = 100 * correct / total
+
+    print(
+        f"Epoch {epoch + 1}: "
+        f"Loss = {loss.item():.4f}, "
+        f"Accuracy = {accuracy:.2f}%"
+    )
+```
+
+---
+
+## 16.1 Set Training Mode
+
+```python
+model.train()
+```
+
+This tells PyTorch that the model is being used for training.
+
+This is important for layers whose behavior changes between training and evaluation.
+
+---
+
+## 16.2 Reset Accuracy Counters
+
+```python
+correct = 0
+total = 0
+```
+
+These variables track how many predictions are correct.
+
+---
+
+## 16.3 Loop Through Batches
+
+```python
+for images, labels in train_loader:
+```
+
+Each iteration provides:
+
+```text
+images → input images
+labels → correct classes
+```
+
+For example:
+
+```text
+64 images
+64 labels
+```
+
+because our batch size is 64.
+
+---
+
+## 16.4 Move Data to the Device
+
+```python
+images = images.to(device)
+labels = labels.to(device)
+```
+
+The data must be on the same device as the model.
+
+---
+
+## 16.5 Clear Previous Gradients
+
+```python
+optimizer.zero_grad()
+```
+
+PyTorch accumulates gradients by default.
+
+We clear the previous gradients before calculating new ones.
+
+---
+
+## 16.6 Forward Pass
+
+```python
+outputs = model(images)
+```
+
+The images pass through ResNet.
+
+Conceptually:
+
+```text
+Images
+  ↓
+ResNet
+  ↓
+Features
+  ↓
+FC Layer
+  ↓
+10 Output Scores
+```
+
+The output shape is approximately:
+
+```text
+[64, 10]
+```
+
+because:
+
+```text
+64 images × 10 classes
+```
+
+---
+
+## 16.7 Calculate Loss
+
+```python
+loss = criterion(outputs, labels)
+```
+
+The loss measures how different the predictions are from the correct labels.
+
+---
+
+## 16.8 Backpropagation
+
+```python
+loss.backward()
+```
+
+PyTorch calculates gradients for the trainable parameters.
+
+Because the ResNet backbone is frozen:
+
+```text
+Backbone → no parameter updates
+FC layer → receives gradients
+```
+
+---
+
+## 16.9 Update Parameters
+
+```python
+optimizer.step()
+```
+
+Adam uses the calculated gradients to update the trainable weights.
+
+---
+
+## 16.10 Get Predictions
+
+```python
+predictions = outputs.argmax(1)
+```
+
+The model produces 10 scores for every image.
+
+For example:
+
+```text
+airplane     0.02
+automobile   0.01
+bird         0.05
+cat          0.80
+deer         0.02
+dog          0.04
+frog         0.01
+horse        0.02
+ship         0.01
+truck        0.02
+```
+
+`argmax(1)` selects the class with the highest score:
+
+```text
+cat
+```
+
+---
+
+## 16.11 Calculate Accuracy
+
+```python
+total += labels.size(0)
+
+correct += (
+    (predictions == labels)
+    .sum()
+    .item()
+)
+```
+
+For example:
+
+```text
+Total predictions = 64
+Correct predictions = 48
+```
+
+Accuracy:
+
+```text
+48 / 64 × 100 = 75%
+```
+
+---
+
+## 16.12 Print Training Results
+
+```python
+accuracy = 100 * correct / total
+
+print(
+    f"Epoch {epoch + 1}: "
+    f"Loss = {loss.item():.4f}, "
+    f"Accuracy = {accuracy:.2f}%"
+)
+```
+
+Example:
+
+```text
+Epoch 1: Loss = 0.8502, Accuracy = 70.21%
+Epoch 2: Loss = 0.7124, Accuracy = 75.48%
+Epoch 3: Loss = 0.6811, Accuracy = 76.31%
+```
+
+The exact values will vary.
+
+---
+
+# 17. Fine-Tuning
+
+Now we move from transfer learning to **fine-tuning**.
+
+Initially:
+
+```text
+All ResNet layers → Frozen
+FC layer           → Trainable
+```
+
+Now we want some pretrained features to adapt to CIFAR-10.
+
+---
+
+# 18. Unfreeze `layer4`
+
+```python
+for param in model.layer4.parameters():
+    param.requires_grad = True
+```
+
+### Explanation
+
+ResNet-18 contains several major layers:
+
+```text
+conv1
+layer1
+layer2
+layer3
+layer4
+fc
+```
+
+We keep the earlier layers frozen and only unfreeze:
+
+```text
+layer4
+```
+
+### Why `layer4`?
+
+Earlier layers generally learn more generic features:
+
+```text
+Edges
+Textures
+Basic shapes
+```
+
+Later layers learn more task-specific visual features:
+
+```text
+Object parts
+Complex shapes
+Higher-level patterns
+```
+
+Therefore, adapting the final ResNet block is a simple and efficient fine-tuning strategy.
+
+---
+
+# 19. Create a Smaller Learning Rate
+
+```python
+optimizer = optim.Adam(
+    filter(
+        lambda p: p.requires_grad,
+        model.parameters()
+    ),
+    lr=0.0001
+)
+```
+
+### Explanation
+
+The learning rate is reduced from:
+
+```text
+0.001
+```
+
+to:
+
+```text
+0.0001
+```
+
+This is important because the pretrained layers already contain useful knowledge.
+
+We don't want to make large updates that could destroy the learned features.
+
+### Trainable parameters
+
+At this point:
+
+```text
+layer4 → Trainable
+fc     → Trainable
+
+Everything else → Frozen
+```
+
+The `filter()` expression selects only parameters where:
+
+```python
+p.requires_grad == True
+```
+
+---
+
+# 20. Fine-Tune the Model
+
+We train for two additional epochs.
+
+```python
+for epoch in range(2):
+
+    model.train()
+
+    for images, labels in train_loader:
+
+        images = images.to(device)
+        labels = labels.to(device)
+
+        optimizer.zero_grad()
+
+        outputs = model(images)
+
+        loss = criterion(outputs, labels)
+
+        loss.backward()
+
+        optimizer.step()
+
+    print(
+        f"Fine-tuning Epoch {epoch + 1}: "
+        f"Loss = {loss.item():.4f}"
+    )
+```
+
+### What changed?
+
+Previously:
+
+```text
+Only FC layer learns
+```
+
+Now:
+
+```text
+layer4 + FC learn
+```
+
+So the pretrained ResNet features can adapt to CIFAR-10.
+
+---
+
+# 21. Transfer Learning vs Fine-Tuning
+
+The project contains both concepts.
+
+### Transfer learning
+
+```text
+Pretrained ResNet
+       ↓
+Freeze backbone
+       ↓
+Train new FC layer
+```
+
+We reuse knowledge from ImageNet.
+
+### Fine-tuning
+
+```text
+Pretrained ResNet
+       ↓
+Unfreeze layer4
+       ↓
+Train layer4 + FC
+       ↓
+Use smaller learning rate
+```
+
+We allow some pretrained features to adapt to the new task.
+
+### Easy interview explanation
+
+> **Transfer learning** means reusing a pretrained model for a new task, while **fine-tuning** means updating some of those pretrained layers so their features adapt to the new dataset.
+
+---
+
+# 22. Evaluate the Model
+
+After training, we evaluate the model on the test dataset.
+
+```python
+model.eval()
+
+correct = 0
+total = 0
+
+with torch.no_grad():
+
+    for images, labels in test_loader:
+
+        images = images.to(device)
+        labels = labels.to(device)
+
+        outputs = model(images)
+
+        predictions = outputs.argmax(1)
+
+        total += labels.size(0)
+
+        correct += (
+            predictions == labels
+        ).sum().item()
+
+accuracy = 100 * correct / total
+
+print(f"Test Accuracy: {accuracy:.2f}%")
+```
+
+---
+
+# 23. Switch to Evaluation Mode
+
+```python
+model.eval()
+```
+
+This tells PyTorch that we are evaluating rather than training.
+
+It changes the behavior of certain layers such as:
+
+- Dropout
+- Batch Normalization
+
+---
+
+# 24. Disable Gradient Calculation
+
+```python
+with torch.no_grad():
+```
+
+During testing, we don't need gradients.
+
+This:
+
+- reduces memory usage
+- reduces computation
+- makes inference faster
+
+We only need predictions.
+
+---
+
+# 25. Calculate Test Predictions
+
+```python
+outputs = model(images)
+
+predictions = outputs.argmax(1)
+```
+
+The model produces scores for each of the 10 classes.
+
+`argmax(1)` selects the class with the highest score.
+
+---
+
+# 26. Calculate Test Accuracy
+
+```python
+total += labels.size(0)
+
+correct += (
+    predictions == labels
+).sum().item()
+```
+
+Finally:
+
+```python
+accuracy = 100 * correct / total
+```
+
+Example output:
+
+```text
+Test Accuracy: 78.42%
+```
+
+The exact accuracy can vary depending on hardware, training time, PyTorch/torchvision versions, and training configuration.
+
+---
+
+# 27. Display Some Predictions
+
+We can inspect actual and predicted classes.
+
+```python
+classes = [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck"
+]
+```
+
+These class names correspond to the CIFAR-10 labels.
+
+---
+
+# 28. Get a Batch of Test Images
+
+```python
+images, labels = next(iter(test_loader))
+
+images = images.to(device)
+```
+
+### Explanation
+
+```python
+iter(test_loader)
+```
+
+creates an iterator over the test batches.
+
+```python
+next(...)
+```
+
+gets the first batch.
+
+So we obtain:
+
+```text
+images → batch of test images
+labels → corresponding actual classes
+```
+
+---
+
+# 29. Generate Predictions
+
+```python
+with torch.no_grad():
+
+    outputs = model(images)
+
+    predictions = outputs.argmax(1)
+```
+
+The model predicts the class for each image.
+
+---
+
+# 30. Print Actual vs Predicted
+
+```python
+for i in range(10):
+
+    print(
+        f"Actual: {classes[labels[i]]:10s} "
+        f"Predicted: {classes[predictions[i].item()]}"
+    )
+```
+
+Example:
+
+```text
+Actual: cat        Predicted: cat
+Actual: airplane   Predicted: airplane
+Actual: dog        Predicted: dog
+Actual: truck      Predicted: automobile
+Actual: frog       Predicted: frog
+Actual: horse      Predicted: horse
+Actual: ship       Predicted: ship
+Actual: bird       Predicted: bird
+Actual: deer       Predicted: deer
+Actual: cat        Predicted: dog
+```
+
+This lets us quickly see how the model is performing on individual examples.
+
+---
+
+# 31. Complete Code
+
+The following is the complete beginner-friendly version that can be placed into a single notebook.
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+from torchvision import datasets, transforms, models
+from torch.utils.data import DataLoader
+
+
+# --------------------------------------------------
+# 1. Device
+# --------------------------------------------------
+
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+
+print("Using:", device)
+
+
+# --------------------------------------------------
+# 2. Transform
+# --------------------------------------------------
+
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        [0.485, 0.456, 0.406],
+        [0.229, 0.224, 0.225]
+    )
+])
+
+
+# --------------------------------------------------
+# 3. Dataset
+# --------------------------------------------------
+
+train_data = datasets.CIFAR10(
+    "./data",
+    train=True,
+    download=True,
+    transform=transform
+)
+
+test_data = datasets.CIFAR10(
+    "./data",
+    train=False,
+    download=True,
+    transform=transform
+)
+
+
+# --------------------------------------------------
+# 4. DataLoader
+# --------------------------------------------------
+
+train_loader = DataLoader(
+    train_data,
+    batch_size=64,
+    shuffle=True
+)
+
+test_loader = DataLoader(
+    test_data,
+    batch_size=64
+)
+
+print("Train:", len(train_data))
+print("Test:", len(test_data))
+
+
+# --------------------------------------------------
+# 5. Pretrained ResNet-18
+# --------------------------------------------------
+
+model = models.resnet18(weights="DEFAULT")
+
+
+# --------------------------------------------------
+# 6. Replace classifier
+# --------------------------------------------------
+
+model.fc = nn.Linear(
+    model.fc.in_features,
+    10
+)
+
+model = model.to(device)
+
+
+# --------------------------------------------------
+# 7. Freeze pretrained layers
+# --------------------------------------------------
+
+for param in model.parameters():
+    param.requires_grad = False
+
+for param in model.fc.parameters():
+    param.requires_grad = True
+
+
+# --------------------------------------------------
+# 8. Loss and optimizer
+# --------------------------------------------------
+
+criterion = nn.CrossEntropyLoss()
+
+optimizer = optim.Adam(
+    model.fc.parameters(),
+    lr=0.001
+)
+
+
+# --------------------------------------------------
+# 9. Train classifier
+# --------------------------------------------------
+
+for epoch in range(3):
+
+    model.train()
+
+    correct = 0
+    total = 0
+
+    for images, labels in train_loader:
+
+        images = images.to(device)
+        labels = labels.to(device)
+
+        optimizer.zero_grad()
+
+        outputs = model(images)
+
+        loss = criterion(outputs, labels)
+
+        loss.backward()
+
+        optimizer.step()
+
+        predictions = outputs.argmax(1)
+
+        total += labels.size(0)
+
+        correct += (
+            predictions == labels
+        ).sum().item()
+
+    accuracy = 100 * correct / total
+
+    print(
+        f"Epoch {epoch + 1}: "
+        f"Loss = {loss.item():.4f}, "
+        f"Accuracy = {accuracy:.2f}%"
+    )
+
+
+# --------------------------------------------------
+# 10. Fine-tune layer4
+# --------------------------------------------------
+
+for param in model.layer4.parameters():
+    param.requires_grad = True
+
+
+# --------------------------------------------------
+# 11. Smaller learning rate
+# --------------------------------------------------
+
+optimizer = optim.Adam(
+    filter(
+        lambda p: p.requires_grad,
+        model.parameters()
+    ),
+    lr=0.0001
+)
+
+
+# --------------------------------------------------
+# 12. Fine-tuning
+# --------------------------------------------------
+
+for epoch in range(2):
+
+    model.train()
+
+    for images, labels in train_loader:
+
+        images = images.to(device)
+        labels = labels.to(device)
+
+        optimizer.zero_grad()
+
+        outputs = model(images)
+
+        loss = criterion(outputs, labels)
+
+        loss.backward()
+
+        optimizer.step()
+
+    print(
+        f"Fine-tuning Epoch {epoch + 1}: "
+        f"Loss = {loss.item():.4f}"
+    )
+
+
+# --------------------------------------------------
+# 13. Evaluation
+# --------------------------------------------------
+
+model.eval()
+
+correct = 0
+total = 0
+
+with torch.no_grad():
+
+    for images, labels in test_loader:
+
+        images = images.to(device)
+        labels = labels.to(device)
+
+        outputs = model(images)
+
+        predictions = outputs.argmax(1)
+
+        total += labels.size(0)
+
+        correct += (
+            predictions == labels
+        ).sum().item()
+
+
+accuracy = 100 * correct / total
+
+print(f"Test Accuracy: {accuracy:.2f}%")
+
+
+# --------------------------------------------------
+# 14. Predictions
+# --------------------------------------------------
+
+classes = [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck"
+]
+
+images, labels = next(iter(test_loader))
+
+images = images.to(device)
+
+with torch.no_grad():
+
+    outputs = model(images)
+
+    predictions = outputs.argmax(1)
+
+
+for i in range(10):
+
+    print(
+        f"Actual: {classes[labels[i]]:10s} "
+        f"Predicted: {classes[predictions[i].item()]}"
+    )
+```
+
+---
+
+# 32. What Happens During Prediction?
+
+The complete prediction process is:
+
+```text
+CIFAR-10 Image
+      ↓
+Resize to 224 × 224
+      ↓
+Normalize
+      ↓
+ResNet-18
+      ↓
+Extract visual features
+      ↓
+Fully Connected Layer
+      ↓
+10 class scores
+      ↓
+argmax()
+      ↓
+Predicted Class
+```
+
+For example:
+
+```text
+Input:
+Image of a dog
+
+        ↓
+
+ResNet-18
+
+        ↓
+
+Class scores:
+
+dog        0.91
+cat        0.04
+horse      0.02
+bird       0.01
+...
+
+        ↓
+
+argmax()
+
+        ↓
+
+dog
+```
+
+---
+
+# 33. Important Parameters to Remember
+
+| Parameter | Value | Purpose |
+| --- | --: | --- |
+| Image size | `224 × 224` | Matches ResNet input preprocessing |
+| Batch size | `64` | Number of images per batch |
+| Classes | `10` | CIFAR-10 classes |
+| Initial epochs | `3` | Train classifier |
+| Fine-tuning epochs | `2` | Adapt pretrained features |
+| Initial LR | `0.001` | Train new classifier |
+| Fine-tuning LR | `0.0001` | Smaller updates to pretrained features |
+
+---
+
+# 34. Final Mental Model
+
+Remember the project using this simple sequence:
+
+```text
+1. Load CIFAR-10
+       ↓
+2. Resize + normalize images
+       ↓
+3. Load pretrained ResNet-18
+       ↓
+4. Replace 1000-class FC → 10-class FC
+       ↓
+5. Freeze pretrained layers
+       ↓
+6. Train new FC layer
+       ↓
+7. Unfreeze layer4
+       ↓
+8. Fine-tune with smaller LR
+       ↓
+9. Evaluate on test data
+       ↓
+10. Check predictions
+```
+
+## One-Sentence Summary
+
+> **Use a pretrained ResNet-18 as a feature extractor, train a new CIFAR-10 classifier, then fine-tune the final ResNet block with a smaller learning rate.**

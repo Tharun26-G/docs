@@ -261,6 +261,12 @@
             "pages": [
               "cnn-regularization"
             ]
+          },
+          {
+            "group": "Day 28",
+            "pages": [
+              "cifar-10"
+            ]
           }
         ]
       }

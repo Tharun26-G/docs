@@ -267,6 +267,12 @@
             "pages": [
               "cifar-10"
             ]
+          },
+          {
+            "group": "Day 29",
+            "pages": [
+              "token-sen-embedding"
+            ]
           }
         ]
       }

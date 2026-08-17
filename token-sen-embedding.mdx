@@ -1,0 +1,968 @@
+---
+title: "Tokenization & Sentence Embeddings"
+---
+
+## 1. What is Tokenization?
+
+**Tokenization** is the process of breaking text into smaller units called **tokens** so that a machine-learning model can process the text.
+
+Example:
+
+```text
+"I love machine learning"
+        ↓
+["I", "love", "machine", "learning"]
+```
+
+The model then converts these tokens into numerical IDs.
+
+```text
+Text
+ ↓
+Tokens
+ ↓
+Token IDs
+ ↓
+Embeddings
+ ↓
+Model
+```
+
+---
+
+# 2. Why Do We Need Tokenization?
+
+Neural networks work with numbers, not raw text.
+
+For example:
+
+```text
+"I love AI"
+```
+
+cannot directly be given to a neural network.
+
+Instead:
+
+```text
+"I love AI"
+      ↓
+["I", "love", "AI"]
+      ↓
+[101, 2293, 9932]
+```
+
+The IDs are then converted into vectors called **embeddings**.
+
+---
+
+# 3. Types of Tokenization
+
+Common approaches include:
+
+1. Word-level tokenization
+2. Character-level tokenization
+3. Subword tokenization
+
+For modern Transformer models, **subword tokenization** is especially important.
+
+Two popular subword algorithms are:
+
+- **BPE — Byte Pair Encoding**
+- **WordPiece**
+
+---
+
+# 4. BPE — Byte Pair Encoding
+
+BPE breaks words into smaller pieces and learns which pieces frequently occur together.
+
+### Basic idea
+
+Suppose the training data contains:
+
+```text
+low
+lower
+lowest
+```
+
+Initially, words can be viewed as characters:
+
+```text
+l o w
+l o w e r
+l o w e s t
+```
+
+BPE looks for frequent combinations and merges them.
+
+For example:
+
+```text
+l + o → lo
+lo + w → low
+```
+
+It can eventually learn subwords such as:
+
+```text
+low
+er
+est
+```
+
+So:
+
+```text
+lower
+```
+
+could be represented approximately as:
+
+```text
+["low", "er"]
+```
+
+The exact tokens depend on the tokenizer's learned vocabulary.
+
+---
+
+# 5. Why BPE is Useful
+
+Consider a rare word:
+
+```text
+"unhappiness"
+```
+
+If the complete word isn't in the vocabulary, a subword tokenizer can break it into smaller pieces.
+
+For example:
+
+```text
+["un", "happiness"]
+```
+
+or potentially:
+
+```text
+["un", "happi", "ness"]
+```
+
+This means the model doesn't need a separate vocabulary entry for every possible word.
+
+### Main advantages
+
+- Handles rare words
+- Handles new words
+- Keeps vocabulary manageable
+- Captures meaningful subwords
+
+---
+
+# 6. WordPiece
+
+**WordPiece** is another subword tokenization algorithm.
+
+It is famously used with **BERT-style models**.
+
+Example:
+
+```text
+"playing"
+```
+
+could be tokenized as:
+
+```text
+["play", "##ing"]
+```
+
+The `##` means that `ing` is a continuation of the previous token.
+
+Another example:
+
+```text
+"unwanted"
+```
+
+could become:
+
+```text
+["un", "##wanted"]
+```
+
+The exact result depends on the tokenizer vocabulary.
+
+---
+
+# 7. BPE vs WordPiece
+
+| Feature | BPE | WordPiece |
+| --- | --- | --- |
+| Full name | Byte Pair Encoding | WordPiece |
+| Type | Subword tokenizer | Subword tokenizer |
+| Main idea | Merge frequent pieces | Learn useful subword pieces |
+| Handles rare words | Yes | Yes |
+| Example | `play` \+ `ing` | `play` \+ `##ing` |
+| Common association | GPT-style models | BERT |
+
+Simple way to remember:
+
+```text
+BPE
+→ repeatedly merges common pieces
+
+WordPiece
+→ learns useful word pieces
+```
+
+---
+
+# 8. BPE Tokenizer Code
+
+We can use Hugging Face `transformers`.
+
+Install:
+
+```bash
+pip install transformers
+```
+
+Example using a GPT-2 tokenizer:
+
+```python
+from transformers import AutoTokenizer
+
+# Load tokenizer
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+
+text = "I love machine learning"
+
+# Tokenize
+tokens = tokenizer.tokenize(text)
+
+print("Tokens:")
+print(tokens)
+```
+
+Possible output:
+
+```text
+Tokens:
+['I', 'Ġlove', 'Ġmachine', 'Ġlearning']
+```
+
+The `Ġ` is how this tokenizer represents a space before a token.
+
+---
+
+# 9. Convert BPE Tokens to IDs
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+
+text = "I love machine learning"
+
+tokens = tokenizer.tokenize(text)
+
+token_ids = tokenizer.convert_tokens_to_ids(tokens)
+
+print("Tokens:")
+print(tokens)
+
+print("Token IDs:")
+print(token_ids)
+```
+
+Possible output:
+
+```text
+Tokens:
+['I', 'Ġlove', 'Ġmachine', 'Ġlearning']
+
+Token IDs:
+[40, 1842, 3314, 467]
+```
+
+The exact IDs depend on the tokenizer vocabulary.
+
+---
+
+# 10. WordPiece Tokenizer Code
+
+For WordPiece, we can use the BERT tokenizer.
+
+```python
+from transformers import AutoTokenizer
+
+# Load BERT tokenizer
+tokenizer = AutoTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+text = "I love machine learning"
+
+tokens = tokenizer.tokenize(text)
+
+print("Tokens:")
+print(tokens)
+```
+
+Possible output:
+
+```text
+Tokens:
+['i', 'love', 'machine', 'learning']
+```
+
+Try a word that may be split into subwords:
+
+```python
+text = "playing"
+
+tokens = tokenizer.tokenize(text)
+
+print(tokens)
+```
+
+Possible output:
+
+```text
+['playing']
+```
+
+For another word, you may see:
+
+```text
+['some', '##thing']
+```
+
+The exact split depends on the pretrained vocabulary.
+
+---
+
+# 11. Convert WordPiece Tokens to IDs
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+text = "I love machine learning"
+
+tokens = tokenizer.tokenize(text)
+
+token_ids = tokenizer.convert_tokens_to_ids(tokens)
+
+print("Tokens:")
+print(tokens)
+
+print("Token IDs:")
+print(token_ids)
+```
+
+---
+
+# 12. Tokenizer `encode()`
+
+Instead of manually converting tokens to IDs, we can use `encode()`.
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+text = "I love machine learning"
+
+token_ids = tokenizer.encode(text)
+
+print(token_ids)
+```
+
+BERT adds special tokens by default.
+
+Conceptually:
+
+```text
+[CLS] I love machine learning [SEP]
+```
+
+The special tokens help the model understand the structure of the input.
+
+---
+
+# 13. Better Way: `tokenizer()`
+
+In modern Hugging Face code, it is common to directly call the tokenizer.
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+text = "I love machine learning"
+
+encoded = tokenizer(text)
+
+print(encoded)
+```
+
+You can also inspect individual components:
+
+```python
+print("Input IDs:")
+print(encoded["input_ids"])
+
+print("Attention Mask:")
+print(encoded["attention_mask"])
+```
+
+---
+
+# 14. What is an Attention Mask?
+
+When sentences have different lengths, padding is often added.
+
+Example:
+
+```text
+Sentence 1:
+I love AI
+
+Sentence 2:
+I love machine learning
+```
+
+After padding:
+
+```text
+I love AI [PAD]
+I love machine learning
+```
+
+The attention mask tells the model which positions are real tokens.
+
+```text
+1 → real token
+0 → padding
+```
+
+Example:
+
+```text
+[1, 1, 1, 0]
+```
+
+---
+
+# 15. What are Embeddings?
+
+An **embedding** is a numerical representation of text.
+
+Instead of representing:
+
+```text
+"cat"
+```
+
+only as an ID:
+
+```text
+1054
+```
+
+we represent it as a vector:
+
+```text
+[0.21, -0.43, 0.67, 0.12, ...]
+```
+
+The vector contains information learned by the model.
+
+Similar concepts generally have embeddings that are closer together in the embedding space.
+
+---
+
+# 16. Sentence Embeddings
+
+A **sentence embedding** represents an entire sentence using a single vector.
+
+Example:
+
+```text
+"I love machine learning"
+```
+
+becomes something like:
+
+```text
+[0.12, -0.34, 0.51, 0.27, ...]
+```
+
+Another sentence:
+
+```text
+"I enjoy studying AI"
+```
+
+also becomes a vector.
+
+If the meanings are similar, their vectors should be relatively close.
+
+---
+
+# 17. Sentence Transformers
+
+**Sentence Transformers** is a Python library designed to generate useful embeddings for sentences, paragraphs, and other text.
+
+Install it:
+
+```bash
+pip install sentence-transformers
+```
+
+Import it:
+
+```python
+from sentence_transformers import SentenceTransformer
+```
+
+Load a pretrained model:
+
+```python
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+```
+
+---
+
+# 18. Generate Sentence Embeddings
+
+```python
+from sentence_transformers import SentenceTransformer
+
+# Load model
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+
+# Sentences
+sentences = [
+    "I love machine learning",
+    "I enjoy studying artificial intelligence",
+    "I like playing football"
+]
+
+# Generate embeddings
+embeddings = model.encode(sentences)
+
+print(embeddings.shape)
+```
+
+Possible output:
+
+```text
+(3, 384)
+```
+
+This means:
+
+```text
+3 sentences
+×
+384 numbers per sentence
+```
+
+So:
+
+```text
+Sentence 1 → 384-dimensional vector
+Sentence 2 → 384-dimensional vector
+Sentence 3 → 384-dimensional vector
+```
+
+---
+
+# 19. View the Embedding
+
+```python
+print(embeddings[0])
+```
+
+Possible output:
+
+```text
+[ 0.0231 -0.0412  0.0873  0.0124 ... ]
+```
+
+The exact values will be different depending on the model and library version.
+
+---
+
+# 20. Sentence Similarity
+
+One major application of sentence embeddings is **semantic similarity**.
+
+For example:
+
+```text
+"I love machine learning"
+
+"I enjoy studying artificial intelligence"
+```
+
+These sentences have related meanings.
+
+But:
+
+```text
+"I love machine learning"
+
+"I ordered pizza yesterday"
+```
+
+have very different meanings.
+
+We can measure this using **cosine similarity**.
+
+---
+
+# 21. Cosine Similarity Code
+
+Install scikit-learn if necessary:
+
+```bash
+pip install scikit-learn
+```
+
+Code:
+
+```python
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Load model
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+
+# Sentences
+sentences = [
+    "I love machine learning",
+    "I enjoy studying artificial intelligence",
+    "I ordered pizza yesterday"
+]
+
+# Create embeddings
+embeddings = model.encode(sentences)
+
+# Calculate similarity
+similarity = cosine_similarity(embeddings)
+
+print(similarity)
+```
+
+Possible output:
+
+```text
+[[1.00 0.72 0.10]
+ [0.72 1.00 0.12]
+ [0.10 0.12 1.00]]
+```
+
+The exact numbers will vary.
+
+Interpretation:
+
+```text
+1.00 → sentence compared with itself
+
+0.72 → relatively similar
+
+0.10 → very different
+```
+
+---
+
+# 22. Compare Two Sentences Directly
+
+You can also compare only two sentences.
+
+```python
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+
+sentence1 = "I love machine learning"
+sentence2 = "I enjoy studying artificial intelligence"
+
+embedding1 = model.encode([sentence1])
+embedding2 = model.encode([sentence2])
+
+score = cosine_similarity(
+    embedding1,
+    embedding2
+)
+
+print("Similarity:", score[0][0])
+```
+
+Possible output:
+
+```text
+Similarity: 0.7
+```
+
+Again, the exact score depends on the model.
+
+---
+
+# 23. Complete Example
+
+This combines **tokenization \+ sentence embeddings**.
+
+```python
+from transformers import AutoTokenizer
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+
+
+# 1. Tokenization
+
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+text = "I love machine learning"
+
+tokens = tokenizer.tokenize(text)
+
+print("Tokens:")
+print(tokens)
+
+
+
+# 2. Token IDs
+
+
+token_ids = tokenizer.convert_tokens_to_ids(
+    tokens
+)
+
+print("\nToken IDs:")
+print(token_ids)
+
+
+
+# 3. Sentence Embeddings
+
+
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+
+sentences = [
+    "I love machine learning",
+    "I enjoy studying artificial intelligence",
+    "I ordered pizza yesterday"
+]
+
+embeddings = model.encode(sentences)
+
+print("\nEmbedding Shape:")
+print(embeddings.shape)
+
+
+
+# 4. Similarity
+
+
+similarity = cosine_similarity(
+    embeddings
+)
+
+print("\nSimilarity Matrix:")
+print(similarity)
+```
+
+---
+
+# 24. Tokenization vs Embeddings
+
+These two concepts are related but different.
+
+### Tokenization
+
+Converts text into smaller pieces.
+
+```text
+"I love AI"
+
+      ↓
+
+["i", "love", "ai"]
+
+      ↓
+
+[1045, 2293, ...]
+```
+
+### Sentence Embedding
+
+Converts the meaning of the entire sentence into a vector.
+
+```text
+"I love AI"
+
+      ↓
+
+[0.12, -0.43, 0.61, ...]
+```
+
+---
+
+# 25. Complete NLP Pipeline
+
+The overall process can be remembered as:
+
+```text
+                 RAW TEXT
+                    |
+                    ↓
+              TOKENIZATION
+                    |
+             ┌──────┴──────┐
+             ↓                            ↓
+            BPE                     WordPiece
+             |                            |
+             └──────┬──────┘
+                    ↓
+                TOKEN IDs
+                    ↓
+             Transformer
+                    ↓
+                Embeddings
+                    ↓
+          Sentence Embedding
+                    ↓
+       ┌────────────┼────────────┐
+       ↓            ↓            ↓
+ Semantic Search  Similarity  Classification
+```
+
+---
+
+# 26. Practical Applications
+
+### 1. Semantic Search
+
+Search by meaning rather than exact keywords.
+
+```text
+Query:
+"How can I learn AI?"
+
+        ↓
+
+Sentence embedding
+
+        ↓
+
+Find similar documents
+```
+
+### 2. Duplicate Detection
+
+```text
+"How do I reset my password?"
+
+"How can I change my password?"
+```
+
+Can be identified as semantically similar.
+
+### 3. Recommendation Systems
+
+Find similar:
+
+- Products
+- Articles
+- Questions
+- Documents
+
+### 4. Document Clustering
+
+Convert documents into embeddings and group similar documents.
+
+### 5. Question Matching
+
+Find which stored question is most similar to a user's question.
+
+---
+
+# 27. Key Points to Remember
+
+```text
+Tokenization
+→ Converts text into tokens.
+
+BPE
+→ Builds subwords by merging frequent pieces.
+
+WordPiece
+→ Represents words using learned subword pieces.
+
+Token IDs
+→ Numerical representation of tokens.
+
+Embedding
+→ Numerical vector representation.
+
+Sentence Embedding
+→ One vector representing an entire sentence.
+
+Sentence Transformer
+→ Pretrained model/library for generating sentence embeddings.
+
+Cosine Similarity
+→ Measures how similar two embedding vectors are.
+```
+
+## Quick Revision
+
+```text
+Text
+"I love AI"
+     ↓
+Tokenizer
+     ↓
+["i", "love", "ai"]
+     ↓
+Token IDs
+     ↓
+Transformer
+     ↓
+Sentence Embedding
+     ↓
+[0.12, -0.43, 0.61, ...]
+     ↓
+Cosine Similarity
+     ↓
+Semantic Similarity
+```

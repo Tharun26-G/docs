@@ -1,0 +1,1163 @@
+---
+title: "Hugging Face Transformers"
+---
+
+# Fine-tuning BERT for Text Classification
+
+BERT is a **pre-trained Transformer model** that can understand the meaning and context of text. Instead of training BERT from scratch, we load a pre-trained BERT model and **fine-tune it on our own classification dataset**.
+
+A typical workflow is:
+
+```text
+Text Dataset
+     ↓
+Tokenizer
+     ↓
+BERT Pre-trained Model
+     ↓
+Fine-tuning
+     ↓
+Classification
+     ↓
+Prediction
+```
+
+---
+
+## 1. What is Hugging Face Transformers?
+
+**Hugging Face Transformers** is a Python library that provides pre-trained NLP models such as:
+
+- BERT
+- DistilBERT
+- RoBERTa
+- ALBERT
+- GPT
+- T5
+
+For this example, we will use:
+
+```text
+bert-base-uncased
+```
+
+### Why use a pre-trained model?
+
+Training BERT from scratch requires huge amounts of data and computational resources.
+
+Instead:
+
+```text
+Pre-trained BERT
+      ↓
+Already understands language
+      ↓
+Train on our specific task
+      ↓
+Text classification
+```
+
+This process is called **fine-tuning**.
+
+---
+
+# 2. What is BERT?
+
+**BERT = Bidirectional Encoder Representations from Transformers**
+
+BERT uses the Transformer architecture to understand the relationship between words in a sentence.
+
+For example:
+
+```text
+I deposited money in the bank.
+```
+
+and
+
+```text
+I sat near the river bank.
+```
+
+The word `bank` has different meanings.
+
+BERT uses the surrounding words to understand the context.
+
+---
+
+# 3. Pre-trained Model
+
+A pre-trained model has already learned general language patterns from a large text corpus.
+
+For example:
+
+```python
+from transformers import BertTokenizer, BertForSequenceClassification
+```
+
+Then load the model:
+
+```python
+model = BertForSequenceClassification.from_pretrained(
+    "bert-base-uncased",
+    num_labels=2
+)
+```
+
+Here:
+
+```text
+bert-base-uncased
+        ↓
+Pre-trained BERT
+        ↓
+Classification head
+        ↓
+2 classes
+```
+
+---
+
+# 4. What is Fine-tuning?
+
+Fine-tuning means taking an already trained model and training it further on a smaller, task-specific dataset.
+
+For example, suppose we have:
+
+| Text | Label |
+| --- | --: |
+| I love this movie | 1 |
+| This movie is excellent | 1 |
+| I hate this movie | 0 |
+| This movie is terrible | 0 |
+
+Where:
+
+```text
+1 = Positive
+0 = Negative
+```
+
+We fine-tune BERT using this dataset.
+
+---
+
+# 5. Install Required Libraries
+
+```bash
+pip install transformers datasets evaluate torch
+```
+
+We will use:
+
+- `transformers` → BERT and tokenizer
+- `datasets` → dataset handling
+- `evaluate` → evaluation metrics
+- `torch` → PyTorch backend
+
+---
+
+# 6. Import Libraries
+
+```python
+import torch
+
+from datasets import Dataset
+from transformers import (
+    BertTokenizer,
+    BertForSequenceClassification,
+    TrainingArguments,
+    Trainer
+)
+```
+
+---
+
+# 7. Create a Small Dataset
+
+For learning purposes, we can create our own dataset.
+
+```python
+texts = [
+    "I love this product",
+    "This product is excellent",
+    "Amazing experience",
+    "I really enjoyed this",
+    "This is fantastic",
+
+    "I hate this product",
+    "This product is terrible",
+    "Very bad experience",
+    "I am disappointed",
+    "I do not like this"
+]
+
+labels = [
+    1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0
+]
+```
+
+Here:
+
+```text
+1 → Positive
+0 → Negative
+```
+
+---
+
+# 8. Create Hugging Face Dataset
+
+```python
+dataset = Dataset.from_dict({
+    "text": texts,
+    "label": labels
+})
+
+print(dataset)
+```
+
+Example output:
+
+```text
+Dataset({
+    features: ['text', 'label'],
+    num_rows: 10
+})
+```
+
+---
+
+# 9. Split Dataset
+
+We need training and testing data.
+
+```python
+dataset = dataset.train_test_split(
+    test_size=0.2,
+    seed=42
+)
+
+print(dataset)
+```
+
+Conceptually:
+
+```text
+80% → Training
+20% → Testing
+```
+
+---
+
+# 10. Load BERT Tokenizer
+
+```python
+tokenizer = BertTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+```
+
+The tokenizer converts text into tokens that BERT understands.
+
+For example:
+
+```text
+"I love this product"
+```
+
+becomes something similar to:
+
+```text
+[I, love, this, product]
+```
+
+and then gets converted into numerical token IDs.
+
+---
+
+# 11. Tokenization
+
+Create a tokenization function:
+
+```python
+def tokenize_function(examples):
+    return tokenizer(
+        examples["text"],
+        padding="max_length",
+        truncation=True,
+        max_length=128
+    )
+```
+
+### Important parameters
+
+```python
+padding="max_length"
+```
+
+Makes sequences the same length.
+
+```python
+truncation=True
+```
+
+Cuts text if it is too long.
+
+```python
+max_length=128
+```
+
+Maximum sequence length is 128 tokens.
+
+---
+
+# 12. Apply Tokenization
+
+```python
+tokenized_dataset = dataset.map(
+    tokenize_function,
+    batched=True
+)
+```
+
+Now the dataset contains information such as:
+
+```text
+input_ids
+attention_mask
+label
+```
+
+---
+
+# 13. What is `input_ids`?
+
+BERT does not directly understand:
+
+```text
+"I love this product"
+```
+
+The tokenizer converts it into numbers.
+
+For example:
+
+```text
+"I love this product"
+        ↓
+[101, 1045, 2293, 2023, 4031, 102]
+```
+
+These numbers represent vocabulary tokens.
+
+---
+
+# 14. What is `attention_mask`?
+
+The attention mask tells BERT which tokens are real and which are padding.
+
+Example:
+
+```text
+input_ids:
+[101, 1045, 2293, 2023, 4031, 102, 0, 0]
+
+attention_mask:
+[ 1,    1,    1,    1,    1,   1, 0, 0]
+```
+
+Meaning:
+
+```text
+1 → actual token
+0 → padding
+```
+
+---
+
+# 15. Load Pre-trained BERT
+
+```python
+model = BertForSequenceClassification.from_pretrained(
+    "bert-base-uncased",
+    num_labels=2
+)
+```
+
+`num_labels=2` means:
+
+```text
+Class 0 → Negative
+Class 1 → Positive
+```
+
+The architecture is approximately:
+
+```text
+Input Text
+    ↓
+Tokenizer
+    ↓
+BERT
+    ↓
+Classification Layer
+    ↓
+Positive / Negative
+```
+
+---
+
+# 16. Define Training Arguments
+
+```python
+training_args = TrainingArguments(
+    output_dir="./results",
+    eval_strategy="epoch",
+    learning_rate=2e-5,
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
+    num_train_epochs=3,
+    weight_decay=0.01,
+    report_to="none"
+)
+```
+
+### Important parameters
+
+**Learning rate**
+
+```python
+learning_rate=2e-5
+```
+
+Controls how much model weights change during training.
+
+BERT fine-tuning generally uses a relatively small learning rate.
+
+**Batch size**
+
+```python
+per_device_train_batch_size=4
+```
+
+Number of examples processed at once.
+
+**Epochs**
+
+```python
+num_train_epochs=3
+```
+
+The model sees the training dataset three times.
+
+**Weight decay**
+
+```python
+weight_decay=0.01
+```
+
+Helps reduce overfitting.
+
+---
+
+# 17. Create Trainer
+
+```python
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_dataset["train"],
+    eval_dataset=tokenized_dataset["test"]
+)
+```
+
+The `Trainer` handles much of the training loop automatically.
+
+Instead of manually writing:
+
+```python
+optimizer.zero_grad()
+loss.backward()
+optimizer.step()
+```
+
+Hugging Face's `Trainer` handles these operations for us.
+
+---
+
+# 18. Start Fine-tuning
+
+```python
+trainer.train()
+```
+
+During training:
+
+```text
+Training data
+      ↓
+Tokenizer output
+      ↓
+BERT
+      ↓
+Prediction
+      ↓
+Calculate loss
+      ↓
+Backpropagation
+      ↓
+Update BERT weights
+      ↓
+Repeat
+```
+
+This is the **fine-tuning process**.
+
+---
+
+# 19. Evaluate the Model
+
+```python
+results = trainer.evaluate()
+
+print(results)
+```
+
+You may see output similar to:
+
+```text
+{
+    'eval_loss': 0.35,
+    'eval_runtime': ...,
+    'epoch': 3.0
+}
+```
+
+Because this is a very small demonstration dataset, the evaluation result is **not meaningful as a real-world benchmark**.
+
+For a real project, use hundreds or thousands of examples.
+
+---
+
+# 20. Make Predictions
+
+Let's create a new sentence:
+
+```python
+text = "This product is amazing"
+```
+
+Tokenize it:
+
+```python
+inputs = tokenizer(
+    text,
+    return_tensors="pt",
+    truncation=True,
+    padding=True
+)
+```
+
+Move inputs to the same device as the model:
+
+```python
+inputs = {
+    key: value.to(model.device)
+    for key, value in inputs.items()
+}
+```
+
+---
+
+# 21. Get Model Prediction
+
+```python
+with torch.no_grad():
+    outputs = model(**inputs)
+```
+
+The model returns logits.
+
+```python
+print(outputs.logits)
+```
+
+Example:
+
+```text
+tensor([[-1.2, 2.8]])
+```
+
+There are two values because we have two classes:
+
+```text
+Class 0 → Negative
+Class 1 → Positive
+```
+
+---
+
+# 22. Convert Logits to Class
+
+```python
+prediction = torch.argmax(
+    outputs.logits,
+    dim=1
+)
+
+print(prediction.item())
+```
+
+Example:
+
+```text
+1
+```
+
+Therefore:
+
+```text
+1 → Positive
+```
+
+---
+
+# 23. Complete Prediction Code
+
+```python
+text = "This product is amazing"
+
+inputs = tokenizer(
+    text,
+    return_tensors="pt",
+    truncation=True,
+    padding=True
+)
+
+inputs = {
+    key: value.to(model.device)
+    for key, value in inputs.items()
+}
+
+with torch.no_grad():
+    outputs = model(**inputs)
+
+prediction = torch.argmax(
+    outputs.logits,
+    dim=1
+)
+
+if prediction.item() == 1:
+    print("Positive")
+else:
+    print("Negative")
+```
+
+---
+
+# 24. Complete Example
+
+Here is the complete beginner-friendly implementation in one place:
+
+```python
+import torch
+
+from datasets import Dataset
+
+from transformers import (
+    BertTokenizer,
+    BertForSequenceClassification,
+    TrainingArguments,
+    Trainer
+)
+
+
+# 1. Create dataset
+
+
+texts = [
+    "I love this product",
+    "This product is excellent",
+    "Amazing experience",
+    "I really enjoyed this",
+    "This is fantastic",
+
+    "I hate this product",
+    "This product is terrible",
+    "Very bad experience",
+    "I am disappointed",
+    "I do not like this"
+]
+
+labels = [
+    1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0
+]
+
+
+# 2. Create Hugging Face dataset
+
+
+dataset = Dataset.from_dict({
+    "text": texts,
+    "label": labels
+})
+
+
+# 3. Train/test split
+
+
+dataset = dataset.train_test_split(
+    test_size=0.2,
+    seed=42
+)
+
+
+# 4. Load tokenizer
+
+
+tokenizer = BertTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+
+
+# 5. Tokenization
+
+
+def tokenize_function(examples):
+    return tokenizer(
+        examples["text"],
+        padding="max_length",
+        truncation=True,
+        max_length=128
+    )
+
+tokenized_dataset = dataset.map(
+    tokenize_function,
+    batched=True
+)
+
+
+# 6. Load pre-trained BERT
+
+
+model = BertForSequenceClassification.from_pretrained(
+    "bert-base-uncased",
+    num_labels=2
+)
+
+
+# 7. Training configuration
+
+
+training_args = TrainingArguments(
+    output_dir="./results",
+    eval_strategy="epoch",
+    learning_rate=2e-5,
+    per_device_train_batch_size=4,
+    per_device_eval_batch_size=4,
+    num_train_epochs=3,
+    weight_decay=0.01,
+    report_to="none"
+)
+
+
+# 8. Trainer
+
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_dataset["train"],
+    eval_dataset=tokenized_dataset["test"]
+)
+
+
+# 9. Fine-tune BERT
+
+
+trainer.train()
+
+
+# 10. Evaluate
+
+
+results = trainer.evaluate()
+
+print("Evaluation:")
+print(results)
+
+
+# 11. Prediction
+
+
+text = "This product is amazing"
+
+inputs = tokenizer(
+    text,
+    return_tensors="pt",
+    truncation=True,
+    padding=True
+)
+
+inputs = {
+    key: value.to(model.device)
+    for key, value in inputs.items()
+}
+
+with torch.no_grad():
+    outputs = model(**inputs)
+
+prediction = torch.argmax(
+    outputs.logits,
+    dim=1
+)
+
+if prediction.item() == 1:
+    print("Prediction: Positive")
+else:
+    print("Prediction: Negative")
+```
+
+---
+
+# 25. Understanding the Complete Pipeline
+
+The most important part to remember is:
+
+```text
+                    PRE-TRAINING
+                        │
+                        ▼
+                 BERT Model
+                        │
+                        │
+                 Fine-tuning
+                        │
+                        ▼
+              Classification Task
+                        │
+          ┌─────────────┴─────────────┐
+          ▼                           ▼
+       Positive                    Negative
+```
+
+More specifically:
+
+```text
+Raw Text
+   │
+   ▼
+Tokenizer
+   │
+   ├── input_ids
+   └── attention_mask
+   │
+   ▼
+Pre-trained BERT
+   │
+   ▼
+Classification Head
+   │
+   ▼
+Logits
+   │
+   ▼
+argmax()
+   │
+   ▼
+Class Prediction
+```
+
+---
+
+# 26. Important Hugging Face Classes
+
+| Class | Purpose |
+| --- | --- |
+| `BertTokenizer` | Converts text into tokens |
+| `BertForSequenceClassification` | BERT \+ classification layer |
+| `TrainingArguments` | Defines training configuration |
+| `Trainer` | Handles training and evaluation |
+| `Dataset` | Handles datasets |
+
+---
+
+# 27. `AutoTokenizer` and `AutoModel`
+
+In modern Hugging Face code, you will often see `AutoTokenizer` and `AutoModel`.
+
+Instead of:
+
+```python
+from transformers import BertTokenizer
+
+tokenizer = BertTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+```
+
+you can use:
+
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "bert-base-uncased"
+)
+```
+
+Similarly:
+
+```python
+from transformers import AutoModelForSequenceClassification
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    "bert-base-uncased",
+    num_labels=2
+)
+```
+
+This is useful because the same code can work with different Transformer architectures.
+
+For example:
+
+```python
+model_name = "bert-base-uncased"
+```
+
+or:
+
+```python
+model_name = "distilbert-base-uncased"
+```
+
+or:
+
+```python
+model_name = "roberta-base"
+```
+
+---
+
+# 28. Recommended Modern Version
+
+For your learning, I would recommend using the `Auto*` classes:
+
+```python
+from transformers import (
+    AutoTokenizer,
+    AutoModelForSequenceClassification
+)
+
+model_name = "bert-base-uncased"
+
+tokenizer = AutoTokenizer.from_pretrained(
+    model_name
+)
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    model_name,
+    num_labels=2
+)
+```
+
+This is more flexible and is commonly seen in Hugging Face projects.
+
+---
+
+# 29. Fine-tuning vs Feature Extraction
+
+### Feature extraction
+
+BERT weights are frozen:
+
+```text
+BERT
+ ↓
+Frozen
+ ↓
+Features
+ ↓
+Classifier
+```
+
+### Fine-tuning
+
+BERT weights are updated:
+
+```text
+BERT
+ ↓
+Trainable
+ ↓
+Classification
+```
+
+Fine-tuning usually allows the model to adapt better to the specific task.
+
+---
+
+# 30. Example Applications
+
+The same approach can be used for:
+
+### Sentiment analysis
+
+```text
+"I love this movie"
+        ↓
+Positive
+```
+
+### Spam detection
+
+```text
+"You won a free prize!"
+        ↓
+Spam
+```
+
+### News classification
+
+```text
+"India wins the cricket match"
+        ↓
+Sports
+```
+
+### Customer complaint classification
+
+```text
+"My payment failed"
+        ↓
+Payment Issue
+```
+
+### Intent classification
+
+```text
+"Where is my order?"
+        ↓
+Order Tracking
+```
+
+---
+
+# 31. Binary vs Multi-class Classification
+
+### Binary classification
+
+Two classes:
+
+```python
+num_labels=2
+```
+
+Example:
+
+```text
+Positive
+Negative
+```
+
+### Three-class classification
+
+```python
+num_labels=3
+```
+
+Example:
+
+```text
+Positive
+Neutral
+Negative
+```
+
+### Five-class classification
+
+```python
+num_labels=5
+```
+
+Example:
+
+```text
+Sports
+Politics
+Technology
+Business
+Entertainment
+```
+
+---
+
+# 32. Key Concepts to Remember
+
+### Pre-trained model
+
+A model already trained on a large dataset.
+
+### Tokenizer
+
+Converts text into numerical representations.
+
+### Fine-tuning
+
+Continues training a pre-trained model on a specific task.
+
+### Classification head
+
+The final layer that produces class predictions.
+
+### Logits
+
+Raw scores produced by the classification model.
+
+### `argmax`
+
+Selects the class with the highest score.
+
+---
+
+# 33. Summary of Each Step
+
+```text
+1. Load dataset          → Get text and labels
+2. Split dataset         → Training + testing
+3. Load tokenizer        → Prepare text for BERT
+4. Tokenize text         → Convert text to token IDs
+5. Load BERT             → Load pre-trained model
+6. Add classification    → Define output classes
+7. Configure training    → Learning rate, batch size, epochs
+8. Create Trainer        → Set up training
+9. Fine-tune             → Update BERT weights
+10. Evaluate             → Check model performance
+11. Predict              → Classify new text
+```
+
+## Final mental model
+
+```text
+                 Hugging Face
+                      │
+              ┌───────┴────────┐
+              │                │
+          Tokenizer           Model
+              │                  │
+              ▼                ▼
+          Text → IDs       Pre-trained BERT
+              │                │
+              └───────┬────────┘
+                      ▼
+                 Fine-tuning
+                      │
+                      ▼
+              Classification
+                      │
+                      ▼
+             Positive / Negative
+```

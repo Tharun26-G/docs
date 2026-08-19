@@ -1,0 +1,545 @@
+---
+title: "Sentiment Analysis with HuggingFace"
+---
+
+Sentiment analysis is an NLP task that determines the **emotional polarity of text**, usually as:
+
+- **Positive**
+- **Negative**
+- Sometimes **Neutral**
+
+For example:
+
+```text
+"I really enjoyed this movie."
+→ Positive
+
+"The product was terrible."
+→ Negative
+```
+
+In HuggingFace, we can use a **pre-trained and fine-tuned Transformer model** to predict sentiment without training a model from scratch.
+
+## 1. NLP Text Preprocessing
+
+Before a machine learning model can process text, the text needs to be converted into numerical representations.
+
+Typical preprocessing includes:
+
+1. Convert text into tokens
+2. Convert tokens into token IDs
+3. Add special tokens
+4. Create attention masks
+5. Pad or truncate sequences
+6. Pass the processed input to the Transformer model
+
+Example:
+
+```text
+"I love this movie"
+```
+
+can be tokenized approximately as:
+
+```text
+["i", "love", "this", "movie"]
+```
+
+The tokenizer then converts these tokens into numerical IDs:
+
+```text
+[1045, 2293, 2023, 3185]
+```
+
+The actual IDs depend on the tokenizer being used.
+
+## 2. HuggingFace Transformers
+
+HuggingFace Transformers provides pre-trained NLP models such as:
+
+- BERT
+- DistilBERT
+- RoBERTa
+- ALBERT
+- DeBERTa
+
+For sentiment analysis, we can use a model that has already been **fine-tuned on a sentiment classification dataset**.
+
+A common beginner-friendly model is:
+
+```text
+distilbert-base-uncased-finetuned-sst-2-english
+```
+
+It is a DistilBERT model fine-tuned for binary sentiment classification.
+
+The model predicts:
+
+```text
+LABEL_0 → NEGATIVE
+LABEL_1 → POSITIVE
+```
+
+## 3. Text Preprocessing with AutoTokenizer
+
+HuggingFace provides `AutoTokenizer` to automatically load the correct tokenizer for a model.
+
+```python
+from transformers import AutoTokenizer
+
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+```
+
+Now tokenize a sentence:
+
+```python
+text = "I really enjoyed this movie."
+
+tokens = tokenizer(text)
+
+print(tokens)
+```
+
+You will get information similar to:
+
+```text
+{
+    'input_ids': [...],
+    'attention_mask': [...]
+}
+```
+
+### input\_ids
+
+`input_ids` are numerical representations of the tokens.
+
+### attention\_mask
+
+`attention_mask` tells the model which tokens are actual input and which tokens are padding.
+
+## 4. Tokenization with Padding and Truncation
+
+For multiple sentences, the sentences can have different lengths.
+
+We can use:
+
+```python
+encoded = tokenizer(
+    texts,
+    padding=True,
+    truncation=True,
+    return_tensors="pt"
+)
+```
+
+Meaning:
+
+```text
+padding=True
+→ Makes sequences the same length
+
+truncation=True
+→ Cuts sequences that are too long
+
+return_tensors="pt"
+→ Returns PyTorch tensors
+```
+
+Example:
+
+```python
+texts = [
+    "I love this product.",
+    "This movie was terrible."
+]
+
+encoded = tokenizer(
+    texts,
+    padding=True,
+    truncation=True,
+    return_tensors="pt"
+)
+
+print(encoded)
+```
+
+## 5. Predicting Sentiment
+
+We can load the fine-tuned model using `AutoModelForSequenceClassification`.
+
+```python
+from transformers import AutoModelForSequenceClassification
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    model_name
+)
+```
+
+Then pass the tokenized input to the model:
+
+```python
+outputs = model(**encoded)
+```
+
+The model produces **logits**.
+
+```python
+print(outputs.logits)
+```
+
+Logits are raw scores produced by the classification layer.
+
+## 6. Convert Logits into Probabilities
+
+We can use Softmax to convert logits into probabilities.
+
+```python
+import torch
+
+probabilities = torch.softmax(
+    outputs.logits,
+    dim=1
+)
+
+print(probabilities)
+```
+
+Example:
+
+```text
+tensor([
+    [0.0012, 0.9988],
+    [0.9975, 0.0025]
+])
+```
+
+This means:
+
+```text
+Sentence 1
+Negative: 0.0012
+Positive: 0.9988
+
+Sentence 2
+Negative: 0.9975
+Positive: 0.0025
+```
+
+## 7. Get the Predicted Class
+
+We can find the class with the highest probability.
+
+```python
+predictions = torch.argmax(
+    probabilities,
+    dim=1
+)
+
+print(predictions)
+```
+
+For example:
+
+```text
+tensor([1, 0])
+```
+
+The mapping is:
+
+```text
+0 → NEGATIVE
+1 → POSITIVE
+```
+
+## 8. Complete Sentiment Analysis Code
+
+This is a simple version suitable for a beginner coding exercise.
+
+```python
+import torch
+
+from transformers import (
+    AutoTokenizer,
+    AutoModelForSequenceClassification
+)
+
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    model_name
+)
+
+texts = [
+    "I really enjoyed this movie.",
+    "The movie was terrible.",
+    "The product is excellent.",
+    "I am very disappointed with the service."
+]
+
+encoded = tokenizer(
+    texts,
+    padding=True,
+    truncation=True,
+    return_tensors="pt"
+)
+
+with torch.no_grad():
+    outputs = model(**encoded)
+
+probabilities = torch.softmax(
+    outputs.logits,
+    dim=1
+)
+
+predictions = torch.argmax(
+    probabilities,
+    dim=1
+)
+
+labels = ["NEGATIVE", "POSITIVE"]
+
+for text, prediction, probability in zip(
+    texts,
+    predictions,
+    probabilities
+):
+    label = labels[prediction.item()]
+    confidence = probability[prediction].item()
+
+    print(f"Text: {text}")
+    print(f"Sentiment: {label}")
+    print(f"Confidence: {confidence:.4f}")
+    print()
+```
+
+Example output:
+
+```text
+Text: I really enjoyed this movie.
+Sentiment: POSITIVE
+Confidence: 0.9998
+
+Text: The movie was terrible.
+Sentiment: NEGATIVE
+Confidence: 0.9997
+
+Text: The product is excellent.
+Sentiment: POSITIVE
+Confidence: 0.9999
+
+Text: I am very disappointed with the service.
+Sentiment: NEGATIVE
+Confidence: 0.9996
+```
+
+## 9. Using the HuggingFace Pipeline
+
+HuggingFace also provides a much simpler `pipeline()` API.
+
+Instead of manually performing tokenization, model inference, Softmax, and prediction, we can use:
+
+```python
+from transformers import pipeline
+
+classifier = pipeline(
+    "sentiment-analysis"
+)
+
+result = classifier(
+    "I really enjoyed this movie."
+)
+
+print(result)
+```
+
+Example:
+
+```text
+[
+    {
+        'label': 'POSITIVE',
+        'score': 0.9998
+    }
+]
+```
+
+For multiple sentences:
+
+```python
+texts = [
+    "I love this product.",
+    "This product is terrible.",
+    "The service was excellent."
+]
+
+results = classifier(texts)
+
+for text, result in zip(texts, results):
+    print(text)
+    print(result)
+```
+
+Output:
+
+```text
+I love this product.
+{'label': 'POSITIVE', 'score': 0.9998}
+
+This product is terrible.
+{'label': 'NEGATIVE', 'score': 0.9997}
+
+The service was excellent.
+{'label': 'POSITIVE', 'score': 0.9999}
+```
+
+## 10. Code by using Pipeline
+
+```python
+from transformers import pipeline
+
+classifier = pipeline(
+    "sentiment-analysis"
+)
+
+texts = [
+    "I love this product.",
+    "The product is terrible.",
+    "The movie was fantastic.",
+    "I am disappointed with the service."
+]
+
+results = classifier(texts)
+
+for text, result in zip(texts, results):
+    print(f"Text: {text}")
+    print(f"Sentiment: {result['label']}")
+    print(f"Confidence: {result['score']:.4f}")
+    print()
+```
+
+## 11. How the Prediction Works
+
+The complete flow is:
+
+```text
+Raw Text
+   ↓
+Tokenizer
+   ↓
+Tokens
+   ↓
+Token IDs + Attention Mask
+   ↓
+DistilBERT
+   ↓
+Classification Layer
+   ↓
+Logits
+   ↓
+Softmax
+   ↓
+Probability
+   ↓
+Positive / Negative
+```
+
+For example:
+
+```text
+"I love this movie"
+        ↓
+Tokenizer
+        ↓
+Token IDs
+        ↓
+DistilBERT
+        ↓
+Classification scores
+        ↓
+POSITIVE: 0.998
+NEGATIVE: 0.002
+        ↓
+POSITIVE
+```
+
+## 12. Installing Required Libraries
+
+Install the required packages with:
+
+```bash
+pip install transformers torch
+```
+
+Then run:
+
+```bash
+python sentiment_demo.py
+```
+
+## 13. Important Concepts
+
+| Concept | Explanation |
+| --- | --- |
+| NLP | Processing and understanding human language |
+| Tokenization | Breaking text into tokens |
+| Token IDs | Numerical representation of tokens |
+| Attention Mask | Identifies valid tokens |
+| Transformer | Neural network architecture for language |
+| BERT | Transformer-based NLP model |
+| DistilBERT | Smaller and faster version of BERT |
+| Fine-tuning | Training a pre-trained model for a specific task |
+| Logits | Raw classification scores |
+| Softmax | Converts scores into probabilities |
+| Sentiment | Positive or negative classification |
+| Confidence | Probability assigned to the prediction |
+| Pipeline | Simplified HuggingFace API for inference |
+
+## 14. `pipeline()` vs Manual Approach
+
+### Pipeline
+
+```python
+classifier = pipeline("sentiment-analysis")
+
+result = classifier("I love this movie.")
+```
+
+Best when:
+
+- You want simple code
+- You are learning NLP
+- You only need predictions
+- You want to quickly test a model
+
+### Manual approach
+
+```python
+tokenizer(...)
+model(...)
+torch.softmax(...)
+torch.argmax(...)
+```
+
+Best when:
+
+- You want to understand the internal process
+- You need custom preprocessing
+- You want more control over the model
+- You are building a larger NLP application
+
+## 15. Key Takeaway
+
+The main idea is:
+
+```text
+Text
+→ Tokenization
+→ Numerical input
+→ Fine-tuned Transformer
+→ Classification scores
+→ Sentiment prediction
+```

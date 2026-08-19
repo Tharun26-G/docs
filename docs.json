@@ -277,7 +277,13 @@
           {
             "group": "Day 30",
             "pages": [
-              "untitled-page-3"
+              "hf-transformers"
+            ]
+          },
+          {
+            "group": "Day 31",
+            "pages": [
+              "sentiment-analysis"
             ]
           }
         ]

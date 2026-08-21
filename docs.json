@@ -291,6 +291,13 @@
             "pages": [
               "prompt-engineering"
             ]
+          },
+          {
+            "group": "Day 33",
+            "pages": [
+              "chain-prompt",
+              "cot-prompt-code"
+            ]
           }
         ]
       }

@@ -1,0 +1,544 @@
+---
+title: "Chain-of-Thought Prompting"
+---
+
+## 1. Introduction
+
+**Chain-of-Thought prompting** is a prompting technique used to improve performance on tasks that require multiple reasoning steps.
+
+Instead of treating a problem as a single question, the task is structured so that the model can work through intermediate reasoning before producing the final result.
+
+It is especially useful for tasks involving:
+
+- Mathematics
+- Logic
+- Multi-step calculations
+- Programming problems
+- Planning
+- Complex decision-making
+
+The two main ideas are:
+
+```text
+Few-Shot Prompting
+        +
+Step-by-Step Reasoning
+        =
+Chain-of-Thought Prompting
+```
+
+---
+
+# 2. Few-Shot Prompting
+
+## Definition
+
+**Few-shot prompting** provides the model with a small number of examples before giving it the actual task.
+
+The examples demonstrate:
+
+- What the task looks like
+- How the input should be interpreted
+- What type of output is expected
+- What reasoning pattern or solution approach is useful
+
+## Basic Example
+
+```text
+Question:
+What is 2 + 3?
+
+Answer:
+5
+
+Question:
+What is 10 + 7?
+
+Answer:
+17
+
+Question:
+What is 8 + 6?
+
+Answer:
+```
+
+The model uses the examples to understand the task.
+
+---
+
+# 3. Few-Shot Prompting for More Complex Tasks
+
+Few-shot examples can demonstrate how to solve a category of problems.
+
+```text
+Example 1:
+
+Question:
+A box contains 5 apples. 2 apples are removed.
+How many apples remain?
+
+Answer:
+5 - 2 = 3
+
+Final Answer: 3
+
+
+Example 2:
+
+Question:
+A store has 10 books and receives 4 more books.
+How many books are there now?
+
+Answer:
+10 + 4 = 14
+
+Final Answer: 14
+
+
+Question:
+A library has 20 books and gives away 6 books.
+How many books remain?
+
+Answer:
+```
+
+The examples guide the model toward the expected problem-solving pattern.
+
+---
+
+# 4. Step-by-Step Reasoning
+
+## Definition
+
+Some problems require multiple steps before reaching a final answer.
+
+For these tasks, a useful prompt can ask the model to:
+
+1. Identify the important information.
+2. Break the problem into smaller parts.
+3. Perform the required operations.
+4. Check the result.
+5. Return the final answer.
+
+## Example
+
+```text
+Solve the following problem carefully.
+
+Identify the required information.
+Work through the necessary steps.
+Check the calculation.
+Then provide the final answer with a concise explanation.
+
+Question:
+A person buys 3 notebooks for ₹25 each.
+What is the total cost?
+```
+
+The calculation is:
+
+```text
+3 × 25 = 75
+```
+
+Final answer:
+
+```text
+₹75
+```
+
+---
+
+# 5. Combining Few-Shot and Step-by-Step Reasoning
+
+Chain-of-Thought prompting often combines examples with a structured reasoning approach.
+
+## Example Prompt
+
+```text
+Solve the problems using the same approach as the examples.
+
+Example:
+
+Question:
+A train travels 60 km per hour for 2 hours.
+How far does it travel?
+
+Solution:
+Distance = Speed × Time
+Distance = 60 × 2
+Distance = 120 km
+
+Final Answer: 120 km
+
+
+Now solve:
+
+Question:
+A car travels 80 km per hour for 3 hours.
+How far does it travel?
+
+Provide the final answer with a concise explanation.
+```
+
+The example demonstrates the structure and approach expected for the new problem.
+
+---
+
+# 6. Zero-Shot vs Few-Shot Chain-of-Thought
+
+## Zero-Shot
+
+The model receives instructions but no examples.
+
+```text
+Solve the following problem carefully.
+Break it into the necessary steps.
+Verify the result.
+
+Question:
+If 5 workers complete a task in 10 days,
+how many worker-days are required?
+```
+
+The model must determine the reasoning pattern from the instruction.
+
+---
+
+## Few-Shot
+
+The model receives examples before the actual problem.
+
+```text
+Example:
+
+Question:
+If 4 workers work for 5 days,
+how many worker-days are required?
+
+Solution:
+Worker-days = Workers × Days
+Worker-days = 4 × 5
+Worker-days = 20
+
+Final Answer: 20
+
+
+Question:
+If 5 workers work for 10 days,
+how many worker-days are required?
+
+Answer:
+```
+
+Few-shot prompting provides an example of the expected reasoning pattern.
+
+---
+
+# 7. General Chain-of-Thought Prompt Template
+
+A reusable template is:
+
+```text
+You are an expert {role}.
+
+Solve the following problem carefully.
+
+Requirements:
+1. Identify the important information.
+2. Break the problem into smaller steps.
+3. Apply the appropriate method.
+4. Check the result for errors.
+5. Provide the final answer with a concise explanation.
+
+Problem:
+{problem}
+```
+
+---
+
+# 8. Few-Shot Chain-of-Thought Template
+
+```text
+You are an expert problem solver.
+
+Solve problems using the approach demonstrated below.
+
+Example 1:
+
+Problem:
+{example_problem_1}
+
+Solution:
+{example_solution_1}
+
+Final Answer:
+{example_answer_1}
+
+
+Example 2:
+
+Problem:
+{example_problem_2}
+
+Solution:
+{example_solution_2}
+
+Final Answer:
+{example_answer_2}
+
+
+Now solve:
+
+Problem:
+{new_problem}
+
+Provide a concise final explanation and answer.
+```
+
+---
+
+# 9. When to Use Chain-of-Thought Prompting
+
+It is useful when the task involves:
+
+### Multi-Step Problems
+
+```text
+Analyze the requirements, solve the task, and verify the result.
+```
+
+### Mathematical Problems
+
+```text
+Solve the calculation carefully and check the final result.
+```
+
+### Programming Problems
+
+```text
+Analyze the bug, identify the root cause, propose a fix,
+and verify that the solution satisfies the requirements.
+```
+
+### Data Analysis
+
+```text
+Analyze the data, identify important patterns,
+check for inconsistencies, and provide conclusions.
+```
+
+### Planning
+
+```text
+Break the objective into smaller tasks,
+identify dependencies, and create a step-by-step plan.
+```
+
+---
+
+# 10. Reasoning and Verification
+
+For complex tasks, it is often useful to separate solving from checking.
+
+## Example
+
+```text
+Task:
+Solve the problem.
+
+Verification:
+Check that:
+- All requirements are addressed.
+- The calculations are correct.
+- No assumptions conflict with the provided information.
+
+Return:
+A concise explanation and the final answer.
+```
+
+This creates a simple workflow:
+
+```text
+Understand Task
+      ↓
+Solve Problem
+      ↓
+Check Result
+      ↓
+Correct Errors
+      ↓
+Return Final Answer
+```
+
+---
+
+# 11. Best Practices
+
+## 1. Use Clear Examples
+
+Few-shot examples should be:
+
+- Relevant to the actual task
+- Correct
+- Consistent
+- Simple enough to demonstrate the pattern
+
+## 2. Use Similar Examples
+
+If the actual task is mathematical, use mathematical examples.
+
+If the actual task is code generation, use code examples.
+
+Poorly matched examples can confuse the model.
+
+---
+
+## 3. Ask for Verification
+
+For important tasks, add verification criteria.
+
+```text
+Before giving the final answer, check:
+
+- Does the solution answer the question?
+- Are calculations correct?
+- Are all requirements satisfied?
+```
+
+---
+
+## 4. Avoid Unnecessary Complexity
+
+Not every task requires detailed reasoning.
+
+Simple tasks often work well with direct prompting.
+
+### Simple Task
+
+```text
+Translate this sentence into French.
+```
+
+### Complex Task
+
+```text
+Analyze the problem, identify the relevant constraints,
+work through the solution, verify it, and provide the final answer.
+```
+
+Use additional reasoning guidance only when the task benefits from it.
+
+---
+
+# 12. Chain-of-Thought vs Direct Prompting
+
+| Feature | Direct Prompting | Chain-of-Thought Prompting |
+| --- | --- | --- |
+| Task complexity | Simple tasks | Multi-step tasks |
+| Examples | Optional | Often useful |
+| Intermediate reasoning | Usually not emphasized | Structured problem-solving approach |
+| Verification | Optional | Often included |
+| Best for | Simple questions and generation | Complex reasoning and planning |
+
+---
+
+# 13. Important Limitation
+
+A model's reasoning process is not guaranteed to be correct simply because it produces a step-by-step explanation.
+
+A response can still contain:
+
+- Incorrect assumptions
+- Calculation errors
+- Missing information
+- Logical mistakes
+
+Therefore, for important tasks, use external verification when possible.
+
+For example:
+
+- Use a calculator for important calculations
+- Run generated code
+- Validate JSON with a parser
+- Check results against source data
+- Test software with unit tests
+
+---
+
+# 14. Complete Example
+
+## Prompt
+
+```text
+You are an expert problem solver.
+
+Solve the problem carefully.
+
+Example:
+
+Question:
+A shop sells 4 pens for ₹10 each.
+
+Solution:
+Total Cost = Number of Pens × Cost per Pen
+Total Cost = 4 × 10
+Total Cost = ₹40
+
+Final Answer: ₹40
+
+
+Now solve:
+
+Question:
+A student buys 6 notebooks for ₹35 each.
+
+Requirements:
+- Identify the required calculation.
+- Solve the problem.
+- Check the result.
+- Provide a concise explanation.
+```
+
+## Expected Solution
+
+```text
+Total Cost = Number of Notebooks × Cost per Notebook
+
+Total Cost = 6 × 35
+
+Total Cost = ₹210
+
+Final Answer: ₹210
+```
+
+---
+
+# 15. Key Takeaways
+
+| Topic | Explanation |
+| --- | --- |
+| **Chain-of-Thought Prompting** | A technique for improving performance on multi-step reasoning tasks |
+| **Few-Shot Prompting** | Provide examples that demonstrate the task or expected pattern |
+| **Step-by-Step Reasoning** | Break complex tasks into smaller logical stages |
+| **Reasoning Guidance** | Instruct the model to analyze requirements and solve systematically |
+| **Verification** | Check whether the result satisfies requirements and contains errors |
+| **Zero-Shot Approach** | Give instructions without examples |
+| **Few-Shot Approach** | Give examples before the actual task |
+| **Best Use Cases** | Mathematics, logic, programming, planning, and complex analysis |
+| **Limitation** | Step-by-step explanations do not guarantee correctness |
+
+## Simple Formula
+
+```text
+Complex Problem
+      ↓
+Relevant Examples
+      +
+Clear Reasoning Instructions
+      +
+Verification
+      ↓
+More Reliable Final Answer
+```

@@ -302,7 +302,8 @@
           {
             "group": "Day 34",
             "pages": [
-              "llm-interface-api"
+              "llm-interface-api",
+              "hf-fastapi"
             ]
           }
         ]

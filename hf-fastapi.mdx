@@ -1,0 +1,315 @@
+---
+title: "Code "
+---
+
+## **Problem Statement**
+
+- **Problem:** We need a way for an application/user to send a text prompt to an AI model and receive generated text as a response.
+- **Solution:** Build a simple **REST API using FastAPI** that connects to the **GPT-2 AI model**.
+
+## **What the Code Is Doing**
+
+- Loads the **GPT-2 model** using Hugging Face Transformers.
+- Creates a `/predict` API where the user sends a **prompt** and GPT-2 generates text.
+- Returns the **AI-generated text as a JSON response**.
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+from transformers import pipeline
+
+app = FastAPI(title="GPT-2 API")
+
+# load model once when the application starts
+
+generator = pipeline("text-generation", model="gpt2")
+
+
+class PredictionRequest(BaseModel):
+    prompt: str
+    max_length: int = 100
+
+
+@app.get("/")
+def home():
+    return {"message": "GPT-2 API is running"}
+
+
+@app.post("/predict")
+def predict(request: PredictionRequest):
+    result = generator(
+        request.prompt,
+        max_length=request.max_length,
+        num_return_sequences=1,
+        do_sample=True,
+        temperature=0.7,
+    )
+
+    return {"prompt": request.prompt, "generated_text": result[0]["generated_text"]}
+```
+
+## **1. Install dependencies**
+
+First, install the required Python packages:
+
+```bash
+pip install fastapi uvicorn transformers torch
+```
+
+- **FastAPI** → creates the API.
+- **Uvicorn** → runs the FastAPI server.
+- **Transformers** → provides the GPT-2 model.
+- **PyTorch** → required by GPT-2 to run.
+
+---
+
+## **2. Import libraries**
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+from transformers import pipeline
+```
+
+- `FastAPI` → lets us create API endpoints.
+- `BaseModel` → validates incoming JSON requests.
+- `pipeline` → provides an easy way to use GPT-2.
+
+---
+
+## **3. Create the FastAPI application**
+
+```python
+app = FastAPI(title="GPT-2 API")
+```
+
+This creates your API application.
+
+The API will have the title **GPT-2 API**.
+
+---
+
+## **4. Load GPT-2**
+
+```python
+generator = pipeline("text-generation", model="gpt2")
+```
+
+This loads the **GPT-2 AI model**.
+
+`"text-generation"` tells Transformers:
+
+> "I want an AI model that generates text."
+
+The model is loaded **once**, rather than every time someone makes a request.
+
+---
+
+## **5. Define the request format**
+
+```python
+class PredictionRequest(BaseModel):
+    prompt: str
+    max_length: int = 100
+```
+
+This defines what the client should send.
+
+For example:
+
+```json
+{
+  "prompt": "Artificial intelligence is",
+  "max_length": 50
+}
+```
+
+- `prompt` → text given to the AI.
+- `max_length` → maximum length of the generated output.
+- If `max_length` isn't provided, it defaults to `100`.
+
+---
+
+## **6. Create the home endpoint**
+
+```python
+@app.get("/")
+def home():
+    return {"message": "GPT-2 API is running"}
+```
+
+When someone visits:
+
+```text
+GET /
+```
+
+the API responds:
+
+```json
+{
+  "message": "GPT-2 API is running"
+}
+```
+
+This is mainly a simple way to check that the server is working.
+
+---
+
+## **7. Create the AI prediction endpoint**
+
+```python
+@app.post("/predict")
+def predict(request: PredictionRequest):
+```
+
+This creates:
+
+```text
+POST /predict
+```
+
+The API expects a JSON request matching `PredictionRequest`.
+
+---
+
+## **8. Send the prompt to GPT-2**
+
+```python
+result = generator(
+    request.prompt,
+    max_length=request.max_length,
+    num_return_sequences=1,
+    do_sample=True,
+    temperature=0.7,
+)
+```
+
+This is where the **AI actually generates text**.
+
+For example, the user sends:
+
+```json
+{
+  "prompt": "AI will change the world because",
+  "max_length": 50
+}
+```
+
+GPT-2 receives the prompt and predicts what text should come next.
+
+### **Important parameters**
+
+- `request.prompt` → input given to AI.
+- `max_length` → maximum generated length.
+- `num_return_sequences=1` → generate one answer.
+- `do_sample=True` → allow varied/random generation.
+- `temperature=0.7` → controls randomness. Higher = more random.
+
+---
+
+## **9. Return the AI response**
+
+```python
+return {
+    "prompt": request.prompt,
+    "generated_text": result[0]["generated_text"]
+}
+```
+
+The API sends the original prompt and AI-generated text back to the client.
+
+Example response:
+
+```json
+{
+  "prompt": "AI will change the world because",
+  "generated_text": "AI will change the world because it can help people solve complex problems..."
+}
+```
+
+---
+
+## **10. Run the API**
+
+Save the file as:
+
+```text
+main.py
+```
+
+Then run:
+
+```bash
+uvicorn main:app --reload
+```
+
+You should see something like:
+
+```text
+Uvicorn running on http://127.0.0.1:8000
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
+You should get:
+
+```json
+{
+  "message": "GPT-2 API is running"
+}
+```
+
+---
+
+## **11. How the AI API works overall**
+
+```text
+Client
+   ↓
+POST /predict
+   ↓
+JSON prompt
+   ↓
+FastAPI
+   ↓
+GPT-2
+   ↓
+Generated text
+   ↓
+JSON response
+```
+
+### **Request**
+
+```json
+{
+  "prompt": "The future of AI is",
+  "max_length": 50
+}
+```
+
+### **AI**
+
+GPT-2 takes:
+
+```text
+"The future of AI is"
+```
+
+and predicts the next tokens/words based on what it learned during training.
+
+### **Response**
+
+```json
+{
+  "prompt": "The future of AI is",
+  "generated_text": "The future of AI is likely to bring significant changes..."
+}
+```
+
+**In short:** FastAPI is the **server/API**, GPT-2 is the **AI**, the prompt is the **input**, and the generated text is the **AI output**.

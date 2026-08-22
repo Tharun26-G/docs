@@ -1,0 +1,727 @@
+---
+title: "LLM Inference API (FastAPI)"
+---
+
+# 1. What is FastAPI?
+
+**FastAPI** is a Python web framework used to build APIs. It is particularly useful for ML/LLM applications because it provides:
+
+- High performance
+- Automatic API documentation
+- Request/response validation
+- Easy integration with Python ML libraries
+- Asynchronous programming support
+
+A typical LLM inference architecture looks like:
+
+```text
+Client
+   |
+   | HTTP POST /generate
+   v
+FastAPI Server
+   |
+   v
+Hugging Face Transformer Model
+   |
+   v
+Generated Text
+   |
+   v
+Client
+```
+
+---
+
+# 2. Installing FastAPI
+
+Create a virtual environment and install the required packages:
+
+```bash
+pip install fastapi uvicorn
+```
+
+For Hugging Face models:
+
+```bash
+pip install transformers torch
+```
+
+---
+
+# 3. Creating a Basic FastAPI App
+
+Create `main.py`:
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/")
+def home():
+    return {
+        "message": "LLM Inference API is running"
+    }
+```
+
+Run the server:
+
+```bash
+uvicorn main:app --reload
+```
+
+The API will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+FastAPI also automatically provides interactive documentation at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+and:
+
+```text
+http://127.0.0.1:8000/redoc
+```
+
+---
+
+# 4. Creating API Endpoints
+
+For example, create a simple greeting endpoint:
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/hello")
+def hello():
+    return {
+        "message": "Hello from FastAPI"
+    }
+```
+
+Request:
+
+```http
+GET /hello
+```
+
+Response:
+
+```json
+{
+    "message": "Hello from FastAPI"
+}
+```
+
+---
+
+# 5. POST Request with Input Data
+
+LLM APIs normally receive prompts using `POST`.
+
+FastAPI uses **Pydantic models** to validate request data.
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+
+class PromptRequest(BaseModel):
+    prompt: str
+
+
+@app.post("/generate")
+def generate(request: PromptRequest):
+    return {
+        "prompt": request.prompt,
+        "response": "This is a generated response."
+    }
+```
+
+Example request:
+
+```json
+{
+    "prompt": "Explain machine learning"
+}
+```
+
+Response:
+
+```json
+{
+    "prompt": "Explain machine learning",
+    "response": "This is a generated response."
+}
+```
+
+---
+
+# 6. Loading a Hugging Face Model
+
+Hugging Face's `transformers` library provides pretrained models and tokenizers.
+
+For demonstration, we can use a small text-generation model.
+
+```python
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+model_name = "distilgpt2"
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+```
+
+Here:
+
+- `AutoTokenizer` converts text into tokens.
+- `AutoModelForCausalLM` loads a causal language model.
+- `distilgpt2` is a relatively small model suitable for demonstration.
+
+For production, you would generally choose a model based on your hardware, latency, context length, licensing, and quality requirements.
+
+---
+
+# 7. Generating Text with the Hugging Face Model
+
+The basic inference process is:
+
+```python
+prompt = "Artificial intelligence is"
+
+inputs = tokenizer(prompt, return_tensors="pt")
+
+outputs = model.generate(
+    **inputs,
+    max_new_tokens=50
+)
+
+response = tokenizer.decode(
+    outputs[0],
+    skip_special_tokens=True
+)
+
+print(response)
+```
+
+The process is:
+
+```text
+Prompt
+  ↓
+Tokenizer
+  ↓
+Input Tokens
+  ↓
+Hugging Face Model
+  ↓
+Output Tokens
+  ↓
+Tokenizer
+  ↓
+Generated Text
+```
+
+---
+
+# 8. Building the LLM Inference API
+
+Now combine FastAPI and Hugging Face.
+
+`main.py`:
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+app = FastAPI(
+    title="LLM Inference API",
+    description="FastAPI application serving a Hugging Face model",
+    version="1.0.0"
+)
+
+MODEL_NAME = "distilgpt2"
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+
+
+class GenerateRequest(BaseModel):
+    prompt: str
+    max_new_tokens: int = 50
+
+
+@app.get("/")
+def home():
+    return {
+        "message": "LLM API is running"
+    }
+
+
+@app.post("/generate")
+def generate(request: GenerateRequest):
+
+    inputs = tokenizer(
+        request.prompt,
+        return_tensors="pt"
+    )
+
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=request.max_new_tokens
+    )
+
+    generated_text = tokenizer.decode(
+        outputs[0],
+        skip_special_tokens=True
+    )
+
+    return {
+        "prompt": request.prompt,
+        "response": generated_text
+    }
+```
+
+Run it:
+
+```bash
+uvicorn main:app --reload
+```
+
+---
+
+# 9. Testing the API
+
+Using `curl`:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/generate" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "prompt": "Artificial intelligence is",
+           "max_new_tokens": 50
+         }'
+```
+
+Example response:
+
+```json
+{
+    "prompt": "Artificial intelligence is",
+    "response": "Artificial intelligence is ..."
+}
+```
+
+You can also test it interactively through:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# 10. Improving the Generation Parameters
+
+Hugging Face's `generate()` supports several useful parameters.
+
+```python
+outputs = model.generate(
+    **inputs,
+    max_new_tokens=100,
+    temperature=0.7,
+    top_p=0.9,
+    do_sample=True
+)
+```
+
+Important parameters:
+
+| Parameter | Purpose |
+| --- | --- |
+| `max_new_tokens` | Maximum number of newly generated tokens |
+| `temperature` | Controls randomness |
+| `top_p` | Nucleus sampling |
+| `do_sample` | Enables sampling |
+| `num_return_sequences` | Number of generated responses |
+
+For example:
+
+```python
+outputs = model.generate(
+    **inputs,
+    max_new_tokens=100,
+    temperature=0.7,
+    top_p=0.9,
+    do_sample=True
+)
+```
+
+---
+
+# 11. Running the Model on GPU
+
+For larger models, GPU inference is usually necessary.
+
+```python
+import torch
+
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+
+model = model.to(device)
+```
+
+Then move the inputs to the same device:
+
+```python
+inputs = tokenizer(
+    request.prompt,
+    return_tensors="pt"
+)
+
+inputs = {
+    key: value.to(device)
+    for key, value in inputs.items()
+}
+```
+
+Then:
+
+```python
+with torch.no_grad():
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=request.max_new_tokens
+    )
+```
+
+---
+
+# 12. A Better Production-Oriented Version
+
+You don't want to repeatedly load the model for every request.
+
+Instead, load it **once when the application starts**.
+
+```python
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from transformers import (
+    AutoTokenizer,
+    AutoModelForCausalLM
+)
+
+MODEL_NAME = "distilgpt2"
+
+tokenizer = None
+model = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global tokenizer, model
+
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+
+    yield
+
+    del model
+    del tokenizer
+
+
+app = FastAPI(lifespan=lifespan)
+```
+
+Then your endpoint can use the already-loaded model:
+
+```python
+from pydantic import BaseModel
+
+
+class GenerateRequest(BaseModel):
+    prompt: str
+    max_new_tokens: int = 50
+
+
+@app.post("/generate")
+def generate(request: GenerateRequest):
+
+    inputs = tokenizer(
+        request.prompt,
+        return_tensors="pt"
+    )
+
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=request.max_new_tokens
+    )
+
+    response = tokenizer.decode(
+        outputs[0],
+        skip_special_tokens=True
+    )
+
+    return {
+        "response": response
+    }
+```
+
+This avoids loading the model on every API request.
+
+---
+
+# 13. Using a Chat-Style API
+
+For an LLM application, you may want an API resembling a chat endpoint.
+
+Request:
+
+```json
+{
+    "messages": [
+        {
+            "role": "user",
+            "content": "What is machine learning?"
+        }
+    ]
+}
+```
+
+Pydantic models can represent this:
+
+```python
+from typing import List
+from pydantic import BaseModel
+
+
+class Message(BaseModel):
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: List[Message]
+```
+
+Endpoint:
+
+```python
+@app.post("/chat")
+def chat(request: ChatRequest):
+
+    prompt = request.messages[-1].content
+
+    inputs = tokenizer(
+        prompt,
+        return_tensors="pt"
+    )
+
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=100
+    )
+
+    response = tokenizer.decode(
+        outputs[0],
+        skip_special_tokens=True
+    )
+
+    return {
+        "message": {
+            "role": "assistant",
+            "content": response
+        }
+    }
+```
+
+---
+
+# 14. Project Structure
+
+A small LLM API can be organized like this:
+
+```text
+llm-api/
+│
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── model.py
+│   └── schemas.py
+│
+├── requirements.txt
+└── README.md
+```
+
+### `schemas.py`
+
+```python
+from pydantic import BaseModel
+
+
+class GenerateRequest(BaseModel):
+    prompt: str
+    max_new_tokens: int = 50
+```
+
+### `model.py`
+
+```python
+from transformers import (
+    AutoTokenizer,
+    AutoModelForCausalLM
+)
+
+MODEL_NAME = "distilgpt2"
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+
+
+def generate_text(prompt: str, max_new_tokens: int = 50):
+
+    inputs = tokenizer(
+        prompt,
+        return_tensors="pt"
+    )
+
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=max_new_tokens
+    )
+
+    return tokenizer.decode(
+        outputs[0],
+        skip_special_tokens=True
+    )
+```
+
+### `main.py`
+
+```python
+from fastapi import FastAPI
+
+from .schemas import GenerateRequest
+from .model import generate_text
+
+app = FastAPI()
+
+
+@app.get("/")
+def home():
+    return {"message": "LLM API running"}
+
+
+@app.post("/generate")
+def generate(request: GenerateRequest):
+
+    response = generate_text(
+        request.prompt,
+        request.max_new_tokens
+    )
+
+    return {
+        "response": response
+    }
+```
+
+Run:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+---
+
+# 15. Production Architecture
+
+For a real LLM deployment, the architecture is usually closer to:
+
+```text
+                    ┌──────────────┐
+                    │    Client    │
+                    └──────┬───────┘
+                           │
+                         HTTP
+                           │
+                    ┌──────▼───────┐
+                    │   FastAPI    │
+                    │     API      │
+                    └──────┬───────┘
+                           │
+                    ┌──────▼───────┐
+                    │ Model Server │
+                    │              │
+                    │ Hugging Face │
+                    │ Transformer  │
+                    └──────┬───────┘
+                           │
+                       GPU / CPU
+```
+
+For larger production LLMs, you may use a dedicated inference engine rather than directly calling `model.generate()` inside a FastAPI process. Examples include Hugging Face's **Text Generation Inference (TGI)** and other optimized serving frameworks.
+
+---
+
+# 16. Key Concepts to Remember
+
+### FastAPI
+
+```text
+FastAPI
+  ├── Routes
+  ├── Request validation
+  ├── Response serialization
+  ├── Async support
+  └── Automatic API documentation
+```
+
+### Hugging Face inference
+
+```text
+Text
+ ↓
+Tokenizer
+ ↓
+Tensor
+ ↓
+Model
+ ↓
+Generated Tokens
+ ↓
+Tokenizer
+ ↓
+Text
+```
+
+### LLM API
+
+```text
+POST /generate
+        ↓
+   JSON Request
+        ↓
+     FastAPI
+        ↓
+  Hugging Face Model
+        ↓
+   JSON Response
+```
+
+**Most important practical point:** load the model once, not once per request; keep model/tokenizer initialization outside the request handler, use the appropriate device (`cuda` when available), and for large production models consider a specialized inference server rather than running raw Transformers generation directly inside FastAPI.

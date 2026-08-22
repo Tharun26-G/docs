@@ -298,6 +298,12 @@
               "chain-prompt",
               "cot-prompt-code"
             ]
+          },
+          {
+            "group": "Day 34",
+            "pages": [
+              "llm-interface-api"
+            ]
           }
         ]
       }

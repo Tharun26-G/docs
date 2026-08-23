@@ -1,0 +1,650 @@
+---
+title: "Conversational chatbot"
+---
+
+This mini-project introduces the basics of **dialogue management** and shows how to combine a simple **state machine** with an **LLM API**.
+
+## Learning Objectives
+
+- Understand dialogue management in conversational systems
+- Learn how a chatbot keeps track of conversation state
+- Build a simple rule-based state machine
+- Integrate an LLM API for generating natural responses
+- Create a chatbot that can handle greetings, questions, help, and exit commands
+
+---
+
+# 1. What is a Conversational Chatbot?
+
+A conversational chatbot is a program that interacts with users through natural language.
+
+A basic chatbot usually performs these steps:
+
+```text
+User Input
+    ↓
+Intent Detection
+    ↓
+Dialogue State Management
+    ↓
+Response Generation
+    ↓
+User
+```
+
+For example:
+
+```text
+User: Hello
+
+Chatbot:
+1. Detects greeting intent
+2. Updates state to GREETING
+3. Generates a response
+
+Bot: Hello! How can I help you today?
+```
+
+---
+
+# 2. Dialogue Management Basics
+
+Dialogue management controls the flow of a conversation.
+
+The chatbot needs to answer questions such as:
+
+- What is the user trying to do?
+- What happened previously?
+- What state is the conversation currently in?
+- What should the chatbot do next?
+
+For example:
+
+```text
+User: Hello
+State: GREETING
+
+User: What is machine learning?
+State: QUESTION
+
+User: Help
+State: HELP
+
+User: Bye
+State: END
+```
+
+A dialogue manager decides how the chatbot moves from one state to another.
+
+---
+
+# 3. What is a Dialogue State?
+
+A dialogue state represents the current stage of a conversation.
+
+For this project, we can use these states:
+
+| State | Purpose |
+| --- | --- |
+| `START` | Beginning of conversation |
+| `GREETING` | User says hello |
+| `QUESTION` | User asks a question |
+| `HELP` | User asks for assistance |
+| `END` | Conversation ends |
+| `UNKNOWN` | Input does not match a rule |
+
+Example:
+
+```text
+START
+  ↓
+GREETING
+  ↓
+QUESTION
+  ↓
+QUESTION
+  ↓
+END
+```
+
+---
+
+# 4. Rule-Based Intent Detection
+
+A simple chatbot can detect user intent using keywords.
+
+Example:
+
+```python
+if user_input in ["hello", "hi", "hey"]:
+    intent = "greeting"
+
+elif user_input == "help":
+    intent = "help"
+
+elif user_input in ["bye", "exit", "quit"]:
+    intent = "exit"
+
+else:
+    intent = "question"
+```
+
+This approach is called **rule-based intent detection**.
+
+It is simple and useful for controlling predictable conversation flows.
+
+---
+
+# 5. What is a State Machine?
+
+A state machine is a system that moves between predefined states based on events or user input.
+
+Example:
+
+```text
+              hello
+START ─────────────────▶ GREETING
+
+              question
+GREETING ───────────────▶ QUESTION
+
+              help
+QUESTION ───────────────▶ HELP
+
+              bye
+ANY STATE ──────────────▶ END
+```
+
+In Python, we can represent the state like this:
+
+```python
+state = "START"
+```
+
+Then update it based on the user's intent:
+
+```python
+if intent == "greeting":
+    state = "GREETING"
+
+elif intent == "help":
+    state = "HELP"
+
+elif intent == "exit":
+    state = "END"
+
+else:
+    state = "QUESTION"
+```
+
+---
+
+# 6. Why Combine Rules with an LLM?
+
+A rule-based chatbot is good at controlling the conversation.
+
+An LLM is good at generating natural and intelligent responses.
+
+By combining them:
+
+```text
+                ┌──────────────────┐
+User Input ────▶│ Rule-Based Logic │
+                └────────┬─────────┘
+                         │
+                  Detect Intent
+                         │
+                ┌────────▼─────────┐
+                │ State Management │
+                └────────┬─────────┘
+                         │
+                         ▼
+                ┌──────────────────┐
+                │      LLM API     │
+                └────────┬─────────┘
+                         │
+                         ▼
+                    Response
+```
+
+The state machine controls **what should happen**, while the LLM helps generate **how the chatbot should respond**.
+
+---
+
+# 7. Project Structure
+
+For this mini-project:
+
+```text
+conversational-chatbot/
+│
+├── chatbot.ipynb
+└── .env
+```
+
+The `.env` file stores the API key.
+
+Example:
+
+```env
+OPENAI_API_KEY=your_api_key_here
+```
+
+Install the required libraries:
+
+```python
+!pip install openai python-dotenv
+```
+
+---
+
+# 8. Complete `chatbot.ipynb` Code
+
+## Step 1: Import Libraries
+
+```python
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+```
+
+---
+
+## Step 2: Load the API Key
+
+```python
+load_dotenv()
+
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+```
+
+Make sure your `.env` file contains:
+
+```env
+OPENAI_API_KEY=your_api_key_here
+```
+
+---
+
+## Step 3: Define the Chatbot States
+
+```python
+START = "START"
+GREETING = "GREETING"
+QUESTION = "QUESTION"
+HELP = "HELP"
+END = "END"
+UNKNOWN = "UNKNOWN"
+```
+
+---
+
+## Step 4: Create Intent Detection
+
+This function uses simple rules to identify the user's intent.
+
+```python
+def detect_intent(user_input):
+    user_input = user_input.lower().strip()
+
+    if user_input in ["hello", "hi", "hey"]:
+        return "greeting"
+
+    elif user_input in ["help", "what can you do"]:
+        return "help"
+
+    elif user_input in ["bye", "exit", "quit"]:
+        return "exit"
+
+    else:
+        return "question"
+```
+
+---
+
+## Step 5: Create the State Manager
+
+This function updates the chatbot's current state.
+
+```python
+def update_state(intent):
+    if intent == "greeting":
+        return GREETING
+
+    elif intent == "help":
+        return HELP
+
+    elif intent == "exit":
+        return END
+
+    elif intent == "question":
+        return QUESTION
+
+    else:
+        return UNKNOWN
+```
+
+---
+
+## Step 6: Create the LLM Response Function
+
+The chatbot sends the user's question to the LLM.
+
+```python
+def get_llm_response(user_input, state):
+    prompt = f"""
+You are a helpful conversational chatbot.
+
+Current conversation state: {state}
+
+User message: {user_input}
+
+Respond naturally and clearly.
+"""
+
+    response = client.responses.create(
+        model="gpt-5-mini",
+        input=prompt
+    )
+
+    return response.output_text
+```
+
+---
+
+## Step 7: Add Rule-Based Responses
+
+Some simple intents do not need an LLM call.
+
+```python
+def get_rule_response(state):
+    if state == GREETING:
+        return "Hello! How can I help you today?"
+
+    elif state == HELP:
+        return """
+I can:
+1. Answer questions
+2. Explain concepts
+3. Have a conversation with you
+
+Type 'bye' or 'exit' to end the conversation.
+"""
+
+    elif state == END:
+        return "Goodbye! Have a great day!"
+
+    return None
+```
+
+---
+
+# 9. Main Chatbot Loop
+
+Now combine the rule-based system, state machine, and LLM.
+
+```python
+state = START
+
+print("Chatbot: Hello! Type 'help' to see what I can do.")
+print("Chatbot: Type 'bye' to exit.\n")
+
+while state != END:
+
+    user_input = input("You: ")
+
+    intent = detect_intent(user_input)
+
+    state = update_state(intent)
+
+    rule_response = get_rule_response(state)
+
+    if rule_response:
+        print("Chatbot:", rule_response)
+
+    elif state == QUESTION:
+        response = get_llm_response(
+            user_input,
+            state
+        )
+
+        print("Chatbot:", response)
+```
+
+---
+
+# 10. Complete Code
+
+```python
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+
+START = "START"
+GREETING = "GREETING"
+QUESTION = "QUESTION"
+HELP = "HELP"
+END = "END"
+UNKNOWN = "UNKNOWN"
+
+
+def detect_intent(user_input):
+    user_input = user_input.lower().strip()
+
+    if user_input in ["hello", "hi", "hey"]:
+        return "greeting"
+
+    elif user_input in ["help", "what can you do"]:
+        return "help"
+
+    elif user_input in ["bye", "exit", "quit"]:
+        return "exit"
+
+    else:
+        return "question"
+
+
+def update_state(intent):
+    if intent == "greeting":
+        return GREETING
+
+    elif intent == "help":
+        return HELP
+
+    elif intent == "exit":
+        return END
+
+    elif intent == "question":
+        return QUESTION
+
+    else:
+        return UNKNOWN
+
+
+def get_rule_response(state):
+    if state == GREETING:
+        return "Hello! How can I help you today?"
+
+    elif state == HELP:
+        return """
+I can:
+1. Answer questions
+2. Explain concepts
+3. Have a conversation with you
+
+Type 'bye' or 'exit' to end the conversation.
+"""
+
+    elif state == END:
+        return "Goodbye! Have a great day!"
+
+    return None
+
+
+def get_llm_response(user_input, state):
+    prompt = f"""
+You are a helpful conversational chatbot.
+
+Current conversation state: {state}
+
+User message: {user_input}
+
+Respond naturally and clearly.
+"""
+
+    response = client.responses.create(
+        model="gpt-5-mini",
+        input=prompt
+    )
+
+    return response.output_text
+
+
+state = START
+
+print("Chatbot: Hello! Type 'help' to see what I can do.")
+print("Chatbot: Type 'bye' to exit.\n")
+
+
+while state != END:
+
+    user_input = input("You: ")
+
+    intent = detect_intent(user_input)
+
+    state = update_state(intent)
+
+    rule_response = get_rule_response(state)
+
+    if rule_response:
+        print("Chatbot:", rule_response)
+
+    elif state == QUESTION:
+        response = get_llm_response(
+            user_input,
+            state
+        )
+
+        print("Chatbot:", response)
+```
+
+---
+
+# 11. Example Conversation
+
+```text
+Chatbot: Hello! Type 'help' to see what I can do.
+
+You: hello
+
+Chatbot: Hello! How can I help you today?
+
+You: What is machine learning?
+
+Chatbot: Machine learning is a branch of artificial intelligence
+that allows computers to learn patterns from data and make predictions.
+
+You: help
+
+Chatbot:
+
+I can:
+1. Answer questions
+2. Explain concepts
+3. Have a conversation with you
+
+Type 'bye' or 'exit' to end the conversation.
+
+You: bye
+
+Chatbot: Goodbye! Have a great day!
+```
+
+---
+
+# 12. Key Concepts Used
+
+## Dialogue Management
+
+Controls the flow of the conversation and decides what the chatbot should do next.
+
+```text
+Input → Intent → State → Response
+```
+
+## Intent Detection
+
+Identifies what the user wants.
+
+```python
+hello → greeting
+help → help
+bye → exit
+question → question
+```
+
+## State Machine
+
+Tracks the current stage of the conversation.
+
+```python
+START → GREETING → QUESTION → END
+```
+
+## Rule-Based System
+
+Handles predictable commands without calling the LLM.
+
+```python
+hello
+help
+bye
+```
+
+## LLM Integration
+
+Handles open-ended questions.
+
+```python
+What is deep learning?
+Explain neural networks.
+How does Python work?
+```
+
+---
+
+# 13. Project Flow
+
+```text
+                    User Input
+                        │
+                        ▼
+                ┌───────────────┐
+                │ Detect Intent │
+                └───────┬───────┘
+                        │
+                        ▼
+                ┌───────────────┐
+                │ Update State  │
+                └───────┬───────┘
+                        │
+              ┌─────────┴─────────┐
+              │                   │
+              ▼                   ▼
+        Rule-Based            Open Question
+         Response                   │
+              │                     ▼
+              │                LLM API
+              │                     │
+              └──────────┬──────────┘
+                         ▼
+                    Chatbot Response
+```

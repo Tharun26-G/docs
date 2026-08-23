@@ -305,6 +305,12 @@
               "llm-interface-api",
               "hf-fastapi"
             ]
+          },
+          {
+            "group": "Day 35",
+            "pages": [
+              "convo-chatbot"
+            ]
           }
         ]
       }

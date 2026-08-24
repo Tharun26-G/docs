@@ -1,0 +1,383 @@
+---
+title: "Sentence Embeddings for Retrieval"
+---
+
+Sentence embeddings convert an entire sentence or paragraph into a fixed-size numerical vector. These vectors capture **semantic meaning**, allowing us to compare texts and retrieve the most relevant results.
+
+## 1. What are Sentence Embeddings?
+
+For example:
+
+```text
+Sentence 1: "I love machine learning"
+Sentence 2: "I enjoy studying artificial intelligence"
+Sentence 3: "I ordered pizza yesterday"
+```
+
+A good embedding model should understand that:
+
+- Sentence 1 and Sentence 2 have similar meanings.
+- Sentence 3 is unrelated.
+
+The sentences are converted into vectors:
+
+```text
+"I love machine learning"
+        ↓
+[0.12, -0.45, 0.87, ..., 0.23]
+
+"I enjoy studying artificial intelligence"
+        ↓
+[0.10, -0.41, 0.82, ..., 0.20]
+```
+
+Similar sentences produce vectors that are closer together in the vector space.
+
+---
+
+# 2. Sentence-Transformers
+
+`sentence-transformers` is a Python library used to generate high-quality embeddings for sentences, paragraphs, and documents.
+
+Install it using:
+
+```bash
+pip install sentence-transformers scikit-learn
+```
+
+A commonly used model is:
+
+```python
+all-MiniLM-L6-v2
+```
+
+This model converts text into dense vector embeddings.
+
+---
+
+# 3. Generate Sentence Embeddings
+
+Create a file named:
+
+```text
+sentence_embeddings.py
+```
+
+```python
+from sentence_transformers import SentenceTransformer
+
+# Load the embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Define sentences
+sentences = [
+    "I love machine learning",
+    "I enjoy studying artificial intelligence",
+    "I ordered pizza yesterday"
+]
+
+# Generate embeddings
+embeddings = model.encode(sentences)
+
+# Display embeddings
+for sentence, embedding in zip(sentences, embeddings):
+    print(f"\nSentence: {sentence}")
+    print(f"Embedding shape: {embedding.shape}")
+    print(f"Embedding: {embedding[:10]}")
+```
+
+### Example Output
+
+```text
+Sentence: I love machine learning
+Embedding shape: (384,)
+Embedding: [ 0.12 -0.45  0.87 ...]
+
+Sentence: I enjoy studying artificial intelligence
+Embedding shape: (384,)
+
+Sentence: I ordered pizza yesterday
+Embedding shape: (384,)
+```
+
+Each sentence is represented as a vector with **384 numerical values** for this model.
+
+---
+
+# 4. Cosine Similarity
+
+Cosine similarity measures how similar two vectors are.
+
+The formula is:
+
+\[<br />\\text\{Cosine Similarity\} =<br />\\frac\{A \\cdot B\}<br />\{|A| |B|\}<br />\]
+
+Where:
+
+- `A` is the first embedding vector.
+- `B` is the second embedding vector.
+- `A · B` is the dot product.
+- `||A||` and `||B||` represent the magnitude of the vectors.
+
+### Interpretation
+
+```text
+Similarity close to 1
+→ Very similar meaning
+
+Similarity close to 0
+→ Less related
+
+Similarity close to -1
+→ Opposite direction
+```
+
+For sentence embeddings, semantically similar text generally produces a higher similarity score.
+
+---
+
+# 5. Compare Sentences Using Cosine Similarity
+
+```python
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Load model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Define sentences
+sentences = [
+    "I love machine learning",
+    "I enjoy studying artificial intelligence",
+    "I ordered pizza yesterday"
+]
+
+# Generate embeddings
+embeddings = model.encode(sentences)
+
+# Calculate similarity
+similarity_matrix = cosine_similarity(embeddings)
+
+print(similarity_matrix)
+```
+
+Example structure:
+
+```text
+[[1.00 0.75 0.10]
+ [0.75 1.00 0.12]
+ [0.10 0.12 1.00]]
+```
+
+Interpretation:
+
+```text
+Sentence 1 ↔ Sentence 2
+High similarity
+
+Sentence 1 ↔ Sentence 3
+Low similarity
+
+Sentence 2 ↔ Sentence 3
+Low similarity
+```
+
+---
+
+# 6. Semantic Search and Retrieval
+
+The main use of sentence embeddings is **retrieval**.
+
+Suppose we have a collection of documents:
+
+```text
+Document 1: "Python is widely used for machine learning."
+
+Document 2: "Football is a popular sport around the world."
+
+Document 3: "Neural networks are used in deep learning."
+
+Document 4: "Pizza is one of the most popular foods."
+```
+
+A user asks:
+
+```text
+"How is AI used for learning?"
+```
+
+Instead of searching only for exact keywords, we:
+
+```text
+Query
+   ↓
+Convert query into embedding
+   ↓
+Compare with document embeddings
+   ↓
+Calculate cosine similarity
+   ↓
+Sort by similarity score
+   ↓
+Return most relevant documents
+```
+
+This is called **semantic search**.
+
+---
+
+# 7. Complete Retrieval Example
+
+Create:
+
+```text
+semantic_search.py
+```
+
+```python
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# 1. Load embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# 2. Create document collection
+documents = [
+    "Python is widely used for machine learning.",
+    "Football is a popular sport around the world.",
+    "Neural networks are used in deep learning.",
+    "Pizza is one of the most popular foods.",
+    "Transformers are widely used in natural language processing."
+]
+
+# 3. Convert documents into embeddings
+document_embeddings = model.encode(documents)
+
+# 4. Define user query
+query = "How is artificial intelligence used for learning?"
+
+# 5. Convert query into embedding
+query_embedding = model.encode([query])
+
+# 6. Calculate cosine similarity
+scores = cosine_similarity(
+    query_embedding,
+    document_embeddings
+)[0]
+
+# 7. Sort documents by similarity
+results = sorted(
+    zip(documents, scores),
+    key=lambda x: x[1],
+    reverse=True
+)
+
+# 8. Display results
+print(f"\nQuery: {query}\n")
+
+print("Search Results:")
+
+for document, score in results:
+    print(f"{score:.4f} - {document}")
+```
+
+---
+
+# 8. Expected Output
+
+The exact scores may vary depending on the model version and environment.
+
+```text
+Query: How is artificial intelligence used for learning?
+
+Search Results:
+
+0.72 - Neural networks are used in deep learning.
+0.65 - Python is widely used for machine learning.
+0.48 - Transformers are widely used in natural language processing.
+0.10 - Football is a popular sport around the world.
+0.05 - Pizza is one of the most popular foods.
+```
+
+The retrieval system returns documents with the highest semantic similarity.
+
+---
+
+# 9. Retrieve Only Top K Results
+
+Usually, we do not need every document. We retrieve only the top results.
+
+```python
+top_k = 3
+
+top_results = results[:top_k]
+
+for document, score in top_results:
+    print(f"{score:.4f} - {document}")
+```
+
+Output:
+
+```text
+Top 3 Results:
+
+0.72 - Neural networks are used in deep learning.
+0.65 - Python is widely used for machine learning.
+0.48 - Transformers are widely used in natural language processing.
+```
+
+---
+
+# 10. Important Concepts
+
+| Concept | Explanation |
+| :-- | :-- |
+| Sentence Embedding | Numerical vector representing the meaning of text |
+| Embedding Model | Model that converts text into vectors |
+| Sentence-Transformers | Library for generating sentence embeddings |
+| Cosine Similarity | Measures similarity between vectors |
+| Semantic Search | Searches based on meaning rather than exact keywords |
+| Retrieval | Finding the most relevant documents |
+| Top K | Number of highest-ranked results returned |
+
+---
+
+# 11. Retrieval Workflow
+
+```text
+Documents
+    ↓
+Generate Document Embeddings
+    ↓
+Store Embeddings
+
+User Query
+    ↓
+Generate Query Embedding
+    ↓
+Cosine Similarity Search
+    ↓
+Rank Documents
+    ↓
+Return Top K Results
+```
+
+## Key Takeaway
+
+Sentence embeddings are the foundation of modern **semantic search and retrieval systems**. Instead of matching exact words, the system compares the **meaning of the query** with the meaning of stored documents.
+
+This workflow is also a fundamental building block of **RAG systems**:
+
+```text
+User Question
+      ↓
+Convert to Embedding
+      ↓
+Search Similar Documents
+      ↓
+Retrieve Top K Documents
+      ↓
+Provide Documents to LLM
+      ↓
+Generate Answer
+```

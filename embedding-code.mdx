@@ -1,0 +1,719 @@
+---
+title: "Embedding - Code Example"
+---
+
+```python
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# 1. Load the sentence embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# 2. Define FAQ sentences
+faqs = [
+    "How do I reset my password?",
+    "How can I change my email address?",
+    "Where can I check my order status?",
+    "How do I cancel my subscription?",
+    "What payment methods do you accept?",
+    "How can I contact customer support?"
+]
+
+# 3. Generate embeddings for all FAQ sentences
+faq_embeddings = model.encode(faqs)
+
+# 4. Define a user query
+query = "I forgot my password. How can I create a new one?"
+
+# 5. Generate embedding for the query
+query_embedding = model.encode([query])
+
+# 6. Calculate cosine similarity
+similarity_scores = cosine_similarity(
+    query_embedding,
+    faq_embeddings
+)[0]
+
+# 7. Combine FAQ sentences with their similarity scores
+results = list(zip(faqs, similarity_scores))
+
+# 8. Sort results from highest to lowest similarity
+results.sort(key=lambda x: x[1], reverse=True)
+
+# 9. Display similarity results
+print(f"\nQuery: {query}\n")
+print("Similarity Results:")
+
+for faq, score in results:
+    print(f"{score:.4f} - {faq}")
+
+# 10. Display the best matching FAQ
+best_faq, best_score = results[0]
+
+print("\nBest Match:")
+print(f"{best_score:.4f} - {best_faq}")
+```
+
+**Output:**
+
+```text
+Query: I forgot my password. How can I create a new one ?
+
+Similarity Results: 
+0.7894-How do I reset my password?
+0.4579-How can I change my email address?
+0.3186-How can I contact customer support?
+0.2913-How do I cancel my subscription?
+0.1105-Where can I check my order status?
+-0.0438-What payment methods do you accept?
+
+Best Match: 
+0.7894-How do I reset my password?
+```
+
+# 1. Import required libraries
+
+```python
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+```
+
+### `SentenceTransformer`
+
+```python
+from sentence_transformers import SentenceTransformer
+```
+
+This imports the `SentenceTransformer` class.
+
+It is used to load a pretrained model that converts sentences into numerical vectors called **embeddings**.
+
+### `cosine_similarity`
+
+```python
+from sklearn.metrics.pairwise import cosine_similarity
+```
+
+This imports the cosine similarity function from `scikit-learn`.
+
+It is used to compare two embeddings and determine how similar their meanings are.
+
+---
+
+# 2. Load the sentence embedding model
+
+```python
+model = SentenceTransformer("all-MiniLM-L6-v2")
+```
+
+This loads the pretrained model:
+
+```text
+all-MiniLM-L6-v2
+```
+
+The model converts text like:
+
+```text
+How do I reset my password?
+```
+
+into a numerical vector similar to:
+
+```text
+[0.12, -0.45, 0.78, 0.21, ...]
+```
+
+This model produces embeddings with **384 dimensions**.
+
+The same model is used for both:
+
+- FAQ sentences
+- User query
+
+Using the same model ensures that the embeddings can be meaningfully compared.
+
+---
+
+# 3. Define FAQ sentences
+
+```python
+faqs = [
+    "How do I reset my password?",
+    "How can I change my email address?",
+    "Where can I check my order status?",
+    "How do I cancel my subscription?",
+    "What payment methods do you accept?",
+    "How can I contact customer support?"
+]
+```
+
+This creates a Python list containing six FAQ questions.
+
+Conceptually:
+
+```text
+FAQ Database
+
+1. Reset password
+2. Change email
+3. Check order
+4. Cancel subscription
+5. Payment methods
+6. Contact support
+```
+
+These are the documents that we want to search.
+
+---
+
+# 4. Generate embeddings for FAQ sentences
+
+```python
+faq_embeddings = model.encode(faqs)
+```
+
+The `encode()` method converts every FAQ sentence into an embedding.
+
+Before:
+
+```text
+[
+    "How do I reset my password?",
+    "How can I change my email address?",
+    ...
+]
+```
+
+After:
+
+```text
+[
+    [0.12, -0.45, 0.78, ...],
+    [0.34, 0.21, -0.15, ...],
+    ...
+]
+```
+
+Since there are **6 FAQ sentences**, you get **6 embeddings**.
+
+With `all-MiniLM-L6-v2`, the shape will approximately be:
+
+```text
+(6, 384)
+```
+
+This means:
+
+```text
+6 sentences
+×
+384 numbers for each sentence
+```
+
+---
+
+# 5. Define a user query
+
+```python
+query = "I forgot my password. How can I create a new one?"
+```
+
+This represents the question entered by a user.
+
+Although the user does not use the exact words:
+
+```text
+reset my password
+```
+
+the sentence has a similar meaning.
+
+This is the advantage of **semantic search**.
+
+Keyword search might look for exact words, while sentence embeddings try to understand the meaning.
+
+---
+
+# 6. Generate an embedding for the query
+
+```python
+query_embedding = model.encode([query])
+```
+
+The query is placed inside a list:
+
+```python
+[query]
+```
+
+This becomes:
+
+```python
+[
+    "I forgot my password. How can I create a new one?"
+]
+```
+
+The model converts it into an embedding.
+
+The resulting shape is approximately:
+
+```text
+(1, 384)
+```
+
+Meaning:
+
+```text
+1 query
+×
+384 numerical values
+```
+
+---
+
+# 7. Calculate cosine similarity
+
+```python
+similarity_scores = cosine_similarity(
+    query_embedding,
+    faq_embeddings
+)[0]
+```
+
+This is the most important part of the retrieval process.
+
+The cosine similarity function compares:
+
+```text
+Query embedding
+        ↓
+"I forgot my password..."
+        ↓
+Compare with
+        ↓
+All FAQ embeddings
+```
+
+Conceptually:
+
+```text
+Query
+  ↓
+Embedding
+  ↓
+Compare with FAQ 1 → similarity score
+Compare with FAQ 2 → similarity score
+Compare with FAQ 3 → similarity score
+Compare with FAQ 4 → similarity score
+Compare with FAQ 5 → similarity score
+Compare with FAQ 6 → similarity score
+```
+
+The result before `[0]` looks like:
+
+```text
+[
+    [
+        0.82,
+        0.35,
+        0.21,
+        0.18,
+        0.12,
+        0.29
+    ]
+]
+```
+
+Since there is only one query, `[0]` extracts the first row:
+
+```python
+)[0]
+```
+
+Result:
+
+```text
+[
+    0.82,
+    0.35,
+    0.21,
+    0.18,
+    0.12,
+    0.29
+]
+```
+
+Each score corresponds to one FAQ.
+
+For example:
+
+```text
+0.82 → How do I reset my password?
+0.35 → How can I change my email address?
+0.21 → Where can I check my order status?
+```
+
+A higher score generally means the sentences are more semantically similar.
+
+---
+
+# 8. Combine FAQs with similarity scores
+
+```python
+results = list(zip(faqs, similarity_scores))
+```
+
+The `zip()` function combines each FAQ with its corresponding similarity score.
+
+For example:
+
+```python
+faqs = [
+    "How do I reset my password?",
+    "How can I change my email address?"
+]
+```
+
+And:
+
+```python
+similarity_scores = [
+    0.82,
+    0.35
+]
+```
+
+After:
+
+```python
+zip(faqs, similarity_scores)
+```
+
+You get pairs like:
+
+```text
+(
+    "How do I reset my password?",
+    0.82
+)
+
+(
+    "How can I change my email address?",
+    0.35
+)
+```
+
+The `list()` converts the result into a list:
+
+```python
+[
+    ("How do I reset my password?", 0.82),
+    ("How can I change my email address?", 0.35)
+]
+```
+
+---
+
+# 9. Sort results from highest to lowest
+
+```python
+results.sort(key=lambda x: x[1], reverse=True)
+```
+
+This sorts the FAQ results according to their similarity score.
+
+### `lambda x: x[1]`
+
+Each item in `results` looks like:
+
+```python
+(
+    "How do I reset my password?",
+    0.82
+)
+```
+
+So:
+
+```python
+x[0]
+```
+
+is:
+
+```text
+FAQ sentence
+```
+
+And:
+
+```python
+x[1]
+```
+
+is:
+
+```text
+Similarity score
+```
+
+Therefore:
+
+```python
+key=lambda x: x[1]
+```
+
+means:
+
+> Sort the results using the similarity score.
+
+### `reverse=True`
+
+By default, sorting happens from smallest to largest.
+
+```text
+0.12
+0.21
+0.35
+0.82
+```
+
+Using:
+
+```python
+reverse=True
+```
+
+changes it to:
+
+```text
+0.82
+0.35
+0.21
+0.12
+```
+
+So the most relevant FAQ appears first.
+
+---
+
+# 10. Print the user query
+
+```python
+print(f"\nQuery: {query}\n")
+```
+
+The `f` before the string means this is an **f-string**.
+
+It allows you to insert variables directly.
+
+```python
+{query}
+```
+
+is replaced with:
+
+```text
+I forgot my password. How can I create a new one?
+```
+
+`\n` adds a new line.
+
+Output:
+
+```text
+Query: I forgot my password. How can I create a new one?
+```
+
+---
+
+# 11. Print a heading
+
+```python
+print("Similarity Results:")
+```
+
+This simply prints:
+
+```text
+Similarity Results:
+```
+
+---
+
+# 12. Loop through all results
+
+```python
+for faq, score in results:
+```
+
+Each item in `results` contains two values:
+
+```python
+(
+    FAQ sentence,
+    similarity score
+)
+```
+
+For example:
+
+```python
+("How do I reset my password?", 0.82)
+```
+
+Python automatically assigns:
+
+```python
+faq = "How do I reset my password?"
+```
+
+and:
+
+```python
+score = 0.82
+```
+
+The loop repeats for every FAQ.
+
+---
+
+# 13. Print each FAQ and its score
+
+```python
+print(f"{score:.4f} - {faq}")
+```
+
+### `{score:.4f}`
+
+This formats the score to four decimal places.
+
+For example:
+
+```python
+0.823456789
+```
+
+becomes:
+
+```text
+0.8235
+```
+
+The output might look like:
+
+```text
+0.8235 - How do I reset my password?
+0.4217 - How can I change my email address?
+0.3052 - How can I contact customer support?
+```
+
+---
+
+# 14. Select the best matching FAQ
+
+```python
+best_faq, best_score = results[0]
+```
+
+Since the list was already sorted in descending order:
+
+```text
+Highest similarity
+        ↓
+results[0]
+        ↓
+Lowest similarity
+```
+
+The first item contains the best match.
+
+For example:
+
+```python
+results[0]
+```
+
+might be:
+
+```python
+("How do I reset my password?", 0.8235)
+```
+
+Python then separates the values:
+
+```python
+best_faq = "How do I reset my password?"
+best_score = 0.8235
+```
+
+---
+
+# 15. Print the best match
+
+```python
+print("\nBest Match:")
+```
+
+Output:
+
+```text
+Best Match:
+```
+
+Then:
+
+```python
+print(f"{best_score:.4f} - {best_faq}")
+```
+
+Output:
+
+```text
+0.8235 - How do I reset my password?
+```
+
+---
+
+# Complete Retrieval Flow
+
+```text
+FAQ Sentences
+      ↓
+Generate FAQ Embeddings
+      ↓
+Store Numerical Vectors
+
+
+User Query
+      ↓
+Generate Query Embedding
+      ↓
+Calculate Cosine Similarity
+      ↓
+Pair FAQ + Similarity Score
+      ↓
+Sort by Highest Score
+      ↓
+Select results[0]
+      ↓
+Best Matching FAQ
+```
+
+## Main Concept
+
+The important part of this program is that the user can write:
+
+```text
+I forgot my password. How can I create a new one?
+```
+
+while the stored FAQ says:
+
+```text
+How do I reset my password?
+```
+
+The words are not exactly the same, but their **meanings are similar**. Sentence embeddings and cosine similarity allow the program to identify that relationship.

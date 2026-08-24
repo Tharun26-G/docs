@@ -311,6 +311,13 @@
             "pages": [
               "convo-chatbot"
             ]
+          },
+          {
+            "group": "Day 36",
+            "pages": [
+              "embeddings",
+              "embedding-code"
+            ]
           }
         ]
       }

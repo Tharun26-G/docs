@@ -322,7 +322,8 @@
           {
             "group": "Day 37",
             "pages": [
-              "faiss"
+              "faiss",
+              "faiss-code"
             ]
           }
         ]

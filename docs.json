@@ -318,6 +318,12 @@
               "embeddings",
               "embedding-code"
             ]
+          },
+          {
+            "group": "Day 37",
+            "pages": [
+              "faiss"
+            ]
           }
         ]
       }

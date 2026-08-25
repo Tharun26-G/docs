@@ -1,0 +1,527 @@
+---
+title: "FAISS"
+---
+
+# Vector Store with FAISS
+
+FAISS, or Facebook AI Similarity Search, is a library used for efficient similarity search and clustering of high-dimensional vectors. It is commonly used in AI applications such as semantic search, Retrieval-Augmented Generation (RAG), recommendation systems, and document retrieval.
+
+## Topics Covered
+
+- Indexing vectors with FAISS
+- Persisting a FAISS index
+- Loading and querying an index
+
+---
+
+# 1. What is a Vector Store?
+
+A vector store stores numerical representations called **embeddings**.
+
+For example, a sentence embedding model converts text into a vector:
+
+```text
+"I love machine learning"
+        ↓
+[0.12, -0.45, 0.78, ..., 0.21]
+```
+
+Similar sentences produce vectors that are close together in vector space.
+
+```text
+"I love machine learning"
+"I enjoy studying AI"
+        ↓
+High similarity
+
+"I ordered pizza yesterday"
+        ↓
+Lower similarity
+```
+
+FAISS allows us to efficiently store these vectors and find the most similar vectors to a query.
+
+---
+
+# 2. Installing FAISS
+
+Install the required libraries:
+
+```bash
+pip install faiss-cpu sentence-transformers
+```
+
+For NVIDIA GPU support, FAISS also provides GPU builds, but `faiss-cpu` is sufficient for learning and small projects.
+
+---
+
+# 3. Indexing Vectors with FAISS
+
+The basic workflow is:
+
+```text
+Documents
+    ↓
+Embedding Model
+    ↓
+Vectors
+    ↓
+FAISS Index
+    ↓
+Similarity Search
+```
+
+## Important FAISS Concepts
+
+### Vector dimension
+
+Every embedding has a fixed number of dimensions.
+
+For example:
+
+```python
+model = SentenceTransformer("all-MiniLM-L6-v2")
+```
+
+This model produces embeddings with:
+
+```text
+384 dimensions
+```
+
+FAISS needs to know this dimension when creating an index.
+
+---
+
+### `IndexFlatL2`
+
+A simple FAISS index is:
+
+```python
+index = faiss.IndexFlatL2(dimension)
+```
+
+`IndexFlatL2` performs similarity search using **Euclidean distance**.
+
+The lower the distance:
+
+```text
+Lower distance = More similar
+Higher distance = Less similar
+```
+
+---
+
+# 4. Complete Example: Create and Query a Vector Store
+
+Create a file named:
+
+```text
+faiss_vector_store.py
+```
+
+```python
+import faiss
+from sentence_transformers import SentenceTransformer
+
+# 1. Load the embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# 2. Define documents
+documents = [
+    "How do I reset my password?",
+    "How can I change my email address?",
+    "What is the refund policy?",
+    "How do I contact customer support?",
+    "How can I delete my account?"
+]
+
+# 3. Convert documents into embeddings
+embeddings = model.encode(documents)
+
+# 4. Get the vector dimension
+dimension = embeddings.shape[1]
+
+print("Vector dimension:", dimension)
+
+# 5. Create a FAISS index
+index = faiss.IndexFlatL2(dimension)
+
+# 6. Add vectors to the index
+index.add(embeddings)
+
+print("Number of vectors:", index.ntotal)
+
+# 7. Create a query
+query = "I forgot my password"
+
+# 8. Convert the query into an embedding
+query_embedding = model.encode([query])
+
+# 9. Search for the 3 most similar vectors
+distances, indices = index.search(query_embedding, k=3)
+
+# 10. Display results
+print("\nQuery:", query)
+print("\nMost similar documents:")
+
+for i, index_position in enumerate(indices[0]):
+    print(
+        f"{i + 1}. {documents[index_position]}"
+        f" | Distance: {distances[0][i]:.4f}"
+    )
+```
+
+Example output:
+
+```text
+Vector dimension: 384
+Number of vectors: 5
+
+Query: I forgot my password
+
+Most similar documents:
+1. How do I reset my password? | Distance: 0.4215
+2. How can I delete my account? | Distance: 1.2342
+3. How do I contact customer support? | Distance: 1.4521
+```
+
+---
+
+# 5. How FAISS Search Works
+
+When you execute:
+
+```python
+distances, indices = index.search(query_embedding, k=3)
+```
+
+FAISS returns two values.
+
+## `distances`
+
+Contains the similarity distances:
+
+```python
+print(distances)
+```
+
+Example:
+
+```text
+[[0.4215 1.2342 1.4521]]
+```
+
+With `IndexFlatL2`, smaller values indicate more similar vectors.
+
+## `indices`
+
+Contains the positions of matching vectors:
+
+```python
+print(indices)
+```
+
+Example:
+
+```text
+[[0 4 3]]
+```
+
+These positions correspond to the original document list:
+
+```python
+documents[0]
+documents[4]
+documents[3]
+```
+
+---
+
+# 6. Persisting a FAISS Index
+
+Creating embeddings can take time for large datasets. Instead of recreating the FAISS index every time, we can save it to disk.
+
+FAISS provides:
+
+```python
+faiss.write_index()
+```
+
+## Save the Index
+
+```python
+faiss.write_index(index, "vector_store.index")
+```
+
+This creates:
+
+```text
+vector_store.index
+```
+
+You should also save the original documents because FAISS stores vectors but does not automatically store your document text or metadata.
+
+---
+
+# 7. Complete Example: Save Documents and FAISS Index
+
+```python
+import faiss
+import pickle
+from sentence_transformers import SentenceTransformer
+
+# 1. Load embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# 2. Define documents
+documents = [
+    "How do I reset my password?",
+    "How can I change my email address?",
+    "What is the refund policy?",
+    "How do I contact customer support?",
+    "How can I delete my account?"
+]
+
+# 3. Create embeddings
+embeddings = model.encode(documents)
+
+# 4. Create FAISS index
+dimension = embeddings.shape[1]
+
+index = faiss.IndexFlatL2(dimension)
+
+# 5. Add embeddings
+index.add(embeddings)
+
+# 6. Save FAISS index
+faiss.write_index(index, "vector_store.index")
+
+# 7. Save documents
+with open("documents.pkl", "wb") as file:
+    pickle.dump(documents, file)
+
+print("Vector store saved successfully.")
+```
+
+After running the program:
+
+```text
+project/
+│
+├── faiss_vector_store.py
+├── vector_store.index
+└── documents.pkl
+```
+
+---
+
+# 8. Loading and Querying the Index
+
+Create a file named:
+
+```text
+query_vector_store.py
+```
+
+```python
+import faiss
+import pickle
+from sentence_transformers import SentenceTransformer
+
+# 1. Load the embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# 2. Load the FAISS index
+index = faiss.read_index("vector_store.index")
+
+# 3. Load the original documents
+with open("documents.pkl", "rb") as file:
+    documents = pickle.load(file)
+
+# 4. Define a search query
+query = "I cannot remember my password"
+
+# 5. Convert the query into an embedding
+query_embedding = model.encode([query])
+
+# 6. Search the index
+distances, indices = index.search(query_embedding, k=3)
+
+# 7. Display results
+print("Query:", query)
+print("\nSearch Results:")
+
+for rank, document_index in enumerate(indices[0]):
+    print(f"\nRank {rank + 1}")
+    print("Document:", documents[document_index])
+    print("Distance:", distances[0][rank])
+```
+
+---
+
+# 9. FAISS Vector Store Workflow
+
+```text
+                    INDEXING
+
+Documents
+    ↓
+Embedding Model
+    ↓
+Document Embeddings
+    ↓
+FAISS Index
+    ↓
+Save Index
+
+
+                    QUERYING
+
+User Query
+    ↓
+Same Embedding Model
+    ↓
+Query Embedding
+    ↓
+FAISS Similarity Search
+    ↓
+Top K Matching Documents
+```
+
+A key rule is:
+
+> Use the same embedding model for both document embeddings and query embeddings.
+
+If you create document vectors using one model and query vectors using another incompatible model, the similarity search results may not be meaningful.
+
+---
+
+# 10. Using Cosine Similarity with FAISS
+
+Sentence embeddings are often compared using cosine similarity.
+
+To use cosine similarity in FAISS:
+
+1. Normalize the vectors.
+2. Use `IndexFlatIP`.
+
+```python
+import faiss
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+documents = [
+    "How do I reset my password?",
+    "How can I change my email address?",
+    "What is the refund policy?"
+]
+
+# Create normalized embeddings
+embeddings = model.encode(
+    documents,
+    normalize_embeddings=True
+)
+
+# Create index
+dimension = embeddings.shape[1]
+
+index = faiss.IndexFlatIP(dimension)
+
+# Add vectors
+index.add(embeddings)
+
+# Query
+query = "I forgot my password"
+
+query_embedding = model.encode(
+    [query],
+    normalize_embeddings=True
+)
+
+# Search
+scores, indices = index.search(query_embedding, k=2)
+
+for rank, document_index in enumerate(indices[0]):
+    print(
+        f"{rank + 1}. {documents[document_index]}"
+        f" | Score: {scores[0][rank]:.4f}"
+    )
+```
+
+With normalized vectors:
+
+```text
+Inner Product ≈ Cosine Similarity
+```
+
+Higher score means greater similarity.
+
+---
+
+# 11. `IndexFlatL2` vs `IndexFlatIP`
+
+| Index | Metric | Better Value |
+| --- | --- | --- |
+| `IndexFlatL2` | Euclidean distance | Lower |
+| `IndexFlatIP` | Inner product | Higher |
+| Normalized `IndexFlatIP` | Cosine similarity | Higher |
+
+For semantic search with sentence embeddings, normalized embeddings with `IndexFlatIP` are a common and intuitive approach.
+
+---
+
+# 12. Key FAISS Methods
+
+## Create an index
+
+```python
+index = faiss.IndexFlatL2(dimension)
+```
+
+## Add vectors
+
+```python
+index.add(embeddings)
+```
+
+## Search vectors
+
+```python
+distances, indices = index.search(query_embedding, k=3)
+```
+
+## Number of stored vectors
+
+```python
+print(index.ntotal)
+```
+
+## Save index
+
+```python
+faiss.write_index(index, "vector_store.index")
+```
+
+## Load index
+
+```python
+index = faiss.read_index("vector_store.index")
+```
+
+---
+
+# 13. Important Points
+
+- FAISS stores and searches numerical vectors efficiently.
+- Text must first be converted into embeddings.
+- The vector dimension must match the FAISS index dimension.
+- `index.add()` stores vectors in the index.
+- `index.search()` finds the nearest vectors.
+- `k` determines how many results are returned.
+- `faiss.write_index()` saves the index.
+- `faiss.read_index()` loads a previously saved index.
+- Store documents and metadata separately alongside the FAISS index.
+- Use the same embedding model for indexing and querying.
+- For cosine similarity, normalize embeddings and use `IndexFlatIP`.

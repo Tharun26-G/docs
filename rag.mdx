@@ -1,0 +1,1159 @@
+---
+title: "Retrieval Pipeline in RAG"
+---
+
+## Retrieve-Augmented Generation Workflow
+
+RAG, or **Retrieval-Augmented Generation**, combines two capabilities:
+
+1. **Retrieval**: Find relevant information from a knowledge source.
+2. **Generation**: Use an LLM to generate an answer based on the retrieved information.
+
+Instead of relying only on the knowledge stored inside the LLM, RAG provides external context at query time.
+
+```text
+User Query
+    ↓
+Query Embedding
+    ↓
+Vector Search
+    ↓
+Relevant Documents
+    ↓
+Context + User Query
+    ↓  
+   LLM
+    ↓
+Final Answer
+```
+
+---
+
+# 1. What is RAG?
+
+A traditional LLM workflow is:
+
+```text
+User Question
+    ↓
+LLM
+    ↓
+Answer
+```
+
+The problem is that the LLM may:
+
+- Not know recent information.
+- Not know private or company-specific data.
+- Generate incorrect information.
+- Hallucinate an answer.
+
+RAG improves this by retrieving relevant information before generating the response.
+
+```text
+User Question
+      ↓
+Retriever
+      ↓
+Relevant Knowledge
+      ↓
+LLM + Context
+      ↓
+Grounded Answer
+```
+
+---
+
+# 2. Important Components of a RAG System
+
+A complete RAG pipeline usually contains the following components:
+
+```text
+Data Source
+    ↓
+Document Loading
+    ↓
+Document Cleaning
+    ↓
+Text Chunking
+    ↓
+Embedding Model
+    ↓
+Vector Store / Index
+    ↓
+────────────────────────
+User Query
+    ↓
+Query Processing
+    ↓
+Query Embedding
+    ↓
+Retriever
+    ↓
+Optional Reranker
+    ↓
+Relevant Context
+    ↓
+Prompt Construction
+    ↓
+LLM
+    ↓
+Generated Answer
+    ↓
+Evaluation
+```
+
+---
+
+# 3. Document Loading
+
+The first step is collecting data.
+
+RAG can retrieve information from:
+
+- PDF files
+- Text files
+- CSV files
+- Databases
+- Websites
+- APIs
+- Documentation
+- Knowledge bases
+- Company documents
+
+Example:
+
+```text
+documents/
+│
+├── machine_learning.pdf
+├── rag_notes.txt
+├── company_policy.pdf
+└── faq.txt
+```
+
+The documents are loaded and converted into text.
+
+```text
+PDF
+ ↓
+Text Extraction
+ ↓
+Raw Document Text
+```
+
+---
+
+# 4. Document Preprocessing
+
+Raw documents may contain unnecessary information.
+
+Preprocessing can include:
+
+- Removing unwanted spaces.
+- Removing duplicate content.
+- Cleaning HTML.
+- Removing irrelevant sections.
+- Fixing encoding issues.
+- Normalizing text.
+
+Example:
+
+```text
+Raw Text:
+"   Machine learning     is a field of AI.   "
+
+↓
+
+Cleaned Text:
+"Machine learning is a field of AI."
+```
+
+Good preprocessing improves retrieval quality.
+
+---
+
+# 5. Text Chunking
+
+Large documents are usually divided into smaller pieces called **chunks**.
+
+Example:
+
+```text
+Large Document
+      ↓
+Chunking
+      ↓
+
+Chunk 1
+Chunk 2
+Chunk 3
+Chunk 4
+```
+
+Instead of embedding an entire 100-page document as one vector, smaller chunks are embedded separately.
+
+## Why Chunking is Important
+
+Large chunks may:
+
+- Contain too much unrelated information.
+- Reduce retrieval precision.
+- Use more LLM context.
+
+Very small chunks may:
+
+- Lose important context.
+- Split related information.
+
+Example:
+
+```text
+Document
+│
+├── Chunk 1: Introduction to RAG
+├── Chunk 2: Embedding models
+├── Chunk 3: Vector databases
+└── Chunk 4: LLM generation
+```
+
+---
+
+# 6. Chunk Size and Chunk Overlap
+
+Two important RAG parameters are:
+
+## Chunk Size
+
+The amount of text stored in each chunk.
+
+Example:
+
+```text
+Chunk Size = 500 characters
+```
+
+or:
+
+```text
+Chunk Size = 300 tokens
+```
+
+## Chunk Overlap
+
+Some text is shared between consecutive chunks.
+
+Example:
+
+```text
+Chunk 1
+[--------------------]
+
+        Overlap
+          ↓
+
+             [--------------------]
+                     Chunk 2
+```
+
+Overlap helps preserve context when important information appears near chunk boundaries.
+
+---
+
+# 7. Embeddings
+
+Embeddings convert text into numerical vectors.
+
+```text
+"Machine learning is a field of AI"
+
+↓
+
+Embedding Model
+
+↓
+
+[0.12, -0.43, 0.78, ..., 0.21]
+```
+
+Similar meanings should produce vectors that are close together.
+
+Example:
+
+```text
+"How do I reset my password?"
+
+"I forgot my password."
+
+↓
+
+Similar vectors
+```
+
+Common embedding models include:
+
+- Sentence Transformers
+- BGE models
+- E5 models
+- OpenAI embedding models
+
+---
+
+# 8. Vector Store
+
+A vector store stores embeddings and allows similarity search.
+
+```text
+Chunks
+  ↓
+Embeddings
+  ↓
+Vector Store
+```
+
+Examples include:
+
+- FAISS
+- Chroma
+- Pinecone
+- Qdrant
+- Weaviate
+- Milvus
+
+The vector store typically connects each vector with its original content and metadata.
+
+Example:
+
+```text
+Vector
+   ↓
+{
+    "text": "FAISS is used for similarity search.",
+    "source": "rag_notes.pdf",
+    "page": 12
+}
+```
+
+---
+
+# 9. Vector Indexing
+
+The vector index organizes embeddings for efficient retrieval.
+
+```text
+Document Chunks
+       ↓
+Embedding Model
+       ↓
+Vectors
+       ↓
+FAISS Index
+```
+
+Different index types involve trade-offs between:
+
+- Search speed
+- Memory usage
+- Accuracy
+- Scalability
+
+For example, FAISS provides index types such as:
+
+```text
+IndexFlatL2
+IndexFlatIP
+IVF
+HNSW
+PQ
+```
+
+For learning and small datasets:
+
+```python
+index = faiss.IndexFlatIP(dimension)
+```
+
+is a simple starting point.
+
+---
+
+# 10. Metadata
+
+Metadata is additional information stored with a chunk.
+
+Example:
+
+```python
+metadata = {
+    "source": "machine_learning.pdf",
+    "page": 10,
+    "section": "Embeddings"
+}
+```
+
+Metadata allows you to:
+
+- Show document sources.
+- Filter search results.
+- Retrieve specific document types.
+- Apply access controls.
+- Improve traceability.
+
+A production RAG system should generally store both:
+
+```text
+Embedding + Text + Metadata
+```
+
+---
+
+# 11. Query Processing
+
+When a user asks a question:
+
+```text
+"What is FAISS?"
+```
+
+The query may be processed before retrieval.
+
+Possible query processing techniques include:
+
+- Query cleaning
+- Query rewriting
+- Query expansion
+- Multi-query retrieval
+- HyDE
+- Intent detection
+
+Example:
+
+```text
+User Query:
+"What is FAISS?"
+
+↓
+
+Query Expansion:
+
+"FAISS vector similarity search library"
+```
+
+This can improve retrieval when the user's wording differs from the wording in the documents.
+
+---
+
+# 12. Query Embedding
+
+The processed query is converted into an embedding using the embedding model.
+
+```text
+User Query
+    ↓
+Embedding Model
+    ↓
+Query Vector
+```
+
+Example:
+
+```python
+query_embedding = model.encode(
+    [query],
+    normalize_embeddings=True
+)
+```
+
+The query vector is then compared with vectors stored in the index.
+
+---
+
+# 13. Similarity Search
+
+The vector store searches for the closest vectors.
+
+```text
+Query Embedding
+       ↓
+FAISS
+       ↓
+Top K Similar Chunks
+```
+
+Example:
+
+```python
+scores, indices = index.search(
+    query_embedding,
+    k=3
+)
+```
+
+`k=3` means:
+
+```text
+Return the 3 most relevant chunks
+```
+
+Common similarity approaches include:
+
+- Cosine similarity
+- Dot product / inner product
+- Euclidean distance
+
+---
+
+# 14. Dense Retrieval
+
+Dense retrieval uses embeddings to search based on semantic meaning.
+
+Example:
+
+```text
+Query:
+"I forgot my login password"
+
+Document:
+"Instructions for resetting your account password"
+```
+
+Even though the exact words are different, embeddings can identify that they have similar meanings.
+
+This is one of the major advantages of vector search.
+
+---
+
+# 15. Sparse Retrieval
+
+Sparse retrieval is based mainly on keywords.
+
+A common algorithm is:
+
+```text
+BM25
+```
+
+Example:
+
+```text
+Query:
+"FAISS vector index"
+
+Document containing:
+"FAISS", "vector", and "index"
+```
+
+Sparse retrieval can perform well for:
+
+- Exact keywords
+- Product names
+- IDs
+- Error codes
+- Technical terms
+
+---
+
+# 16. Hybrid Search
+
+Hybrid search combines:
+
+```text
+Dense Retrieval
+        +
+Sparse Retrieval
+```
+
+Work flow:
+
+```text
+ User Query
+    ↓
+ ┌───────────────┐
+ │               │
+Dense Search   BM25 Search
+ │               │
+ └───────┬───────┘
+         ↓
+Combined Results
+```
+
+Hybrid search can improve retrieval because semantic and keyword search have different strengths.
+
+---
+
+# 17. Reranking
+
+Initial vector search may return relevant but poorly ordered results.
+
+A **reranker** takes the retrieved chunks and reorders them.
+
+```text
+User Query
+    ↓
+Vector Search
+    ↓
+Top 20 Documents
+    ↓
+Reranker
+    ↓
+Best Top 5 Documents
+```
+
+The first stage retrieves candidates quickly.
+
+The reranker performs a more detailed relevance check.
+
+This is often called:
+
+```text
+Retrieve → Rerank
+```
+
+---
+
+# 18. Context Construction
+
+The retrieved chunks are combined before sending them to the LLM.
+
+Example:
+
+```text
+Context:
+
+[Chunk 1]
+FAISS is a library for efficient similarity search.
+
+[Chunk 2]
+FAISS stores vectors in an index.
+
+Question:
+What is FAISS?
+```
+
+The LLM receives both the context and the user question.
+
+---
+
+# 19. Prompt Construction
+
+A typical RAG prompt looks like:
+
+```text
+Use the provided context to answer the question.
+
+Context:
+{retrieved_context}
+
+Question:
+{user_question}
+
+Answer:
+```
+
+A stronger instruction can be:
+
+```text
+Answer only using the provided context.
+If the answer is not available in the context,
+say that the information is not available.
+```
+
+This helps reduce hallucination.
+
+---
+
+# 20. Generation
+
+The LLM receives:
+
+```text
+Retrieved Context
+        +
+User Question
+        +
+System Instructions
+```
+
+Then it generates the answer.
+
+```text
+Context + Question
+        ↓
+       LLM
+        ↓
+Generated Answer
+```
+
+The LLM can be:
+
+- GPT models
+- Llama models
+- Mistral models
+- Gemma models
+- Other language models
+
+---
+
+# 21. Grounded Generation
+
+A good RAG answer should be **grounded** in the retrieved documents.
+
+Example:
+
+```text
+Retrieved Context:
+"FAISS is a library for efficient similarity search."
+
+Question:
+"What is FAISS?"
+
+Answer:
+"FAISS is a library designed for efficient similarity search
+over vector embeddings."
+```
+
+The answer should be based on retrieved evidence rather than unsupported model knowledge.
+
+---
+
+# 22. Citations and Source Attribution
+
+A production RAG system should ideally provide sources.
+
+Example:
+
+```text
+FAISS is used for efficient vector similarity search.
+
+Source:
+machine_learning_notes.pdf, Page 12
+```
+
+This improves:
+
+- Trust
+- Transparency
+- Debugging
+- Verification
+
+This is why metadata is important.
+
+---
+
+# 23. Context Window Management
+
+LLMs have a limited context window.
+
+You cannot always send every retrieved document.
+
+Therefore, a RAG system must select:
+
+```text
+Top Relevant Chunks
+```
+
+instead of:
+
+```text
+Entire Knowledge Base
+```
+
+Common strategies include:
+
+- Top-K retrieval
+- Reranking
+- Context compression
+- Summarization
+- Token limits
+
+---
+
+# 24. Context Compression
+
+Sometimes retrieved chunks contain too much irrelevant information.
+
+Context compression reduces them to only the important information.
+
+```text
+Retrieved Chunk
+      ↓
+Context Compression
+      ↓
+Relevant Information
+      ↓
+     LLM
+```
+
+Benefits:
+
+- Lower token usage
+- Faster generation
+- More focused context
+
+---
+
+# 25. Parent-Child Retrieval
+
+A useful advanced technique is **parent-child retrieval**.
+
+Example:
+
+```text
+Large Document
+      ↓
+Parent Chunk
+      ↓
+Small Child Chunks
+```
+
+The smaller child chunks are used for precise retrieval.
+
+After finding a matching child chunk:
+
+```text
+Matching Child Chunk
+        ↓
+Retrieve Parent Chunk
+        ↓
+Send More Context to LLM
+```
+
+This improves the balance between:
+
+- Retrieval precision
+- Context completeness
+
+---
+
+# 26. Multi-Query Retrieval
+
+A single user query may not retrieve all relevant information.
+
+Example:
+
+```text
+User Query:
+"How does RAG work?"
+```
+
+The system can generate multiple search queries:
+
+```text
+"What is retrieval augmented generation?"
+"RAG pipeline workflow"
+"How do vector databases work with LLMs?"
+```
+
+Each query retrieves documents.
+
+The results are then combined.
+
+---
+
+# 27. HyDE
+
+HyDE stands for **Hypothetical Document Embeddings**.
+
+The workflow is:
+
+```text
+User Query
+    ↓
+LLM generates a hypothetical answer
+    ↓
+Embed hypothetical answer
+    ↓
+Search Vector Database
+    ↓
+Retrieve Real Documents
+```
+
+The hypothetical answer can sometimes produce a better search representation than the original short query.
+
+---
+
+# 28. Retrieval Failure
+
+Sometimes the retriever does not find relevant information.
+
+Example:
+
+```text
+Question
+   ↓
+Retriever
+   ↓
+Low Similarity Results
+```
+
+The system should not blindly send irrelevant chunks to the LLM.
+
+Possible strategies:
+
+- Similarity score thresholds
+- Reranking
+- Query rewriting
+- Fallback search
+- Asking the user for clarification
+- Returning "I could not find relevant information"
+
+This is important for reducing hallucinations.
+
+---
+
+# 29. RAG Evaluation
+
+A RAG system should be evaluated at multiple levels.
+
+## Retrieval Evaluation
+
+Ask:
+
+```text
+Did the system retrieve the correct documents?
+```
+
+Common measures include:
+
+- Precision@K
+- Recall@K
+- MRR
+- NDCG
+
+## Generation Evaluation
+
+Ask:
+
+```text
+Is the generated answer correct and useful?
+```
+
+Evaluate:
+
+- Correctness
+- Relevance
+- Faithfulness
+- Completeness
+
+## End-to-End Evaluation
+
+Ask:
+
+```text
+Did the complete RAG system answer the user correctly?
+```
+
+---
+
+# 30. Important RAG Problems
+
+## Hallucination
+
+The LLM generates unsupported information.
+
+Solution:
+
+- Ground answers in retrieved context.
+- Use clear prompts.
+- Use source citations.
+- Add refusal behavior when evidence is missing.
+
+## Poor Retrieval
+
+Relevant documents are not retrieved.
+
+Solution:
+
+- Improve chunking.
+- Use better embedding models.
+- Add hybrid search.
+- Add reranking.
+- Improve queries.
+
+## Lost Context
+
+Important information is split between chunks.
+
+Solution:
+
+- Use chunk overlap.
+- Adjust chunk size.
+- Use parent-child retrieval.
+
+## Too Much Context
+
+Too many chunks may confuse the LLM.
+
+Solution:
+
+- Use Top-K retrieval.
+- Add reranking.
+- Use context compression.
+
+---
+
+# 31. Basic RAG Pipeline
+
+The complete basic pipeline can be divided into two stages.
+
+## Indexing Stage
+
+```text
+Documents
+    ↓
+  Load
+    ↓
+  Clean
+    ↓
+  Chunk
+    ↓
+Generate Embeddings
+    ↓
+Store Vectors + Metadata
+    ↓
+Vector Index
+```
+
+## Retrieval and Generation Stage
+
+```text
+User Query
+    ↓
+Query Processing
+    ↓
+Query Embedding
+    ↓
+Vector / Hybrid Search
+    ↓
+Top K Results
+    ↓
+Optional Reranking
+    ↓
+Context Construction
+    ↓
+Prompt + Context
+    ↓ 
+   LLM
+    ↓
+Final Answer + Sources
+```
+
+---
+
+# 32. Combining Embeddings \+ FAISS \+ LLM
+
+This connects directly to the topics that already learned.
+
+```text
+                    INDEXING
+
+Documents
+    ↓
+Text Chunking
+    ↓
+SentenceTransformer
+    ↓
+Embeddings
+    ↓
+FAISS Index
+    ↓
+Save Index
+
+
+                RETRIEVAL
+
+User Question
+    ↓
+SentenceTransformer
+    ↓
+Query Embedding
+    ↓
+FAISS Similarity Search
+    ↓
+Top K Documents
+
+
+                GENERATION
+
+Retrieved Documents
+        +
+User Question
+        ↓
+       LLM
+        ↓
+Final Answer
+```
+
+---
+
+# 33. Minimal RAG Pseudocode
+
+```python
+documents = load_documents()
+
+chunks = split_documents(documents)
+
+document_embeddings = embedding_model.encode(chunks)
+
+vector_store.add(document_embeddings)
+
+query = get_user_query()
+
+query_embedding = embedding_model.encode([query])
+
+results = vector_store.search(query_embedding, k=3)
+
+context = get_documents(results)
+
+prompt = f"""
+Answer the question using only the context below.
+
+Context:
+{context}
+
+Question:
+{query}
+"""
+
+answer = llm.generate(prompt)
+
+print(answer)
+```
+
+---
+
+## Order
+
+```text
+1. What is RAG?
+        ↓
+2. Document Loading
+        ↓
+3. Text Chunking
+        ↓
+4. Embeddings
+        ↓
+5. Vector Stores
+        ↓
+6. FAISS Indexing 
+        ↓
+7. Similarity Search
+        ↓
+8. Query Retrieval
+        ↓
+9. Prompt + Retrieved Context
+        ↓
+10. LLM Generation
+        ↓
+11. Build Basic RAG
+        ↓
+12. Metadata and Citations
+        ↓
+13. Hybrid Search
+        ↓
+14. Reranking
+        ↓
+15. RAG Evaluation
+        ↓
+16. Advanced RAG Techniques
+```

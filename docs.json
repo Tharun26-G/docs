@@ -325,6 +325,12 @@
               "faiss",
               "faiss-code"
             ]
+          },
+          {
+            "group": "Day 38",
+            "pages": [
+              "rag"
+            ]
           }
         ]
       }

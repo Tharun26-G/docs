@@ -1,0 +1,1255 @@
+---
+title: "RAG Example"
+---
+
+```python
+import faiss
+
+from google import genai
+from sentence_transformers import SentenceTransformer
+
+
+# 1. Load the embedding model
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+
+# 2. Create sample documents
+documents = [
+    "FAISS is a library used for efficient similarity search over vector embeddings.",
+    "Embeddings are numerical representations of text, images, or other data.",
+    "Retrieval-Augmented Generation, or RAG, retrieves relevant information before sending context to a language model.",
+    "A vector database stores embeddings and allows similarity search between vectors.",
+    "Chunking divides large documents into smaller pieces before generating embeddings.",
+    "The Gemini API allows developers to interact with language models programmatically.",
+]
+
+
+# 3. Convert documents into embeddings
+document_embeddings = embedding_model.encode(documents, normalize_embeddings=True)
+
+
+# 4. Get the embedding dimension
+dimension = document_embeddings.shape[1]
+
+
+# 5. Create a FAISS index
+index = faiss.IndexFlatIP(dimension)
+
+
+# 6. Add document embeddings to the index
+index.add(document_embeddings)
+
+print("Number of documents in the index:", index.ntotal)
+
+
+# 7. Get a query from the user
+query = input("\nAsk a question: ")
+
+
+# 8. Convert the query into an embedding
+query_embedding = embedding_model.encode([query], normalize_embeddings=True)
+
+
+# 9. Retrieve the top-k relevant documents
+k = 3
+
+scores, indices = index.search(query_embedding, k=k)
+
+
+# 10. Get the retrieved documents
+retrieved_documents = []
+
+for rank, document_index in enumerate(indices[0]):
+    document = documents[document_index]
+    score = scores[0][rank]
+
+    retrieved_documents.append(document)
+
+    print(f"\nRank {rank + 1}")
+    print("Document:", document)
+    print(f"Similarity Score: {score:.4f}")
+
+
+# 11. Combine retrieved documents into context
+context = "\n\n".join(retrieved_documents)
+
+
+# 12. Create the RAG prompt
+prompt = f"""
+Answer the user's question using only the provided context.
+
+If the answer is not available in the context, say:
+"I could not find the answer in the provided documents."
+
+Context:
+{context}
+
+Question:
+{query}
+"""
+
+
+# 13. Create the Gemini client
+client = genai.Client()
+
+
+# 14. Send the context and query to Gemini
+response = client.interactions.create(model="gemini-3.7-flash", input=prompt)
+
+
+# 15. Print the final answer
+print("\nFinal Answer:")
+print(response.output_text)
+```
+
+```text
+Documents
+    ↓
+Sentence Embeddings
+    ↓
+FAISS Vector Index
+    ↓
+User Query
+    ↓
+Query Embedding
+    ↓
+Similarity Search
+    ↓
+Top-K Documents
+    ↓
+Context + Question
+    ↓
+Gemini LLM
+    ↓
+Final Answer
+```
+
+---
+
+## 1. Import FAISS
+
+```python
+import faiss
+```
+
+FAISS is used to perform efficient similarity search.
+
+It stores the document embeddings in a vector index and helps find the documents most similar to the user's query.
+
+Later, you use:
+
+```python
+index = faiss.IndexFlatIP(dimension)
+```
+
+to create the index and:
+
+```python
+index.search(...)
+```
+
+to retrieve similar documents.
+
+---
+
+## 2. Import the Gemini SDK
+
+```python
+from google import genai
+```
+
+This imports the Google GenAI library.
+
+use it to connect your Python application to the Gemini API.
+
+Later:
+
+```python
+client = genai.Client()
+```
+
+creates a Gemini client.
+
+And:
+
+```python
+client.interactions.create(...)
+```
+
+sends prompt to the Gemini model.
+
+---
+
+## 3. Import `SentenceTransformer`
+
+```python
+from sentence_transformers import SentenceTransformer
+```
+
+`SentenceTransformer` converts text into numerical vectors called **embeddings**.
+
+For example:
+
+```text
+"FAISS is used for vector search"
+
+        ↓
+
+Embedding Model
+
+        ↓
+
+[0.12, -0.45, 0.78, ..., 0.21]
+```
+
+These vectors represent the semantic meaning of the text.
+
+---
+
+# Step 1: Load the Embedding Model
+
+```python
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+```
+
+This loads the model:
+
+```text
+all-MiniLM-L6-v2
+```
+
+The model converts sentences into embedding vectors.
+
+For this model, each embedding typically has:
+
+```text
+384 dimensions
+```
+
+The same embedding model is used for both:
+
+```text
+Documents
+    ↓
+Document Embeddings
+
+User Query
+    ↓
+Query Embedding
+```
+
+This is important because the query and documents need to exist in the same vector space for meaningful similarity comparison.
+
+---
+
+# Step 2: Create Sample Documents
+
+```python
+documents = [
+    "FAISS is a library used for efficient similarity search over vector embeddings.",
+
+    "Embeddings are numerical representations of text, images, or other data.",
+
+    "Retrieval-Augmented Generation, or RAG, retrieves relevant information before sending context to a language model.",
+
+    "A vector database stores embeddings and allows similarity search between vectors.",
+
+    "Chunking divides large documents into smaller pieces before generating embeddings.",
+
+    "The Gemini API allows developers to interact with language models programmatically.",
+]
+```
+
+This list acts as your small **knowledge base**.
+
+You have six documents:
+
+```text
+Document 0 → FAISS
+Document 1 → Embeddings
+Document 2 → RAG
+Document 3 → Vector Database
+Document 4 → Chunking
+Document 5 → Gemini API
+```
+
+In a real RAG application, these documents could come from:
+
+- PDFs
+- Websites
+- Databases
+- Company documents
+- Text files
+- Documentation
+
+---
+
+# Step 3: Convert Documents into Embeddings
+
+```python
+document_embeddings = embedding_model.encode(
+    documents,
+    normalize_embeddings=True
+)
+```
+
+The `encode()` function converts all six documents into numerical vectors.
+
+Before:
+
+```text
+[
+    "FAISS is a library...",
+    "Embeddings are numerical...",
+    "Retrieval-Augmented Generation..."
+]
+```
+
+After:
+
+```text
+[
+    [0.12, -0.45, 0.78, ...],
+    [0.31, 0.24, -0.11, ...],
+    [0.56, -0.21, 0.34, ...]
+]
+```
+
+The approximate shape is:
+
+```python
+(6, 384)
+```
+
+This means:
+
+```text
+6 document vectors
+×
+384 dimensions each
+```
+
+---
+
+## Why `normalize_embeddings=True`?
+
+```python
+normalize_embeddings=True
+```
+
+Normalizes each embedding vector to have a length of `1`.
+
+This is useful because FAISS index uses:
+
+```python
+faiss.IndexFlatIP()
+```
+
+After normalization:
+
+```text
+Inner Product ≈ Cosine Similarity
+```
+
+Therefore:
+
+```text
+Higher similarity score = More similar
+Lower similarity score = Less similar
+```
+
+---
+
+# Step 4: Get the Embedding Dimension
+
+```python
+dimension = document_embeddings.shape[1]
+```
+
+Suppose:
+
+```python
+document_embeddings.shape
+```
+
+returns:
+
+```text
+(6, 384)
+```
+
+Then:
+
+```python
+document_embeddings.shape[0]
+```
+
+is:
+
+```text
+6
+```
+
+The number of documents.
+
+And:
+
+```python
+document_embeddings.shape[1]
+```
+
+is:
+
+```text
+384
+```
+
+The number of values in each embedding.
+
+Therefore:
+
+```python
+dimension = 384
+```
+
+FAISS needs this value when creating the vector index.
+
+---
+
+# Step 5: Create a FAISS Index
+
+```python
+index = faiss.IndexFlatIP(dimension)
+```
+
+This creates a FAISS index.
+
+Let's break it down:
+
+### `IndexFlat`
+
+Performs an exact similarity search.
+
+It compares the query against all stored vectors.
+
+### `IP`
+
+Means:
+
+```text
+Inner Product
+```
+
+Since we normalized the embeddings, inner product behaves like cosine similarity.
+
+So:
+
+```text
+IndexFlatIP
++
+Normalized Embeddings
+=
+Cosine Similarity Search
+```
+
+The index expects vectors with:
+
+```text
+384 dimensions
+```
+
+---
+
+# Step 6: Add Document Embeddings
+
+```python
+index.add(document_embeddings)
+```
+
+This adds all six document vectors to the FAISS index.
+
+Conceptually:
+
+```text
+FAISS Index
+
+Vector 0 → FAISS document
+Vector 1 → Embeddings document
+Vector 2 → RAG document
+Vector 3 → Vector database document
+Vector 4 → Chunking document
+Vector 5 → Gemini API document
+```
+
+The vector positions correspond to the original positions in the `documents` list.
+
+---
+
+## Print Number of Documents
+
+```python
+print("Number of documents in the index:", index.ntotal)
+```
+
+`index.ntotal` returns the total number of vectors inside the index.
+
+Output:
+
+```text
+Number of documents in the index: 6
+```
+
+---
+
+# Step 7: Get the User's Query
+
+```python
+query = input("\nAsk a question: ")
+```
+
+This waits for the user to enter a question.
+
+For example:
+
+```text
+Ask a question: What is RAG?
+```
+
+The value is stored in:
+
+```python
+query
+```
+
+So:
+
+```python
+query = "What is RAG?"
+```
+
+---
+
+# Step 8: Convert the Query into an Embedding
+
+```python
+query_embedding = embedding_model.encode(
+    [query],
+    normalize_embeddings=True
+)
+```
+
+FAISS cannot directly understand text.
+
+Therefore:
+
+```text
+"What is RAG?"
+```
+
+must be converted into:
+
+```text
+[0.23, -0.14, 0.67, ..., 0.31]
+```
+
+The query embedding shape is approximately:
+
+```python
+(1, 384)
+```
+
+Meaning:
+
+```text
+1 query
+×
+384 dimensions
+```
+
+The query is placed inside a list:
+
+```python
+[query]
+```
+
+because the embedding model and FAISS search work with batches of vectors.
+
+You again use:
+
+```python
+normalize_embeddings=True
+```
+
+so the query vector is normalized in the same way as the document vectors.
+
+---
+
+# Step 9: Retrieve the Top-K Documents
+
+```python
+k = 3
+```
+
+This means want the three most relevant documents.
+
+Then:
+
+```python
+scores, indices = index.search(
+    query_embedding,
+    k=k
+)
+```
+
+FAISS compares the query embedding with all stored document embeddings.
+
+The process is:
+
+```text
+User Query
+    ↓
+Query Embedding
+    ↓
+Compare with all Document Embeddings
+    ↓
+Find the Top 3
+```
+
+FAISS returns two things:
+
+```python
+scores
+```
+
+and:
+
+```python
+indices
+```
+
+---
+
+## Understanding `scores`
+
+Suppose:
+
+```python
+scores
+```
+
+contains:
+
+```text
+[[0.82, 0.41, 0.29]]
+```
+
+The scores represent similarity.
+
+Because we use normalized embeddings with `IndexFlatIP`:
+
+```text
+0.82 → Highly similar
+0.41 → Less similar
+0.29 → Less similar
+```
+
+Higher is better.
+
+---
+
+## Understanding `indices`
+
+Suppose:
+
+```python
+indices
+```
+
+contains:
+
+```text
+[[2, 4, 1]]
+```
+
+These are positions in the original `documents` list.
+
+Therefore:
+
+```python
+documents[2]
+```
+
+is the first result.
+
+```python
+documents[4]
+```
+
+is the second result.
+
+```python
+documents[1]
+```
+
+is the third result.
+
+---
+
+# Step 10: Get the Retrieved Documents
+
+First:
+
+```python
+retrieved_documents = []
+```
+
+creates an empty list.
+
+will store the top three retrieved documents inside it.
+
+---
+
+## Loop Through the Results
+
+```python
+for rank, document_index in enumerate(indices[0]):
+```
+
+Suppose:
+
+```python
+indices[0]
+```
+
+is:
+
+```text
+[2, 4, 1]
+```
+
+Then the loop runs like this:
+
+```text
+First iteration:
+rank = 0
+document_index = 2
+
+Second iteration:
+rank = 1
+document_index = 4
+
+Third iteration:
+rank = 2
+document_index = 1
+```
+
+---
+
+## Retrieve the Original Document
+
+```python
+document = documents[document_index]
+```
+
+If:
+
+```python
+document_index = 2
+```
+
+then:
+
+```python
+document = documents[2]
+```
+
+which gives:
+
+```text
+Retrieval-Augmented Generation, or RAG, retrieves relevant information before sending context to a language model.
+```
+
+---
+
+## Get the Similarity Score
+
+```python
+score = scores[0][rank]
+```
+
+If:
+
+```python
+rank = 0
+```
+
+then:
+
+```python
+score = scores[0][0]
+```
+
+This retrieves the similarity score for the first result.
+
+---
+
+## Store the Document
+
+```python
+retrieved_documents.append(document)
+```
+
+The retrieved document is added to the list.
+
+After three iterations:
+
+```python
+retrieved_documents = [
+    "Retrieval-Augmented Generation...",
+    "Chunking divides...",
+    "Embeddings are..."
+]
+```
+
+---
+
+## Print the Rank
+
+```python
+print(f"\nRank {rank + 1}")
+```
+
+`rank` starts from `0`, but humans normally start counting from `1`.
+
+Therefore:
+
+```text
+rank = 0 → Rank 1
+rank = 1 → Rank 2
+rank = 2 → Rank 3
+```
+
+---
+
+## Print the Document
+
+```python
+print("Document:", document)
+```
+
+Example:
+
+```text
+Document: Retrieval-Augmented Generation, or RAG, retrieves relevant information before sending context to a language model.
+```
+
+---
+
+## Print the Similarity Score
+
+```python
+print(f"Similarity Score: {score:.4f}")
+```
+
+The:
+
+```python
+:.4f
+```
+
+formats the score to four decimal places.
+
+For example:
+
+```text
+0.8234567
+```
+
+becomes:
+
+```text
+0.8235
+```
+
+---
+
+# Step 11: Combine Documents into Context
+
+```python
+context = "\n\n".join(retrieved_documents)
+```
+
+The retrieved documents are currently stored as a list:
+
+```python
+[
+    "Document 1",
+    "Document 2",
+    "Document 3"
+]
+```
+
+The `join()` method combines them into one string.
+
+The:
+
+```python
+"\n\n"
+```
+
+adds two line breaks between documents.
+
+The final context might look like:
+
+```text
+Retrieval-Augmented Generation, or RAG, retrieves relevant information before sending context to a language model.
+
+Chunking divides large documents into smaller pieces before generating embeddings.
+
+Embeddings are numerical representations of text, images, or other data.
+```
+
+This context will be given to Gemini.
+
+---
+
+# Step 12: Create the RAG Prompt
+
+```python
+prompt = f"""
+Answer the user's question using only the provided context.
+
+If the answer is not available in the context, say:
+
+"I could not find the answer in the provided documents."
+
+Context:
+
+{context}
+
+Question:
+
+{query}
+"""
+```
+
+The `f` before the string:
+
+```python
+f"""
+```
+
+means this is an **f-string**.
+
+It allows Python variables to be inserted directly.
+
+These variables:
+
+```python
+{context}
+```
+
+and:
+
+```python
+{query}
+```
+
+are replaced with their actual values.
+
+For example:
+
+```text
+Answer the user's question using only the provided context.
+
+Context:
+
+Retrieval-Augmented Generation, or RAG, retrieves relevant
+information before sending context to a language model.
+
+Chunking divides large documents into smaller pieces before
+generating embeddings.
+
+Question:
+
+What is RAG?
+```
+
+This is the **augmentation** step of RAG.
+
+The retrieved information is added to the prompt before sending it to the LLM.
+
+---
+
+# Step 13: Create the Gemini Client
+
+```python
+client = genai.Client()
+```
+
+This creates a client that communicates with the Gemini API.
+
+The client uses Gemini API key, typically stored as an environment variable:
+
+```text
+GEMINI_API_KEY
+```
+
+program can then send prompts to a Gemini model.
+
+Conceptually:
+
+```text
+Python Application
+        ↓
+Gemini Client
+        ↓
+Gemini API
+        ↓
+Gemini Model
+```
+
+---
+
+# Step 14: Send the Prompt to Gemini
+
+```python
+response = client.interactions.create(
+    model="gemini-3.7-flash",
+    input=prompt
+)
+```
+
+This sends complete RAG prompt to the Gemini model.
+
+The prompt contains:
+
+```text
+Retrieved Context
+        +
+User Question
+        ↓
+Gemini
+```
+
+The model then reads the context and generates an answer.
+
+The response is stored in:
+
+```python
+response
+```
+
+---
+
+# Step 15: Print the Final Answer
+
+```python
+print("\nFinal Answer:")
+```
+
+This prints a heading:
+
+```text
+Final Answer:
+```
+
+Then:
+
+```python
+print(response.output_text)
+```
+
+prints the text generated by Gemini.
+
+For example:
+
+```text
+Final Answer:
+
+RAG stands for Retrieval-Augmented Generation. It retrieves
+relevant information from a knowledge source and provides that
+information as context to a language model before generating
+an answer.
+```
+
+---
+
+# Complete Flow 
+
+## Stage 1: Indexing
+
+This happens before the user asks the question.
+
+```text
+Documents
+    ↓
+SentenceTransformer
+    ↓
+Document Embeddings
+    ↓
+Normalize Embeddings
+    ↓
+FAISS Index
+```
+
+In code:
+
+```python
+document_embeddings = embedding_model.encode(
+    documents,
+    normalize_embeddings=True
+)
+
+index = faiss.IndexFlatIP(dimension)
+
+index.add(document_embeddings)
+```
+
+---
+
+## Stage 2: Retrieval and Generation
+
+After the user enters a question:
+
+```text
+User Query
+    ↓
+SentenceTransformer
+    ↓
+Query Embedding
+    ↓
+FAISS Similarity Search
+    ↓
+Top 3 Documents
+    ↓
+Combine into Context
+    ↓
+Create Prompt
+    ↓
+Gemini API
+    ↓
+Generated Answer
+```
+
+---
+
+# How This Relates to RAG
+
+The three main parts are:
+
+## 1. Retrieval
+
+```python
+scores, indices = index.search(
+    query_embedding,
+    k=3
+)
+```
+
+FAISS retrieves relevant documents.
+
+---
+
+## 2. Augmentation
+
+```python
+context = "\n\n".join(retrieved_documents)
+```
+
+and:
+
+```python
+prompt = f"""
+Context:
+{context}
+
+Question:
+{query}
+"""
+```
+
+The retrieved documents are added to the LLM prompt.
+
+---
+
+## 3. Generation
+
+```python
+response = client.interactions.create(
+    model="gemini-3.7-flash",
+    input=prompt
+)
+```
+
+Gemini generates the final natural-language answer.
+
+---
+
+## Final Architecture
+
+```text
+                  INDEXING
+
+Sample Documents
+       ↓
+SentenceTransformer
+       ↓
+Document Embeddings
+       ↓
+Normalization
+       ↓
+FAISS Index
+
+
+            RETRIEVAL
+
+User Question
+       ↓
+SentenceTransformer
+       ↓
+Query Embedding
+       ↓
+FAISS Similarity Search
+       ↓
+Top-K Relevant Documents
+
+
+            AUGMENTATION
+
+Retrieved Documents
+       +
+User Question
+       ↓
+RAG Prompt
+
+
+             GENERATION
+
+RAG Prompt
+       ↓
+Gemini API
+       ↓
+Gemini LLM
+       ↓
+Final Answer
+```
+
+The most important concept is:
+
+```text
+FAISS does not generate answers.
+
+FAISS retrieves relevant information.
+
+Gemini does not search your documents directly.
+
+Gemini receives the relevant information retrieved by FAISS
+and uses it to generate the final answer.
+```
+
+So complete project is a basic implementation of:
+
+```text
+Embeddings + Vector Store + Retrieval + Context + LLM = RAG
+```

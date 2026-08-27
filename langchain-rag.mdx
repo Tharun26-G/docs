@@ -1,0 +1,1366 @@
+---
+title: "LangChain RAG"
+---
+
+## LangChain Fundamentals
+
+LangChain is a framework for building applications powered by Large Language Models. It provides components for working with:
+
+- LLMs and chat models
+- Prompts
+- Documents
+- Document loaders
+- Text splitters
+- Embeddings
+- Vector stores
+- Retrievers
+- Output parsers
+- Chains
+- Tools and agents
+
+LangChain is commonly used to build:
+
+- RAG applications
+- Document question-answering systems
+- AI chatbots
+- AI agents
+- Tool-using applications
+- Multi-step LLM workflows
+
+---
+
+# 1. Why LangChain?
+
+A basic LLM application may involve manually connecting several components:
+
+```text
+Documents
+    ↓
+Embeddings
+    ↓
+Vector Store
+    ↓
+Similarity Search
+    ↓
+Retrieved Documents
+    ↓
+Prompt
+    ↓
+LLM
+    ↓
+Answer
+```
+
+LangChain provides standardized abstractions for these components.
+
+```text
+Document
+    ↓
+Embedding
+    ↓
+Vector Store
+    ↓
+Retriever
+    ↓
+Prompt
+    ↓
+LLM
+    ↓
+Output Parser
+```
+
+These components can be combined into a **chain**.
+
+---
+
+# 2. Core LangChain Components
+
+The main components used in a RAG application are:
+
+```text
+Documents
+    ↓
+Document Loaders
+    ↓
+Text Splitters
+    ↓
+Embeddings
+    ↓
+Vector Store
+    ↓
+Retriever
+    ↓
+Prompt Template
+    ↓
+LLM
+    ↓
+Output Parser
+    ↓
+Final Answer
+```
+
+---
+
+# 3. Documents
+
+LangChain represents text using the `Document` object.
+
+```python
+from langchain_core.documents import Document
+```
+
+Example:
+
+```python
+document = Document(
+    page_content="RAG combines information retrieval with language generation.",
+    metadata={"source": "rag_notes"}
+)
+```
+
+A document generally contains:
+
+```text
+Document
+├── page_content
+│     └── Main text content
+│
+└── metadata
+      └── Additional information
+```
+
+## `page_content`
+
+Contains the actual text.
+
+```python
+document.page_content
+```
+
+Example:
+
+```text
+RAG combines information retrieval with language generation.
+```
+
+## `metadata`
+
+Stores additional information about the document.
+
+Example:
+
+```python
+metadata={
+    "source": "notes.pdf",
+    "page": 5
+}
+```
+
+Metadata is useful for:
+
+- Source citations
+- File names
+- Page numbers
+- URLs
+- Document IDs
+- Filtering documents
+
+---
+
+# 4. Document Loaders
+
+A document loader reads data from external sources and converts it into LangChain `Document` objects.
+
+Examples of sources:
+
+- Text files
+- PDFs
+- CSV files
+- Websites
+- Databases
+- Notion
+- Google Drive
+
+Conceptually:
+
+```text
+PDF
+ ↓
+Document Loader
+ ↓
+LangChain Documents
+```
+
+Example:
+
+```python
+from langchain_community.document_loaders import TextLoader
+
+loader = TextLoader("notes.txt")
+
+documents = loader.load()
+```
+
+The result is a list of `Document` objects.
+
+```text
+notes.txt
+    ↓
+TextLoader
+    ↓
+[
+    Document(...),
+    Document(...)
+]
+```
+
+---
+
+# 5. Text Splitting and Chunking
+
+Large documents should usually not be embedded as one large piece of text.
+
+Instead:
+
+```text
+Large Document
+      ↓
+Text Splitter
+      ↓
+Chunk 1
+Chunk 2
+Chunk 3
+Chunk 4
+```
+
+Example:
+
+```python
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=50
+)
+
+chunks = text_splitter.split_documents(documents)
+```
+
+## Important Parameters
+
+### `chunk_size`
+
+```python
+chunk_size=500
+```
+
+Maximum approximate size of each chunk.
+
+### `chunk_overlap`
+
+```python
+chunk_overlap=50
+```
+
+Some text from the previous chunk is repeated in the next chunk.
+
+Example:
+
+```text
+Chunk 1
+----------------
+Machine learning is a field of artificial intelligence.
+It allows systems to learn patterns from data.
+
+Chunk 2
+----------------
+systems to learn patterns from data.
+Deep learning is a subset of machine learning.
+```
+
+Overlap helps preserve context between chunks.
+
+---
+
+# 6. Embeddings
+
+Embeddings convert text into numerical vectors.
+
+```text
+Text
+ ↓
+Embedding Model
+ ↓
+Vector
+```
+
+Example:
+
+```text
+"RAG retrieves relevant information"
+                ↓
+          Embedding Model
+                ↓
+[0.12, -0.45, 0.67, ..., 0.21]
+```
+
+Example using Hugging Face embeddings:
+
+```python
+from langchain_huggingface import HuggingFaceEmbeddings
+
+embeddings = HuggingFaceEmbeddings(
+    model_name="all-MiniLM-L6-v2"
+)
+```
+
+Embeddings allow semantic comparison between text.
+
+For example:
+
+```text
+"machine learning"
+
+"artificial intelligence"
+
+        ↓
+
+Similar vector representations
+```
+
+---
+
+# 7. Vector Store
+
+A vector store stores embedding vectors and supports similarity search.
+
+Common vector stores include:
+
+- FAISS
+- Chroma
+- Pinecone
+- Qdrant
+- Weaviate
+- Milvus
+
+The process is:
+
+```text
+Documents
+    ↓
+Embedding Model
+    ↓
+Embeddings
+    ↓
+Vector Store
+```
+
+Example with FAISS:
+
+```python
+from langchain_community.vectorstores import FAISS
+
+vector_store = FAISS.from_documents(
+    documents,
+    embeddings
+)
+```
+
+This internally performs:
+
+```text
+Documents
+    ↓
+Generate Embeddings
+    ↓
+Create FAISS Index
+    ↓
+Store Vectors
+```
+
+---
+
+# 8. Similarity Search
+
+Similarity search finds documents whose embeddings are closest to the query embedding.
+
+```text
+Stored Documents
+      ↓
+Document Embeddings
+
+User Query
+      ↓
+Query Embedding
+      ↓
+Similarity Search
+      ↓
+Most Relevant Documents
+```
+
+Example:
+
+```python
+results = vector_store.similarity_search(
+    "What is RAG?",
+    k=3
+)
+```
+
+The parameter:
+
+```python
+k=3
+```
+
+means:
+
+```text
+Retrieve the top 3 most relevant documents.
+```
+
+---
+
+# 9. Retriever
+
+A retriever is an abstraction for retrieving relevant documents.
+
+Create a retriever from a vector store:
+
+```python
+retriever = vector_store.as_retriever(
+    search_kwargs={"k": 3}
+)
+```
+
+Retrieve documents:
+
+```python
+documents = retriever.invoke(
+    "What is RAG?"
+)
+```
+
+Conceptually:
+
+```text
+Question
+    ↓
+Retriever
+    ↓
+Embedding
+    ↓
+Vector Search
+    ↓
+Top-K Documents
+```
+
+A retriever separates the retrieval logic from the rest of the application.
+
+---
+
+# 10. Retrieval Strategies
+
+The default retrieval method is usually similarity search.
+
+Other strategies can include:
+
+## Similarity Search
+
+```text
+Query
+  ↓
+Find vectors closest to the query
+```
+
+## MMR Search
+
+MMR means **Maximum Marginal Relevance**.
+
+It balances:
+
+- Relevance
+- Diversity
+
+Instead of retrieving three nearly identical chunks:
+
+```text
+Chunk A → Highly relevant
+Chunk B → Very similar to A
+Chunk C → Very similar to A
+```
+
+MMR attempts to retrieve:
+
+```text
+Chunk A → Relevant
+Chunk B → Relevant but different
+Chunk C → Relevant from another perspective
+```
+
+Example:
+
+```python
+retriever = vector_store.as_retriever(
+    search_type="mmr",
+    search_kwargs={"k": 3}
+)
+```
+
+---
+
+# 11. Prompt Templates
+
+Prompt templates create structured prompts.
+
+Import:
+
+```python
+from langchain_core.prompts import ChatPromptTemplate
+```
+
+Example:
+
+```python
+prompt = ChatPromptTemplate.from_template("""
+Answer the question using only the provided context.
+
+Context:
+{context}
+
+Question:
+{question}
+""")
+```
+
+The placeholders:
+
+```text
+{context}
+{question}
+```
+
+are replaced with actual values.
+
+Example:
+
+```text
+Context:
+RAG retrieves relevant documents and provides them
+to an LLM.
+
+Question:
+What is RAG?
+```
+
+Prompt templates make prompts reusable and structured.
+
+---
+
+# 12. LLMs and Chat Models
+
+LangChain supports multiple LLM providers through integrations.
+
+Examples include:
+
+- Google Gemini
+- OpenAI
+- Anthropic
+- Hugging Face
+- Ollama
+
+Example with Gemini:
+
+```python
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0
+)
+```
+
+## Temperature
+
+The `temperature` parameter controls randomness.
+
+```text
+Low Temperature
+↓
+More predictable responses
+
+High Temperature
+↓
+More creative and variable responses
+```
+
+For RAG:
+
+```python
+temperature=0
+```
+
+or a low value is commonly used when factual and consistent answers are preferred.
+
+---
+
+# 13. Output Parsers
+
+LLMs can return structured response objects.
+
+An output parser converts the output into a desired format.
+
+For plain text:
+
+```python
+from langchain_core.output_parsers import StrOutputParser
+
+output_parser = StrOutputParser()
+```
+
+Conceptually:
+
+```text
+LLM Response
+      ↓
+Output Parser
+      ↓
+Plain String
+```
+
+Example chain:
+
+```python
+chain = prompt | llm | output_parser
+```
+
+---
+
+# 14. Chains
+
+A chain connects multiple components together.
+
+Example:
+
+```text
+Prompt
+   ↓
+LLM
+   ↓
+Output Parser
+```
+
+In LangChain:
+
+```python
+chain = prompt | llm | output_parser
+```
+
+The `|` operator is part of **LCEL**.
+
+---
+
+# 15. LCEL
+
+LCEL stands for:
+
+```text
+LangChain Expression Language
+```
+
+LCEL is used to compose LangChain components.
+
+Example:
+
+```python
+chain = prompt | llm | output_parser
+```
+
+The output of one component becomes the input of the next.
+
+```text
+Prompt
+   |
+   ↓
+LLM
+   |
+   ↓
+Output Parser
+```
+
+Run the chain using:
+
+```python
+response = chain.invoke(
+    {
+        "context": context,
+        "question": question
+    }
+)
+```
+
+Other execution methods include:
+
+```python
+chain.batch(...)
+```
+
+for multiple inputs, and:
+
+```python
+chain.stream(...)
+```
+
+for streaming output.
+
+---
+
+# 16. Basic RAG Flow with LangChain
+
+A RAG pipeline has two major stages.
+
+## Indexing Stage
+
+```text
+Documents
+    ↓
+Document Loader
+    ↓
+Text Splitter
+    ↓
+Chunks
+    ↓
+Embedding Model
+    ↓
+Vector Store
+```
+
+## Retrieval and Generation Stage
+
+```text
+User Question
+    ↓
+Retriever
+    ↓
+Relevant Documents
+    ↓
+Format Context
+    ↓
+Prompt Template
+    ↓
+LLM
+    ↓
+Output Parser
+    ↓
+Final Answer
+```
+
+---
+
+# 17. Basic LangChain RAG Example
+
+## Installation
+
+```bash
+pip install -U langchain langchain-community langchain-huggingface langchain-google-genai langchain-text-splitters faiss-cpu sentence-transformers
+```
+
+Set the Gemini API key.
+
+### Git Bash
+
+```bash
+export GEMINI_API_KEY="your_gemini_api_key"
+```
+
+---
+
+## `langchain_rag.py`
+
+```python
+from langchain_core.documents import Document
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+
+# 1. Create documents
+documents = [
+    Document(
+        page_content="FAISS is a library used for efficient similarity search over vector embeddings."
+    ),
+    Document(
+        page_content="Embeddings are numerical representations of text, images, or other data."
+    ),
+    Document(
+        page_content="Retrieval-Augmented Generation, or RAG, retrieves relevant information before sending context to a language model."
+    ),
+    Document(
+        page_content="A vector database stores embeddings and allows similarity search between vectors."
+    ),
+    Document(
+        page_content="Chunking divides large documents into smaller pieces before generating embeddings."
+    ),
+    Document(
+        page_content="The Gemini API allows developers to interact with language models programmatically."
+    ),
+]
+
+
+# 2. Load the embedding model
+embeddings = HuggingFaceEmbeddings(
+    model_name="all-MiniLM-L6-v2"
+)
+
+
+# 3. Create the FAISS vector store
+vector_store = FAISS.from_documents(
+    documents,
+    embeddings
+)
+
+
+# 4. Create the retriever
+retriever = vector_store.as_retriever(
+    search_kwargs={"k": 3}
+)
+
+
+# 5. Load the Gemini LLM
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0
+)
+
+
+# 6. Create the prompt template
+prompt = ChatPromptTemplate.from_template("""
+Answer the question using only the provided context.
+
+If the answer is not available in the context, say:
+"I could not find the answer in the provided documents."
+
+Context:
+{context}
+
+Question:
+{question}
+""")
+
+
+# 7. Create the output parser
+output_parser = StrOutputParser()
+
+
+# 8. Get the question
+question = input("Ask a question: ")
+
+
+# 9. Retrieve relevant documents
+retrieved_documents = retriever.invoke(question)
+
+
+# 10. Combine documents into context
+context = "\n\n".join(
+    document.page_content
+    for document in retrieved_documents
+)
+
+
+# 11. Build the chain
+chain = prompt | llm | output_parser
+
+
+# 12. Run the chain
+response = chain.invoke(
+    {
+        "context": context,
+        "question": question
+    }
+)
+
+
+# 13. Print the result
+print("\nFinal Answer:")
+print(response)
+```
+
+---
+
+# 18. Step-by-Step Code Flow
+
+```text
+1. Create Documents
+        ↓
+2. Load Embedding Model
+        ↓
+3. Create FAISS Vector Store
+        ↓
+4. Create Retriever
+        ↓
+5. Load LLM
+        ↓
+6. Create Prompt Template
+        ↓
+7. Create Output Parser
+        ↓
+8. Get Question
+        ↓
+9. Retrieve Relevant Documents
+        ↓
+10. Build Context
+        ↓
+11. Create Chain
+        ↓
+12. Invoke Chain
+        ↓
+13. Print Answer
+```
+
+---
+
+# 19. The Complete Chain Concept
+
+The generation chain is:
+
+```python
+chain = prompt | llm | output_parser
+```
+
+However, retrieval can also be integrated into a larger workflow.
+
+Conceptually:
+
+```text
+Question
+    ↓
+Retriever
+    ↓
+Retrieved Documents
+    ↓
+Context Formatter
+    ↓
+Prompt
+    ↓
+LLM
+    ↓
+Output Parser
+    ↓
+Answer
+```
+
+The main idea is that each component has a specific responsibility.
+
+| Component | Responsibility |
+| --- | --- |
+| Document Loader | Loads external data |
+| Text Splitter | Splits large documents |
+| Embedding Model | Converts text into vectors |
+| Vector Store | Stores vectors |
+| Retriever | Finds relevant documents |
+| Prompt Template | Structures the LLM input |
+| LLM | Generates the answer |
+| Output Parser | Formats the output |
+| Chain | Connects the components |
+
+---
+
+# 20. Manual RAG vs LangChain RAG
+
+| Feature | Manual Implementation | LangChain |
+| --- | --- | --- |
+| Document handling | Manual | `Document` objects |
+| Chunking | Manual | Text splitters |
+| Embeddings | Direct model calls | Embedding integrations |
+| FAISS indexing | Manual index creation | `FAISS.from_documents()` |
+| Retrieval | `index.search()` | `retriever.invoke()` |
+| Prompts | f-strings | Prompt templates |
+| LLM calls | Provider SDK | LangChain model wrappers |
+| Output handling | Manual | Output parsers |
+| Workflow | Manual orchestration | Chains and LCEL |
+
+---
+
+# 21. Important RAG Concepts with LangChain
+
+## Chunk Size
+
+Chunk size affects retrieval quality.
+
+```text
+Very Large Chunks
+    ↓
+More context
+But less precise retrieval
+
+Very Small Chunks
+    ↓
+More precise retrieval
+But possible loss of context
+```
+
+Choosing a suitable chunk size is important.
+
+---
+
+## Chunk Overlap
+
+Overlap preserves context between neighboring chunks.
+
+```text
+Chunk 1
+[----------------------]
+
+            Chunk 2
+            [----------------------]
+```
+
+Without overlap, important information can be split across chunk boundaries.
+
+---
+
+## Top-K Retrieval
+
+```python
+search_kwargs={"k": 3}
+```
+
+Controls the number of retrieved documents.
+
+```text
+Small K
+↓
+Less context
+Lower token usage
+
+Large K
+↓
+More context
+Higher token usage
+Potentially more irrelevant information
+```
+
+---
+
+## Context Window
+
+The retrieved documents are added to the LLM prompt.
+
+```text
+Retrieved Documents
+        +
+Question
+        +
+Instructions
+        ↓
+LLM Context Window
+```
+
+Too much retrieved context can increase cost, latency, and irrelevant information.
+
+---
+
+## Grounding
+
+A RAG prompt can instruct the model to answer only from the retrieved context.
+
+Example:
+
+```text
+Answer using only the provided context.
+
+If the answer is not present, say that the information
+could not be found.
+```
+
+This helps reduce hallucinations.
+
+However:
+
+```text
+Grounding reduces hallucinations
+≠
+Guarantees zero hallucinations
+```
+
+The quality of retrieval still affects the final answer.
+
+---
+
+## Metadata Filtering
+
+Metadata can be used to restrict retrieval.
+
+Example:
+
+```python
+Document(
+    page_content="...",
+    metadata={
+        "category": "machine_learning",
+        "year": 2026
+    }
+)
+```
+
+A retriever or vector store can use metadata, depending on the underlying store, to search within specific subsets of documents.
+
+---
+
+# 22. RAG Quality
+
+The final answer depends heavily on retrieval quality.
+
+```text
+Good Documents
+       +
+Good Chunking
+       +
+Good Embeddings
+       +
+Relevant Retrieval
+       +
+Clear Prompt
+       +
+Capable LLM
+       ↓
+Better RAG Answers
+```
+
+A useful principle is:
+
+```text
+Bad Retrieval
+    ↓
+Bad Context
+    ↓
+Poor LLM Answer
+```
+
+The LLM can only generate a grounded answer based on the information provided in the retrieved context.
+
+---
+
+# 23. Advanced RAG Concepts
+
+Important topics that build on basic LangChain RAG include:
+
+## Query Transformation
+
+The original query can be rewritten before retrieval.
+
+```text
+Original Query
+      ↓
+Query Rewriting
+      ↓
+Improved Search Query
+      ↓
+Retriever
+```
+
+---
+
+## Multi-Query Retrieval
+
+Generate multiple versions of a query.
+
+```text
+User Question
+      ↓
+Generate Multiple Queries
+      ↓
+Retrieve Documents for Each Query
+      ↓
+Combine Results
+```
+
+This can improve recall.
+
+---
+
+## Reranking
+
+Initial retrieval:
+
+```text
+Top 20 Documents
+```
+
+Then a reranking model:
+
+```text
+Top 20
+   ↓
+Reranker
+   ↓
+Best Top 3
+```
+
+Reranking can improve the relevance of the final context.
+
+---
+
+## Hybrid Search
+
+Combines:
+
+```text
+Semantic Search
+       +
+Keyword Search
+```
+
+This can improve retrieval when exact terms, names, or technical keywords are important.
+
+---
+
+## Contextual Compression
+
+Retrieved documents may contain unnecessary text.
+
+```text
+Retrieved Document
+        ↓
+Compression
+        ↓
+Only Relevant Information
+        ↓
+LLM
+```
+
+This reduces unnecessary context.
+
+---
+
+## Parent-Child Retrieval
+
+Small chunks are used for accurate search, while larger parent documents provide broader context.
+
+```text
+Large Parent Document
+        ↓
+Split into Small Child Chunks
+        ↓
+Retrieve Child Chunk
+        ↓
+Return Parent Context
+```
+
+---
+
+# 24. LangChain RAG Architecture
+
+```text
+                    INDEXING
+
+Data Sources
+    ↓
+Document Loaders
+    ↓
+Documents
+    ↓
+Text Splitters
+    ↓
+Chunks
+    ↓
+Embedding Model
+    ↓
+Vector Store
+
+
+              RETRIEVAL
+
+User Question
+    ↓
+Query Processing
+    ↓
+Retriever
+    ↓
+Similarity / MMR / Hybrid Search
+    ↓
+Relevant Documents
+    ↓
+Optional Reranking
+
+
+              AUGMENTATION
+
+Relevant Documents
+        +
+Prompt Instructions
+        +
+User Question
+        ↓
+Final Prompt
+
+
+               GENERATION
+
+Final Prompt
+      ↓
+LLM
+      ↓
+Output Parser
+      ↓
+Final Answer
+```
+
+---
+
+# Key Takeaways
+
+```text
+LangChain = Framework for building LLM applications
+
+Document = Text + metadata
+
+Document Loader = Loads external data
+
+Text Splitter = Divides large documents into chunks
+
+Embedding Model = Converts text into vectors
+
+Vector Store = Stores and searches vectors
+
+Retriever = Fetches relevant documents
+
+Prompt Template = Structures LLM input
+
+LLM = Generates responses
+
+Output Parser = Converts output into the required format
+
+Chain = Connects multiple components
+
+LCEL = Syntax for composing LangChain components
+
+RAG = Retrieval + Augmentation + Generation
+```
+
+The basic LangChain RAG pipeline can be summarized as:
+
+```text
+Documents
+    ↓
+Load
+    ↓
+Split
+    ↓
+Embed
+    ↓
+Store
+    ↓
+Retrieve
+    ↓
+Augment Prompt
+    ↓
+Generate
+    ↓
+Parse Output
+    ↓
+Answer
+```

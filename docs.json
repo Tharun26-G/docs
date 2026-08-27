@@ -336,7 +336,8 @@
           {
             "group": "Day 39",
             "pages": [
-              "langchain-rag"
+              "langchain-rag",
+              "langchain-rag-code"
             ]
           }
         ]

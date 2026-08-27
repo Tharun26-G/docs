@@ -1,0 +1,1305 @@
+---
+title: "Langchain RAG Code"
+---
+
+This program builds a simple **Retrieval-Augmented Generation (RAG)** application using:
+
+- Hugging Face
+- Sentence embeddings
+- FAISS
+- LangChain
+- A local language model
+
+No API key is required for this implementation.
+
+---
+
+# Overall Workflow
+
+```text
+Sample Documents
+       ↓
+Embedding Model
+       ↓
+Vector Embeddings
+       ↓
+FAISS Vector Store
+       ↓
+Retriever
+       ↓
+Relevant Documents
+       ↓
+Prompt + Context + Question
+       ↓
+Local Hugging Face LLM
+       ↓
+Output Parser
+       ↓
+Final Answer
+```
+
+---
+
+```python
+from transformers import pipeline
+
+
+from langchain_core.documents import Document
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+from langchain_community.vectorstores import FAISS
+
+from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
+
+# 1. create sample documents
+
+documents = [
+    Document(
+        page_content=(
+            "FAISS is a library used for efficient similarity "
+            "search over vector embeddings."
+        )
+    ),
+    Document(
+        page_content=(
+            "Embeddings are numerical representations of text, images, or other data."
+        )
+    ),
+    Document(
+        page_content=(
+            "Retrieval-Augmented Generation, or RAG, retrieves "
+            "relevant information before sending context to a "
+            "language model."
+        )
+    ),
+    Document(
+        page_content=(
+            "A vector database stores embeddings and allows "
+            "similarity search between vectors."
+        )
+    ),
+    Document(
+        page_content=(
+            "Chunking divides large documents into smaller pieces "
+            "before generating embeddings."
+        )
+    ),
+    Document(
+        page_content=(
+            "LangChain is a framework for building applications "
+            "powered by language models."
+        )
+    ),
+]
+
+# 2. load the embedding model
+
+embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+# 3. create the FAISS vector store
+
+vector_store = FAISS.from_documents(documents, embeddings)
+
+# 4. create a retriever
+
+retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+
+# 5. Create a local Hugging Face pipeline
+
+hf_pipeline = pipeline(
+    task="text-generation", model="distilgpt2", max_new_tokens=100, do_sample=False
+)
+
+
+# 6. Convert the Hugging Face pipeline into a LangChain LLM
+
+llm = HuggingFacePipeline(pipeline=hf_pipeline)
+
+# 6. create the RAG prompt
+
+prompt = PromptTemplate.from_template("""
+Answer the question using only the provided context.
+
+If the answer is not available in the context, say:
+
+I could not find the answer in the provided documents.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Answer:
+""")
+
+# 7. creating an output parser
+
+output_parser = StrOutputParser()
+
+# 8. get a question from the user
+
+question = input("\nAsk a question: ")
+
+# 9. retrieve relevant documents
+
+retrieved_documents = retriever.invoke(question)
+
+# 10. Display retriever  documents
+
+print("\n Retrieved Documents:")
+
+for rank, document in enumerate(retrieved_documents, start=1):
+    print(f"\nRank {rank}")
+    print(document.page_content)
+
+# 11. combine documents into context
+
+context = "\n\n".join(document.page_content for document in retrieved_documents)
+
+# 12. building the RAG chain
+
+chain = prompt | llm | output_parser
+
+# 13. generate the answer
+
+response = chain.invoke({"context": context, "question": question})
+
+# 14. printing the final answer
+
+print("\n Final answer: ")
+print(response)
+```
+
+**Output**
+
+```text
+
+Final answer: 
+
+Answer the question using only the provided context.
+
+If the answer is not available in the context, say:
+
+I could not find the answer in the provided documents.
+
+Context:
+LangChain is a framework for building applications powered by language models.
+
+Retrieval-Augmented Generation, or RAG, retrieves relevant information before sending context to a language model.
+
+Chunking divides large documents into smaller pieces before generating embeddings.
+
+Question:
+what is langchain
+
+Answer:
+There are many different ways to implement RAG in the language.
+How to build and use RAG in language models?
+What are the advantages of RAG in language models?
+What are the disadvantages of RAG in language models?
+How can you build and use RAG in language models?
+What are the advantages of RAG in language models?
+How can you build and use RAG in language models?
+Answer:
+The RAG language model is not as simple
+```
+
+# Step 1: Import the Hugging Face Pipeline
+
+```python
+from transformers import pipeline
+```
+
+The `pipeline` function is provided by the `transformers` library.
+
+It provides a simple way to load and use Hugging Face models.
+
+In this program, it is used to load:
+
+```text
+distilgpt2
+```
+
+for text generation.
+
+Conceptually:
+
+```text
+Prompt
+   ↓
+Hugging Face Pipeline
+   ↓
+distilgpt2 Model
+   ↓
+Generated Text
+```
+
+---
+
+# Step 2: Import `Document`
+
+```python
+from langchain_core.documents import Document
+```
+
+The `Document` class is used to represent text in LangChain.
+
+A document can contain:
+
+```text
+Document
+├── page_content
+└── metadata
+```
+
+Example:
+
+```python
+Document(
+    page_content="FAISS is used for similarity search."
+)
+```
+
+The main text is stored inside:
+
+```python
+page_content
+```
+
+---
+
+# Step 3: Import `PromptTemplate`
+
+```python
+from langchain_core.prompts import PromptTemplate
+```
+
+`PromptTemplate` is used to create reusable prompts.
+
+Instead of manually creating a new prompt every time, placeholders can be used.
+
+Example:
+
+```text
+Context:
+{context}
+
+Question:
+{question}
+```
+
+Later, LangChain replaces:
+
+```text
+{context}
+```
+
+with retrieved documents and:
+
+```text
+{question}
+```
+
+with the user's question.
+
+---
+
+# Step 4: Import `StrOutputParser`
+
+```python
+from langchain_core.output_parsers import StrOutputParser
+```
+
+Language models can return different output formats.
+
+`StrOutputParser()` converts the model output into a plain Python string.
+
+Conceptually:
+
+```text
+LLM Response
+      ↓
+StrOutputParser
+      ↓
+Python String
+```
+
+---
+
+# Step 5: Import FAISS
+
+```python
+from langchain_community.vectorstores import FAISS
+```
+
+FAISS is used as the vector store.
+
+Its main purpose is to:
+
+- Store embeddings
+- Search for similar embeddings
+- Retrieve relevant documents
+
+Conceptually:
+
+```text
+Documents
+    ↓
+Embeddings
+    ↓
+FAISS Index
+    ↓
+Similarity Search
+    ↓
+Relevant Documents
+```
+
+---
+
+# Step 6: Import Hugging Face LangChain Components
+
+```python
+from langchain_huggingface import (
+    HuggingFaceEmbeddings,
+    HuggingFacePipeline
+)
+```
+
+Two important components are imported.
+
+## `HuggingFaceEmbeddings`
+
+Used to convert text into numerical vectors.
+
+```text
+Text
+ ↓
+Embedding Model
+ ↓
+Vector
+```
+
+## `HuggingFacePipeline`
+
+Used to connect a Hugging Face pipeline with LangChain.
+
+```text
+Hugging Face Pipeline
+        ↓
+HuggingFacePipeline
+        ↓
+LangChain LLM
+```
+
+---
+
+# Step 7: Create Sample Documents
+
+```python
+documents = [
+    Document(
+        page_content=(
+            "FAISS is a library used for efficient similarity "
+            "search over vector embeddings."
+        )
+    ),
+]
+```
+
+The program creates a list of documents.
+
+Each document contains information about a specific topic.
+
+For example:
+
+```text
+Document 1
+FAISS
+
+Document 2
+Embeddings
+
+Document 3
+RAG
+
+Document 4
+Vector Databases
+
+Document 5
+Chunking
+
+Document 6
+LangChain
+```
+
+These documents act as the knowledge base for the RAG application.
+
+The complete flow starts with:
+
+```text
+Knowledge Base
+     ↓
+documents
+```
+
+---
+
+# Step 8: Load the Embedding Model
+
+```python
+embeddings = HuggingFaceEmbeddings(
+    model_name="all-MiniLM-L6-v2"
+)
+```
+
+The model:
+
+```text
+all-MiniLM-L6-v2
+```
+
+converts text into numerical vectors called **embeddings**.
+
+Example:
+
+```text
+"FAISS is used for similarity search"
+                ↓
+        Embedding Model
+                ↓
+[0.12, -0.34, 0.87, ..., 0.42]
+```
+
+Documents with similar meanings generally have embeddings that are closer together in vector space.
+
+For example:
+
+```text
+"Machine learning is interesting"
+
+"Artificial intelligence is fascinating"
+```
+
+These may have a higher similarity than:
+
+```text
+"Machine learning is interesting"
+
+"Pizza is my favorite food"
+```
+
+---
+
+# Step 9: Create the FAISS Vector Store
+
+```python
+vector_store = FAISS.from_documents(
+    documents,
+    embeddings
+)
+```
+
+This line performs several operations.
+
+```text
+Documents
+    ↓
+Generate Embeddings
+    ↓
+Create FAISS Index
+    ↓
+Store Vectors
+```
+
+The `from_documents()` method automatically:
+
+1. Takes the documents
+2. Converts each document into an embedding
+3. Creates a FAISS index
+4. Stores the embeddings
+5. Maintains the connection between vectors and original documents
+
+Conceptually:
+
+```text
+Document
+    ↓
+Embedding
+    ↓
+FAISS Vector Store
+```
+
+---
+
+# Step 10: Create a Retriever
+
+```python
+retriever = vector_store.as_retriever(
+    search_kwargs={"k": 3}
+)
+```
+
+A retriever is responsible for finding relevant documents.
+
+The parameter:
+
+```python
+"k": 3
+```
+
+means:
+
+```text
+Retrieve the top 3 relevant documents.
+```
+
+The retrieval process is:
+
+```text
+User Question
+      ↓
+Convert Question to Embedding
+      ↓
+Search FAISS
+      ↓
+Find Similar Vectors
+      ↓
+Return Top 3 Documents
+```
+
+For example:
+
+```text
+Question:
+"What is RAG?"
+
+        ↓
+
+FAISS Search
+
+        ↓
+
+Rank 1
+RAG retrieves relevant information.
+
+Rank 2
+Embeddings represent text numerically.
+
+Rank 3
+Chunking divides large documents.
+```
+
+---
+
+# Step 11: Create a Local Hugging Face Pipeline
+
+```python
+hf_pipeline = pipeline(
+    task="text-generation",
+    model="distilgpt2",
+    max_new_tokens=100,
+    do_sample=False
+)
+```
+
+This creates a local Hugging Face text-generation pipeline.
+
+## `task="text-generation"`
+
+```python
+task="text-generation"
+```
+
+Specifies that the model should generate text.
+
+Conceptually:
+
+```text
+Input Prompt
+      ↓
+Language Model
+      ↓
+Generated Text
+```
+
+---
+
+## `model="distilgpt2"`
+
+```python
+model="distilgpt2"
+```
+
+Loads the `distilgpt2` language model.
+
+It is a smaller version of GPT-2.
+
+```text
+GPT-2
+  ↓
+Distillation
+  ↓
+DistilGPT-2
+```
+
+It is useful for:
+
+- Learning
+- Testing
+- Small local experiments
+
+The model runs locally after it is downloaded.
+
+---
+
+## `max_new_tokens=100`
+
+```python
+max_new_tokens=100
+```
+
+Limits the maximum number of new tokens generated by the model.
+
+Example:
+
+```text
+Prompt
+  ↓
+Generate up to 100 new tokens
+```
+
+This prevents the model from generating excessively long responses.
+
+---
+
+## `do_sample=False`
+
+```python
+do_sample=False
+```
+
+Disables random sampling.
+
+This makes generation more deterministic.
+
+Conceptually:
+
+```text
+do_sample=True
+↓
+More variation and randomness
+
+
+do_sample=False
+↓
+More predictable output
+```
+
+For a simple RAG application, predictable output is generally useful.
+
+---
+
+# Step 12: Convert the Pipeline Into a LangChain LLM
+
+```python
+llm = HuggingFacePipeline(
+    pipeline=hf_pipeline
+)
+```
+
+The Hugging Face pipeline is wrapped inside a LangChain component.
+
+Before:
+
+```text
+Transformers Pipeline
+```
+
+After:
+
+```text
+Transformers Pipeline
+        ↓
+HuggingFacePipeline
+        ↓
+LangChain Compatible LLM
+```
+
+This allows the model to be connected with:
+
+- Prompts
+- Chains
+- Output parsers
+- Other LangChain components
+
+---
+
+# Step 13: Create the RAG Prompt
+
+```python
+prompt = PromptTemplate.from_template("""
+Answer the question using only the provided context.
+
+If the answer is not available in the context, say:
+
+I could not find the answer in the provided documents.
+
+Context:
+
+{context}
+
+Question:
+
+{question}
+
+Answer:
+""")
+```
+
+This creates a reusable prompt template.
+
+There are two placeholders:
+
+```text
+{context}
+```
+
+and:
+
+```text
+{question}
+```
+
+## `{context}`
+
+Contains the retrieved documents.
+
+Example:
+
+```text
+Context:
+
+Retrieval-Augmented Generation, or RAG, retrieves
+relevant information before sending context to a
+language model.
+```
+
+## `{question}`
+
+Contains the user's question.
+
+Example:
+
+```text
+Question:
+
+What is RAG?
+```
+
+The final prompt sent to the model becomes:
+
+```text
+Answer the question using only the provided context.
+
+Context:
+
+Retrieval-Augmented Generation, or RAG, retrieves
+relevant information before sending context to a
+language model.
+
+Question:
+
+What is RAG?
+
+Answer:
+```
+
+---
+
+# Step 14: Create the Output Parser
+
+```python
+output_parser = StrOutputParser()
+```
+
+This creates an output parser.
+
+The flow is:
+
+```text
+Model Output
+     ↓
+StrOutputParser
+     ↓
+Plain String
+```
+
+For example:
+
+```text
+Model Response Object
+        ↓
+StrOutputParser()
+        ↓
+"RAG retrieves relevant information before generation."
+```
+
+---
+
+# Step 15: Get the Question From the User
+
+```python
+question = input("\nAsk a question: ")
+```
+
+This waits for user input.
+
+Example:
+
+```text
+Ask a question: What is RAG?
+```
+
+The value is stored in:
+
+```python
+question
+```
+
+So:
+
+```python
+question
+```
+
+contains:
+
+```text
+What is RAG?
+```
+
+The `\n` adds a new line before displaying the message.
+
+---
+
+# Step 16: Retrieve Relevant Documents
+
+```python
+retrieved_documents = retriever.invoke(question)
+```
+
+This starts the retrieval process.
+
+Suppose:
+
+```python
+question = "What is RAG?"
+```
+
+The process becomes:
+
+```text
+"What is RAG?"
+        ↓
+Embedding Model
+        ↓
+Query Vector
+        ↓
+FAISS Similarity Search
+        ↓
+Top 3 Relevant Documents
+```
+
+The result is stored in:
+
+```python
+retrieved_documents
+```
+
+This is a list of LangChain `Document` objects.
+
+---
+
+# Step 17: Display Retrieved Documents
+
+```python
+print("\nRetrieved Documents:")
+```
+
+This prints a heading.
+
+Then:
+
+```python
+for rank, document in enumerate(
+    retrieved_documents,
+    start=1
+):
+```
+
+`enumerate()` loops through the retrieved documents.
+
+Example:
+
+```text
+Document 1
+Document 2
+Document 3
+```
+
+The parameter:
+
+```python
+start=1
+```
+
+starts ranking from `1` instead of `0`.
+
+Without `start=1`:
+
+```text
+0
+1
+2
+```
+
+With:
+
+```python
+start=1
+```
+
+the result is:
+
+```text
+1
+2
+3
+```
+
+Then:
+
+```python
+print(f"\nRank {rank}")
+```
+
+prints:
+
+```text
+Rank 1
+Rank 2
+Rank 3
+```
+
+And:
+
+```python
+print(document.page_content)
+```
+
+prints the actual content of each retrieved document.
+
+Example:
+
+```text
+Rank 1
+
+Retrieval-Augmented Generation, or RAG, retrieves
+relevant information before sending context to a
+language model.
+```
+
+---
+
+# Step 18: Combine Retrieved Documents Into Context
+
+```python
+context = "\n\n".join(
+    document.page_content
+    for document in retrieved_documents
+)
+```
+
+The retrieved documents are combined into one string.
+
+Suppose three documents are retrieved:
+
+```text
+Document 1:
+RAG retrieves relevant information.
+
+Document 2:
+Embeddings are numerical representations.
+
+Document 3:
+Chunking divides large documents.
+```
+
+The `join()` operation creates:
+
+```text
+RAG retrieves relevant information.
+
+Embeddings are numerical representations.
+
+Chunking divides large documents.
+```
+
+The:
+
+```python
+"\n\n"
+```
+
+adds two newline characters between documents.
+
+The final context is stored in:
+
+```python
+context
+```
+
+---
+
+# Step 19: Build the RAG Chain
+
+```python
+chain = prompt | llm | output_parser
+```
+
+This uses **LCEL**, which stands for:
+
+```text
+LangChain Expression Language
+```
+
+The `|` operator connects components.
+
+The chain is:
+
+```text
+Prompt
+   ↓
+LLM
+   ↓
+Output Parser
+```
+
+More specifically:
+
+```text
+PromptTemplate
+      |
+      ↓
+HuggingFacePipeline
+      |
+      ↓
+StrOutputParser
+```
+
+This creates one complete generation workflow.
+
+---
+
+# Step 20: Generate the Answer
+
+```python
+response = chain.invoke(
+    {
+        "context": context,
+        "question": question
+    }
+)
+```
+
+The dictionary provides values for the placeholders.
+
+```python
+{
+    "context": context,
+    "question": question
+}
+```
+
+These values replace:
+
+```text
+{context}
+```
+
+and:
+
+```text
+{question}
+```
+
+The complete process is:
+
+```text
+Retrieved Documents
+        ↓
+context
+
+User Input
+        ↓
+question
+
+        ↓
+
+PromptTemplate
+
+        ↓
+
+Complete Prompt
+
+        ↓
+
+distilgpt2
+
+        ↓
+
+Generated Text
+
+        ↓
+
+StrOutputParser
+
+        ↓
+
+response
+```
+
+The final result is stored in:
+
+```python
+response
+```
+
+---
+
+# Step 21: Print the Final Answer
+
+```python
+print("\nFinal Answer:")
+```
+
+Prints the heading:
+
+```text
+Final Answer:
+```
+
+Then:
+
+```python
+print(response)
+```
+
+prints the generated answer.
+
+Example:
+
+```text
+Final Answer:
+
+RAG retrieves relevant information and provides it
+to a language model before generating a response.
+```
+
+---
+
+# Complete Program Flow
+
+```text
+1. Create Documents
+        ↓
+2. Load Embedding Model
+        ↓
+3. Convert Documents into Embeddings
+        ↓
+4. Store Embeddings in FAISS
+        ↓
+5. Create Retriever
+        ↓
+6. Load Local Hugging Face Model
+        ↓
+7. Create Prompt Template
+        ↓
+8. Create Output Parser
+        ↓
+9. Get User Question
+        ↓
+10. Retrieve Top 3 Relevant Documents
+        ↓
+11. Combine Documents Into Context
+        ↓
+12. Build LangChain Chain
+        ↓
+13. Send Context + Question to LLM
+        ↓
+14. Parse Model Output
+        ↓
+15. Print Final Answer
+```
+
+# Important Components
+
+| Component | Purpose |
+| --- | --- |
+| `Document` | Stores text data |
+| `HuggingFaceEmbeddings` | Converts text into vectors |
+| `all-MiniLM-L6-v2` | Embedding model |
+| `FAISS` | Stores and searches vectors |
+| `Retriever` | Finds relevant documents |
+| `pipeline()` | Creates a Hugging Face inference pipeline |
+| `distilgpt2` | Local text-generation model |
+| `HuggingFacePipeline` | Connects the model to LangChain |
+| `PromptTemplate` | Creates the RAG prompt |
+| `StrOutputParser` | Converts output into a string |
+| `LCEL` | Connects LangChain components |
+| `invoke()` | Executes retrieval or a chain |
+
+# Final RAG Architecture
+
+```text
+                    KNOWLEDGE BASE
+
+Sample Documents
+       ↓
+HuggingFaceEmbeddings
+all-MiniLM-L6-v2
+       ↓
+Vector Embeddings
+       ↓
+FAISS Vector Store
+
+
+                     RETRIEVAL
+
+User Question
+       ↓
+Retriever
+       ↓
+FAISS Similarity Search
+       ↓
+Top 3 Relevant Documents
+
+
+                     GENERATION
+
+Retrieved Documents
+        +
+User Question
+        ↓
+PromptTemplate
+        ↓
+distilgpt2
+        ↓
+HuggingFacePipeline
+        ↓
+StrOutputParser
+        ↓
+Final Answer
+```

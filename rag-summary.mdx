@@ -1,0 +1,859 @@
+---
+title: "RAG Summarization"
+---
+
+# Retrieval-Augmented Summarisation
+
+## Overview
+
+**Retrieval-Augmented Summarisation** combines two processes:
+
+1. **Retrieval**: Find the most relevant documents or document chunks.
+2. **Summarisation**: Generate a concise summary using the retrieved information.
+
+Instead of sending all available documents to a language model, the system first retrieves the most relevant content and then asks the model to create a summary.
+
+```text
+Documents
+    ↓
+Chunking
+    ↓
+Embeddings
+    ↓
+Vector Store
+    ↓
+User Query
+    ↓
+Retriever
+    ↓
+Relevant Documents
+    ↓
+Summarisation Prompt
+    ↓
+LLM
+    ↓
+Final Summary
+```
+
+---
+
+# 1. Why Retrieval-Augmented Summarisation?
+
+Traditional summarisation usually works like this:
+
+```text
+Large Document
+      ↓
+LLM
+      ↓
+Summary
+```
+
+This can become difficult when:
+
+- There are many documents.
+- Documents are too large.
+- Only specific information is needed.
+- The context exceeds the model's context window.
+- Irrelevant information affects the summary.
+
+Retrieval-Augmented Summarisation improves this process:
+
+```text
+Many Documents
+      ↓
+Find Relevant Documents
+      ↓
+Select Important Information
+      ↓
+LLM
+      ↓
+Focused Summary
+```
+
+The model receives only relevant information.
+
+---
+
+# 2. Basic Workflow
+
+The complete process has two main stages.
+
+## Stage 1: Retrieval
+
+```text
+User Query
+    ↓
+Embedding Model
+    ↓
+Query Vector
+    ↓
+Similarity Search
+    ↓
+Top-k Relevant Documents
+```
+
+Example query:
+
+```text
+Summarise information about RAG.
+```
+
+The retriever might return:
+
+```text
+Document 1:
+RAG retrieves relevant information before generation.
+
+Document 2:
+Embeddings convert text into numerical vectors.
+
+Document 3:
+Vector databases store embeddings for similarity search.
+```
+
+---
+
+## Stage 2: Summarisation
+
+The retrieved documents are passed to the language model.
+
+```text
+Retrieved Documents
+        +
+Summarisation Prompt
+        ↓
+Language Model
+        ↓
+Summary
+```
+
+Example:
+
+```text
+RAG improves language model responses by retrieving relevant
+information from a knowledge base before generating an answer.
+Embeddings and vector stores are commonly used to find the
+most relevant information.
+```
+
+---
+
+# 3. Core Components
+
+A Retrieval-Augmented Summarisation system typically contains:
+
+| Component | Purpose |
+| --- | --- |
+| Documents | Source knowledge |
+| Chunking | Splits large documents |
+| Embedding Model | Converts text into vectors |
+| Vector Store | Stores embeddings |
+| Retriever | Finds relevant chunks |
+| Query | Defines what information to retrieve |
+| Prompt | Instructs the model how to summarise |
+| LLM | Generates the summary |
+
+The architecture is:
+
+```text
+Documents
+    ↓
+Chunking
+    ↓
+Embeddings
+    ↓
+Vector Store
+         ↑
+         │
+      User Query
+         │
+         ↓
+     Retriever
+         ↓
+Relevant Chunks
+         ↓
+Summarisation Prompt
+         ↓
+LLM
+         ↓
+Final Summary
+```
+
+---
+
+# 4. Summarisation With Context From Retrieved Documents
+
+The main idea is to give the model a selected context.
+
+Suppose the knowledge base contains 1,000 documents.
+
+A query is:
+
+```text
+Summarise the role of FAISS in a RAG system.
+```
+
+Instead of sending all 1,000 documents:
+
+```text
+1,000 Documents
+       ↓
+      LLM
+```
+
+the system retrieves only the most relevant documents:
+
+```text
+1,000 Documents
+       ↓
+Retriever
+       ↓
+Top 3 Relevant Documents
+       ↓
+LLM
+       ↓
+Summary
+```
+
+This makes the summarisation:
+
+- More focused
+- More efficient
+- More relevant to the query
+- Less likely to include unrelated information
+
+---
+
+# 5. Building the Context
+
+Retrieved documents are usually combined into a single context string.
+
+Example:
+
+```python
+context = "\n\n".join(
+    document.page_content
+    for document in retrieved_documents
+)
+```
+
+Suppose three documents are retrieved:
+
+```text
+Document 1:
+RAG retrieves relevant information before generation.
+
+Document 2:
+Embeddings represent text as numerical vectors.
+
+Document 3:
+FAISS performs efficient similarity search.
+```
+
+The resulting context becomes:
+
+```text
+RAG retrieves relevant information before generation.
+
+Embeddings represent text as numerical vectors.
+
+FAISS performs efficient similarity search.
+```
+
+This context is then passed to the summarisation prompt.
+
+---
+
+# 6. Prompt Design for Summarisation
+
+Prompt design is important because it determines:
+
+- What information should be included.
+- How long the summary should be.
+- What style should be used.
+- Whether unsupported information should be avoided.
+
+A basic summarisation prompt:
+
+```text
+Summarise the following context.
+
+Context:
+{context}
+
+Summary:
+```
+
+A better prompt:
+
+```text
+Create a concise summary using only the information
+provided in the context.
+
+Include the most important concepts.
+
+Do not add information that is not present in the context.
+
+Context:
+{context}
+
+Summary:
+```
+
+This reduces the chance of the model generating information outside the retrieved context.
+
+---
+
+# 7. Query-Focused Summarisation
+
+A useful type of Retrieval-Augmented Summarisation is **query-focused summarisation**.
+
+The summary is generated based on a specific query.
+
+Example:
+
+```text
+Query:
+What is the role of embeddings in RAG?
+
+Context:
+Embeddings are numerical representations of text.
+They allow semantic similarity comparisons between a
+user query and document chunks.
+
+Summary:
+Embeddings convert text into numerical vectors that
+allow a RAG system to find document chunks that are
+semantically similar to a user's query.
+```
+
+The query guides both:
+
+```text
+Query
+ ├── Retrieval
+ │
+ └── Summarisation Focus
+```
+
+---
+
+# 8. Generic vs Query-Focused Summarisation
+
+## Generic Summarisation
+
+The system summarises the retrieved content without a specific focus.
+
+```text
+Retrieved Documents
+        ↓
+Summarise
+        ↓
+General Summary
+```
+
+Prompt:
+
+```text
+Summarise the following context in 3 sentences.
+
+Context:
+{context}
+```
+
+---
+
+## Query-Focused Summarisation
+
+The query determines what should be included in the summary.
+
+```text
+User Query
+      ↓
+Retrieve Relevant Documents
+      ↓
+Summarise Based on Query
+      ↓
+Focused Summary
+```
+
+Prompt:
+
+```text
+Create a summary that answers the query using only
+the provided context.
+
+Query:
+{query}
+
+Context:
+{context}
+
+Summary:
+```
+
+Query-focused summarisation is particularly useful in RAG systems.
+
+---
+
+# 9. Important Prompt Parameters
+
+A summarisation prompt can define several constraints.
+
+## Summary Length
+
+```text
+Create a summary in 3 sentences.
+```
+
+or:
+
+```text
+Summarise the context in less than 100 words.
+```
+
+---
+
+## Output Format
+
+```text
+Provide the summary as bullet points.
+```
+
+Example:
+
+```text
+- RAG retrieves relevant information.
+- Embeddings convert text into vectors.
+- FAISS performs similarity search.
+```
+
+---
+
+## Grounding
+
+```text
+Use only information provided in the context.
+```
+
+This helps reduce hallucinations.
+
+---
+
+## Missing Information Handling
+
+```text
+If the context does not contain enough information,
+state that the information is unavailable.
+```
+
+This prevents the model from inventing missing details.
+
+---
+
+# 10. A Strong Summarisation Prompt
+
+A more complete prompt can be:
+
+```text
+Create a concise and accurate summary using only the
+provided context.
+
+Focus on information relevant to the user's query.
+
+Do not add information that is not present in the
+context.
+
+If the context does not contain enough information,
+say:
+
+"I could not find enough information in the retrieved documents."
+
+Context:
+{context}
+
+Query:
+{query}
+
+Summary:
+```
+
+This prompt includes four important instructions:
+
+```text
+1. Concise
+2. Relevant
+3. Grounded in context
+4. Handles missing information
+```
+
+---
+
+# 11. Retrieval Quality Affects Summary Quality
+
+The summarisation model can only summarise the information it receives.
+
+```text
+Good Retrieval
+      ↓
+Relevant Context
+      ↓
+Better Summary
+```
+
+But:
+
+```text
+Poor Retrieval
+      ↓
+Irrelevant Context
+      ↓
+Poor Summary
+```
+
+This is often described as:
+
+```text
+Retrieval Quality
+        +
+Generation Quality
+        =
+Final RAG Quality
+```
+
+Even a powerful LLM cannot reliably generate a good summary if the relevant information was never retrieved.
+
+---
+
+# 12. Important Retrieval Parameters
+
+## Top-k
+
+```python
+search_kwargs={"k": 3}
+```
+
+The value of `k` determines how many documents are retrieved.
+
+```text
+k = 1
+↓
+Very focused context
+But may miss information
+
+
+k = 10
+↓
+More information
+But may include irrelevant context
+```
+
+The appropriate value depends on the document size and task.
+
+---
+
+## Similarity Search
+
+Documents are retrieved based on semantic similarity.
+
+```text
+Query
+  ↓
+Embedding
+  ↓
+Query Vector
+  ↓
+Compare With Document Vectors
+  ↓
+Most Similar Documents
+```
+
+---
+
+## Chunk Size
+
+Large documents are usually split before indexing.
+
+```text
+Large Document
+      ↓
+Chunking
+      ↓
+Chunk 1
+Chunk 2
+Chunk 3
+      ↓
+Embeddings
+```
+
+If chunks are too large:
+
+- Retrieval may be less precise.
+- More irrelevant information is included.
+
+If chunks are too small:
+
+- Important context may be split across multiple chunks.
+
+Chunk size is therefore an important design decision.
+
+---
+
+# 13. Chunk Overlap
+
+Chunk overlap keeps some text shared between consecutive chunks.
+
+Example:
+
+```text
+Chunk 1:
+A B C D E
+
+Chunk 2:
+D E F G H
+```
+
+The overlapping content is:
+
+```text
+D E
+```
+
+Overlap helps preserve context when important information appears near chunk boundaries.
+
+---
+
+# 14. Map-Reduce Summarisation
+
+When the retrieved context is too large for a single model input, a common approach is **map-reduce summarisation**.
+
+```text
+Document 1 ──→ Summary 1
+Document 2 ──→ Summary 2
+Document 3 ──→ Summary 3
+
+Summary 1
+Summary 2
+Summary 3
+      ↓
+Final Summary
+```
+
+This has two stages.
+
+## Map Stage
+
+Each document or chunk is summarised independently.
+
+```text
+Chunk
+  ↓
+LLM
+  ↓
+Partial Summary
+```
+
+## Reduce Stage
+
+All partial summaries are combined.
+
+```text
+Partial Summaries
+        ↓
+LLM
+        ↓
+Final Summary
+```
+
+---
+
+# 15. Refine Summarisation
+
+Another strategy is **refine summarisation**.
+
+The model starts with an initial summary.
+
+```text
+Chunk 1
+   ↓
+Summary 1
+   +
+Chunk 2
+   ↓
+Updated Summary
+   +
+Chunk 3
+   ↓
+Final Summary
+```
+
+Conceptually:
+
+```text
+Initial Summary
+       ↓
+Add New Context
+       ↓
+Refine Summary
+       ↓
+Repeat
+```
+
+This is useful when processing documents sequentially.
+
+---
+
+# 16. Stuff Summarisation
+
+The simplest approach is sometimes called **stuffing**.
+
+All retrieved content is inserted directly into one prompt.
+
+```text
+Document 1
+Document 2
+Document 3
+      ↓
+Combine Context
+      ↓
+Single LLM Prompt
+      ↓
+Summary
+```
+
+Example:
+
+```python
+context = "\n\n".join(
+    document.page_content
+    for document in retrieved_documents
+)
+```
+
+This approach works well when the context is small enough to fit into the model's input limit.
+
+---
+
+# 17. Comparison of Summarisation Strategies
+
+| Strategy | Process | Best For |
+| --- | --- | --- |
+| Stuff | All context in one prompt | Small context |
+| Map-Reduce | Summarise chunks, then combine | Large documents |
+| Refine | Update summary sequentially | Ordered documents |
+| Query-Focused | Summarise based on a query | RAG applications |
+
+---
+
+# 18. Retrieval-Augmented Summarisation Pipeline
+
+The complete pipeline can be represented as:
+
+```text
+                INDEXING PHASE
+
+Documents
+    ↓
+Text Chunking
+    ↓
+Embedding Model
+    ↓
+Vector Embeddings
+    ↓
+FAISS / Vector Store
+
+
+               RETRIEVAL PHASE
+
+User Query
+    ↓
+Query Embedding
+    ↓
+Similarity Search
+    ↓
+Top-k Relevant Chunks
+
+
+             SUMMARISATION PHASE
+
+Retrieved Chunks
+        +
+User Query
+        ↓
+Summarisation Prompt
+        ↓
+Language Model
+        ↓
+Grounded Summary
+```
+
+---
+
+# 19. Key Concepts
+
+| Concept | Description |
+| --- | --- |
+| Retrieval | Finding relevant documents |
+| Augmentation | Adding retrieved documents to the prompt |
+| Summarisation | Producing a concise version of information |
+| Context | Retrieved information given to the LLM |
+| Grounding | Restricting the answer to retrieved information |
+| Top-k | Number of documents retrieved |
+| Chunking | Splitting large documents |
+| Chunk Overlap | Shared text between chunks |
+| Map-Reduce | Summarise separately and combine |
+| Refine | Iteratively improve a summary |
+| Query-Focused Summary | Summary guided by a specific query |
+
+---
+
+# Summary
+
+Retrieval-Augmented Summarisation extends the RAG workflow by retrieving relevant information before generating a summary.
+
+```text
+Documents
+    ↓
+Embeddings
+    ↓
+Vector Store
+    ↓
+User Query
+    ↓
+Retriever
+    ↓
+Relevant Context
+    ↓
+Summarisation Prompt
+    ↓
+LLM
+    ↓
+Focused Summary
+```
+
+The two most important factors are:
+
+```text
+1. Retrieval Quality
+        +
+2. Prompt Design
+        ↓
+Accurate and Relevant Summary
+```
+
+A good summarisation prompt should clearly define:
+
+```text
+What to summarise
+        +
+What to focus on
+        +
+Expected length
+        +
+Output format
+        +
+Use only retrieved context
+```
+
+This approach is useful when working with large collections of documents where only the information relevant to a particular topic or query needs to be summarised.

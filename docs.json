@@ -339,6 +339,13 @@
               "langchain-rag",
               "langchain-rag-code"
             ]
+          },
+          {
+            "group": "Day 40",
+            "pages": [
+              "rag-summary",
+              "rag-summary-code"
+            ]
           }
         ]
       }

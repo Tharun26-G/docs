@@ -1,0 +1,1069 @@
+---
+title: "Finetune LLM"
+---
+
+# Fine-Tune LLM on Custom Documents
+
+## Overview
+
+Fine-tuning is the process of taking a pre-trained language model and training it further on a custom dataset so that it learns a specific task, format, style, or domain.
+
+This topic focuses on:
+
+- LoRA
+- Adapters
+- Parameter-Efficient Fine-Tuning
+- Preparing a small custom dataset
+- Training and evaluation
+- Saving and using the fine-tuned model
+
+---
+
+# 1. What Is Fine-Tuning?
+
+A pre-trained LLM already contains general language knowledge.
+
+```text
+Pre-trained LLM
+      ↓
+Additional Training
+      ↓
+Custom Dataset
+      ↓
+Fine-Tuned Model
+```
+
+For example:
+
+```text
+Base Model
+    ↓
+General Language Knowledge
+
+Fine-Tuning Dataset
+    ↓
+Company Documentation
+Product Documentation
+Question and Answer Examples
+Domain-Specific Text
+
+    ↓
+
+Fine-Tuned Model
+```
+
+The resulting model becomes better at the specific patterns represented in the training data.
+
+---
+
+# 2. Why Fine-Tune an LLM?
+
+Fine-tuning can be useful when a model needs to learn:
+
+- A specific response format
+- Domain-specific terminology
+- A particular writing style
+- Question-answering patterns
+- Classification tasks
+- Instruction-following behavior
+
+Example:
+
+```text
+Input:
+Explain FAISS.
+
+Output:
+FAISS is a library designed for efficient similarity
+search over vector embeddings.
+```
+
+By training on many examples with a similar structure, the model can learn the expected response pattern.
+
+---
+
+# 3. Fine-Tuning vs RAG
+
+Fine-tuning and RAG solve different problems.
+
+| Fine-Tuning | RAG |
+| --- | --- |
+| Changes model behavior | Provides external context |
+| Uses training examples | Retrieves documents at runtime |
+| Requires training | Does not require model training |
+| Good for style and behavior | Good for changing knowledge |
+| Knowledge may become outdated | Knowledge base can be updated easily |
+
+### Fine-Tuning
+
+```text
+Custom Dataset
+      ↓
+Training
+      ↓
+Updated Model Weights
+      ↓
+Model
+```
+
+### RAG
+
+```text
+Documents
+    ↓
+Vector Store
+    ↓
+Retriever
+    ↓
+Relevant Context
+    ↓
+LLM
+```
+
+A useful distinction is:
+
+```text
+Fine-Tuning
+    ↓
+Changes how the model behaves
+
+RAG
+    ↓
+Changes what information the model receives
+```
+
+Fine-tuning and RAG can also be combined.
+
+```text
+Fine-Tuned Model
+        +
+RAG Context
+        ↓
+Domain-Specific Answer
+```
+
+---
+
+# 4. The Problem With Full Fine-Tuning
+
+A large language model can contain millions or billions of parameters.
+
+Traditional fine-tuning updates all model parameters.
+
+```text
+Pre-trained Model
+
+Parameter 1  ← Updated
+Parameter 2  ← Updated
+Parameter 3  ← Updated
+...
+Parameter N  ← Updated
+```
+
+This requires:
+
+- More GPU memory
+- More computation
+- More training time
+- More storage
+
+For large models, full fine-tuning can be expensive.
+
+This leads to **Parameter-Efficient Fine-Tuning**, commonly called **PEFT**.
+
+---
+
+# 5. Parameter-Efficient Fine-Tuning
+
+PEFT trains only a small portion of additional parameters instead of updating the complete model.
+
+```text
+Base Model Parameters
+        ↓
+Mostly Frozen
+
+        +
+
+Small Trainable Parameters
+        ↓
+Fine-Tuning
+```
+
+Conceptually:
+
+```text
+Large Pre-Trained Model
+        ↓
+Freeze Most Parameters
+        +
+Train Small Components
+        ↓
+Fine-Tuned Model
+```
+
+Popular PEFT techniques include:
+
+- LoRA
+- Adapters
+- Prefix Tuning
+- Prompt Tuning
+
+The most commonly used technique is **LoRA**.
+
+---
+
+# 6. LoRA
+
+LoRA stands for:
+
+```text
+Low-Rank Adaptation
+```
+
+Instead of updating the original model weight matrix directly, LoRA adds small trainable matrices.
+
+Traditional fine-tuning:
+
+```text
+Original Weight Matrix W
+        ↓
+Update W
+```
+
+LoRA:
+
+```text
+Original Weight W
+        ↓
+Frozen
+
+        +
+
+Small Matrix A
+Small Matrix B
+        ↓
+Train A and B
+```
+
+The effective weight update can be represented as:
+
+```text
+W' = W + ΔW
+```
+
+LoRA approximates the update as:
+
+```text
+ΔW = B × A
+```
+
+Therefore:
+
+```text
+W' = W + B × A
+```
+
+Where:
+
+- `W` is the original pre-trained weight matrix
+- `A` and `B` are smaller trainable matrices
+- `ΔW` is the learned weight update
+
+---
+
+# 7. Why Is LoRA Efficient?
+
+A full weight matrix can be very large.
+
+Example:
+
+```text
+W
+
+4096 × 4096
+```
+
+Instead of training the complete matrix, LoRA uses a smaller rank.
+
+```text
+A
+
+4096 × 8
+
+
+B
+
+8 × 4096
+```
+
+Only the smaller matrices are trained.
+
+```text
+Large Model
+    ↓
+Freeze Original Weights
+    ↓
+Train LoRA Matrices
+    ↓
+Lower Memory Usage
+    ↓
+Faster Fine-Tuning
+```
+
+Benefits include:
+
+- Lower GPU memory requirements
+- Fewer trainable parameters
+- Faster training
+- Smaller adapter files
+- Base model can remain unchanged
+
+---
+
+# 8. Important LoRA Parameters
+
+## `r`
+
+The rank of the LoRA matrices.
+
+Example:
+
+```python
+r=8
+```
+
+A higher rank allows the adapter to learn more complex changes but increases the number of trainable parameters.
+
+Common small values include:
+
+```text
+4
+8
+16
+32
+```
+
+---
+
+## `lora_alpha`
+
+Controls the scaling of the LoRA update.
+
+Example:
+
+```python
+lora_alpha=16
+```
+
+The LoRA update is commonly scaled approximately by:
+
+```text
+alpha / r
+```
+
+For:
+
+```text
+r = 8
+alpha = 16
+```
+
+the scaling factor is:
+
+```text
+16 / 8 = 2
+```
+
+---
+
+## `lora_dropout`
+
+Applies dropout during LoRA training.
+
+Example:
+
+```python
+lora_dropout=0.05
+```
+
+Dropout can help reduce overfitting.
+
+---
+
+## `target_modules`
+
+Defines which model layers receive LoRA adapters.
+
+Example:
+
+```python
+target_modules=[
+    "q_proj",
+    "v_proj"
+]
+```
+
+These names depend on the architecture of the base model.
+
+Different models may use different module names.
+
+---
+
+# 9. Adapters
+
+Adapters are small trainable neural network components inserted into an existing pre-trained model.
+
+Conceptually:
+
+```text
+Input
+  ↓
+Transformer Layer
+  ↓
+Adapter
+  ↓
+Transformer Layer
+  ↓
+Adapter
+  ↓
+Output
+```
+
+The original model remains mostly frozen.
+
+Only the adapter components are trained.
+
+```text
+Base Model
+    ↓
+Frozen
+
+Adapters
+    ↓
+Trainable
+```
+
+Adapters allow multiple task-specific modules to be created for the same base model.
+
+```text
+Same Base Model
+      │
+      ├── Customer Support Adapter
+      │
+      ├── Medical Adapter
+      │
+      └── Programming Adapter
+```
+
+---
+
+# 10. LoRA vs Adapters
+
+| Feature | LoRA | Adapters |
+| --- | --- | --- |
+| Adds parameters | Low-rank matrices | Neural network layers |
+| Original model | Mostly frozen | Mostly frozen |
+| Memory efficient | Yes | Yes |
+| Common for LLMs | Very common | Common |
+| Training speed | Fast | Fast |
+| Storage | Small | Small |
+
+Both approaches are examples of parameter-efficient fine-tuning.
+
+---
+
+# 11. Preparing a Small Custom Dataset
+
+A fine-tuning dataset usually contains examples of:
+
+```text
+Input
+    ↓
+Expected Output
+```
+
+For instruction fine-tuning:
+
+```text
+Instruction
+    ↓
+Expected Response
+```
+
+Example:
+
+```json
+{
+    "instruction": "What is FAISS?",
+    "response": "FAISS is a library for efficient similarity search over vector embeddings."
+}
+```
+
+Another example:
+
+```json
+{
+    "instruction": "What are embeddings?",
+    "response": "Embeddings are numerical vector representations of data that capture semantic meaning."
+}
+```
+
+---
+
+# 12. Common Dataset Formats
+
+## JSON
+
+```json
+[
+    {
+        "instruction": "What is RAG?",
+        "response": "RAG retrieves relevant information before generating a response."
+    },
+    {
+        "instruction": "What is FAISS?",
+        "response": "FAISS performs efficient similarity search over vector embeddings."
+    }
+]
+```
+
+---
+
+## JSONL
+
+Each line contains one JSON object.
+
+```json
+{"instruction": "What is RAG?", "response": "RAG retrieves relevant information before generating a response."}
+{"instruction": "What is FAISS?", "response": "FAISS performs efficient similarity search over vector embeddings."}
+```
+
+JSONL is commonly used for larger datasets.
+
+---
+
+## CSV
+
+```text
+instruction,response
+What is RAG?,RAG retrieves relevant information before generating a response.
+What is FAISS?,FAISS performs similarity search over vector embeddings.
+```
+
+---
+
+# 13. Dataset Structure for Instruction Fine-Tuning
+
+A simple structure is:
+
+```text
+Instruction
+    +
+Input
+    ↓
+Expected Output
+```
+
+For example:
+
+```json
+{
+    "instruction": "Summarise the following text.",
+    "input": "FAISS is used for efficient similarity search.",
+    "output": "FAISS enables efficient similarity search."
+}
+```
+
+Another common structure is:
+
+```json
+{
+    "prompt": "What is RAG?",
+    "completion": "RAG retrieves relevant information before generating an answer."
+}
+```
+
+The exact format depends on the model and training pipeline.
+
+---
+
+# 14. Formatting Training Examples
+
+For a text-generation model, structured data is often converted into one training string.
+
+Example:
+
+```text
+Instruction:
+What is RAG?
+
+Response:
+RAG retrieves relevant information before generating a response.
+```
+
+Python example:
+
+```python
+def format_example(example):
+    return f"""
+Instruction:
+{example["instruction"]}
+
+Response:
+{example["response"]}
+"""
+```
+
+The goal is to make every training example follow a consistent format.
+
+```text
+Instruction
+    ↓
+Expected Response
+```
+
+Consistency helps the model learn the expected pattern.
+
+---
+
+# 15. Example Small Custom Dataset
+
+A file called `custom_data.json` could contain:
+
+```json
+[
+    {
+        "instruction": "What is RAG?",
+        "response": "RAG retrieves relevant information from a knowledge source and provides it to a language model before generating a response."
+    },
+    {
+        "instruction": "What is FAISS?",
+        "response": "FAISS is a library used for efficient similarity search over vector embeddings."
+    },
+    {
+        "instruction": "What are embeddings?",
+        "response": "Embeddings are numerical vector representations that capture the semantic meaning of data."
+    },
+    {
+        "instruction": "What is chunking?",
+        "response": "Chunking divides large documents into smaller pieces before processing or generating embeddings."
+    }
+]
+```
+
+For real fine-tuning, more examples are generally needed than this small demonstration dataset.
+
+---
+
+# 16. Dataset Splitting
+
+The dataset should usually be divided into:
+
+```text
+Complete Dataset
+       ↓
+       ├── Training Set
+       │       ↓
+       │    Model Learning
+       │
+       └── Validation Set
+               ↓
+            Model Evaluation
+```
+
+A common split is:
+
+```text
+80% Training
+20% Validation
+```
+
+Example:
+
+```text
+100 Examples
+
+80 → Training
+20 → Validation
+```
+
+For larger datasets, a test set can also be added.
+
+```text
+Training Set
+    ↓
+Model Learning
+
+Validation Set
+    ↓
+Hyperparameter Selection
+
+Test Set
+    ↓
+Final Evaluation
+```
+
+---
+
+# 17. Data Quality Is Important
+
+Fine-tuning quality depends heavily on the dataset.
+
+Poor data:
+
+```text
+Incorrect Information
+        +
+Inconsistent Format
+        +
+Duplicate Examples
+        ↓
+Poor Fine-Tuning Results
+```
+
+Good data:
+
+```text
+Accurate Information
+        +
+Consistent Formatting
+        +
+Relevant Examples
+        +
+High-Quality Responses
+        ↓
+Better Model Behavior
+```
+
+Important data preparation steps include:
+
+- Remove duplicates
+- Remove incorrect examples
+- Keep formatting consistent
+- Remove unnecessary text
+- Check for empty values
+- Ensure instructions match responses
+
+---
+
+# 18. Basic Fine-Tuning Workflow
+
+```text
+1. Choose Base Model
+        ↓
+2. Prepare Dataset
+        ↓
+3. Tokenize Data
+        ↓
+4. Configure LoRA
+        ↓
+5. Train LoRA Adapters
+        ↓
+6. Evaluate Model
+        ↓
+7. Save Adapter
+        ↓
+8. Load Model + Adapter
+        ↓
+9. Generate Responses
+```
+
+---
+
+# 19. Tokenization
+
+Language models do not directly process normal text.
+
+Text must first be converted into tokens.
+
+```text
+"What is RAG?"
+       ↓
+Tokenizer
+       ↓
+Token IDs
+```
+
+Example conceptually:
+
+```text
+"What"
+"is"
+"RAG"
+"?"
+```
+
+becomes:
+
+```text
+[1234, 567, 8910, 12]
+```
+
+The model processes token IDs instead of raw text.
+
+---
+
+# 20. Sequence Length
+
+Training examples must usually have a maximum token length.
+
+Example:
+
+```python
+max_length = 512
+```
+
+If text is longer than the limit, it may be truncated.
+
+```text
+Long Training Example
+        ↓
+Tokenizer
+        ↓
+Maximum Length
+        ↓
+Truncated Tokens
+```
+
+Choosing the sequence length affects:
+
+- Memory usage
+- Training speed
+- Amount of context available
+
+Longer sequences generally require more memory.
+
+---
+
+# 21. Important Training Parameters
+
+Common parameters include:
+
+```python
+learning_rate = 2e-4
+```
+
+Controls how much the trainable parameters change during each update.
+
+```python
+num_train_epochs = 3
+```
+
+Controls how many times the model sees the training dataset.
+
+```python
+per_device_train_batch_size = 2
+```
+
+Controls the number of examples processed together.
+
+```python
+gradient_accumulation_steps = 4
+```
+
+Allows gradients from multiple smaller batches to be accumulated before updating the model.
+
+Effective batch size is approximately:
+
+```text
+Batch Size × Gradient Accumulation Steps
+```
+
+Example:
+
+```text
+2 × 4 = 8
+```
+
+---
+
+# 22. Overfitting
+
+Overfitting happens when the model memorizes the training data instead of learning general patterns.
+
+```text
+Training Performance
+        ↑
+
+Validation Performance
+        ↓
+```
+
+Possible signs:
+
+- Training loss continues decreasing
+- Validation performance becomes worse
+- Model repeats training examples
+- Poor performance on new inputs
+
+Ways to reduce overfitting include:
+
+- More diverse data
+- Fewer training epochs
+- Dropout
+- Lower LoRA rank
+- Validation during training
+
+---
+
+# 23. Saving the LoRA Adapter
+
+One advantage of LoRA is that only the adapter weights need to be saved.
+
+```text
+Base Model
+Large File
+    +
+LoRA Adapter
+Small File
+```
+
+The base model does not need to be duplicated for every fine-tuned task.
+
+Example:
+
+```text
+Base Model
+
+    ├── Adapter for RAG
+    ├── Adapter for Customer Support
+    └── Adapter for Summarisation
+```
+
+During inference:
+
+```text
+Base Model
+    +
+Selected LoRA Adapter
+    ↓
+Fine-Tuned Behavior
+```
+
+---
+
+# 24. Important Fine-Tuning Concepts
+
+| Concept | Description |
+| --- | --- |
+| Base Model | Pre-trained model used as the starting point |
+| Fine-Tuning | Additional training on custom data |
+| PEFT | Efficient fine-tuning using fewer trainable parameters |
+| LoRA | Low-rank adaptation technique |
+| Adapter | Small trainable component added to a model |
+| Rank `r` | Size of the LoRA low-rank matrices |
+| `lora_alpha` | Scaling factor for LoRA updates |
+| Target Modules | Model layers where LoRA is applied |
+| Tokenizer | Converts text into token IDs |
+| Epoch | One complete pass through training data |
+| Batch | Group of examples processed together |
+| Learning Rate | Controls parameter update size |
+| Validation Set | Used to evaluate training performance |
+| Overfitting | Model memorizes training data |
+
+---
+
+# 25. Complete Architecture
+
+```text
+                 PRE-TRAINED MODEL
+
+                      Base LLM
+                         │
+                         │
+                  Freeze Weights
+                         │
+                         ▼
+
+                  LoRA / Adapters
+                         │
+                         │
+                 Train Parameters
+                         │
+                         ▲
+                         │
+                    Custom Dataset
+                         │
+                         │
+                    Tokenization
+                         │
+                         ▼
+
+                  Fine-Tuned Adapter
+                         │
+                         ▼
+
+                   Base Model
+                         +
+                   LoRA Adapter
+                         │
+                         ▼
+
+                  Custom Response
+```
+
+---
+
+# Summary
+
+Fine-tuning allows a pre-trained language model to adapt to a custom task or response pattern.
+
+Traditional fine-tuning:
+
+```text
+Pre-trained Model
+        ↓
+Update All Parameters
+        ↓
+Fine-Tuned Model
+```
+
+Parameter-efficient fine-tuning with LoRA:
+
+```text
+Pre-trained Model
+        ↓
+Freeze Most Parameters
+        +
+Train Small LoRA Matrices
+        ↓
+Efficient Fine-Tuned Model
+```
+
+The complete learning workflow is:
+
+```text
+Custom Documents or Data
+        ↓
+Prepare Training Examples
+        ↓
+Format Dataset
+        ↓
+Tokenization
+        ↓
+Choose Base Model
+        ↓
+Configure LoRA
+        ↓
+Fine-Tune
+        ↓
+Evaluate
+        ↓
+Save Adapter
+        ↓
+Load Base Model + Adapter
+        ↓
+Generate Responses
+```
+
+The key idea is:
+
+```text
+Fine-Tuning
+    ↓
+Teaches the model new behavior and patterns
+
+RAG
+    ↓
+Provides the model with external knowledge at runtime
+```

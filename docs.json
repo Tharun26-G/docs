@@ -346,6 +346,12 @@
               "rag-summary",
               "rag-summary-code"
             ]
+          },
+          {
+            "group": "Day 41",
+            "pages": [
+              "llm-finetune"
+            ]
           }
         ]
       }

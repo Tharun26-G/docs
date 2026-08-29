@@ -352,6 +352,12 @@
             "pages": [
               "llm-finetune"
             ]
+          },
+          {
+            "group": "Day 42",
+            "pages": [
+              "KB-assistant"
+            ]
           }
         ]
       }

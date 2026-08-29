@@ -1,0 +1,793 @@
+---
+title: "Knowledge‑Base Assistant"
+---
+
+## Project Goal
+
+Build a **domain-specific knowledge-base assistant** that can answer questions based on the content of a PDF.
+
+The system combines:
+
+1. **Retrieval** to find relevant PDF chunks.
+2. **A fine-tuned language model** to generate the answer.
+
+```text
+PDF Knowledge Base
+        ↓
+Text Extraction
+        ↓
+Chunking
+        ↓
+Embeddings
+        ↓
+FAISS Vector Store
+        ↓
+User Question
+        ↓
+Retriever
+        ↓
+Relevant PDF Chunks
+        ↓
+Fine-Tuned GPT-2
+        ↓
+Answer
+```
+
+The notebook can be named:
+
+```text
+kb_assistant.ipynb
+```
+
+---
+
+# 1. Project Structure
+
+```text
+Day 42 - Knowledge Base Assistant/
+│
+├── kb_assistant.ipynb
+├── document.pdf
+│
+├── finetuned_gpt2/
+│   ├── config.json
+│   ├── model.safetensors
+│   ├── tokenizer.json
+│   └── ...
+```
+
+The project assumes that `document.pdf` is used as the knowledge source and the fine-tuned GPT-2 model from the previous exercise is stored in `finetuned_gpt2`.
+
+---
+
+# 2. Install Required Libraries
+
+Run this cell first.
+
+```python
+!pip install pymupdf
+!pip install langchain-community
+!pip install langchain-huggingface
+!pip install langchain-text-splitters
+!pip install sentence-transformers
+!pip install faiss-cpu
+!pip install transformers
+!pip install torch
+```
+
+---
+
+# 3. Import Libraries
+
+```python
+import fitz
+
+from transformers import pipeline
+
+from langchain_core.documents import Document
+
+from langchain_community.vectorstores import FAISS
+
+from langchain_huggingface import (
+    HuggingFaceEmbeddings,
+    HuggingFacePipeline
+)
+
+from langchain_text_splitters import (
+    RecursiveCharacterTextSplitter
+)
+
+from langchain_core.prompts import PromptTemplate
+
+from langchain_core.output_parsers import (
+    StrOutputParser
+)
+```
+
+### Purpose of each library
+
+| Library | Purpose |
+| --- | --- |
+| `fitz` | Extract text from the PDF |
+| `Document` | Store text as LangChain documents |
+| `RecursiveCharacterTextSplitter` | Split PDF text into chunks |
+| `HuggingFaceEmbeddings` | Generate embeddings |
+| `FAISS` | Store and search vectors |
+| `pipeline` | Load the Hugging Face model |
+| `HuggingFacePipeline` | Use the model with LangChain |
+| `PromptTemplate` | Create the answer prompt |
+| `StrOutputParser` | Extract the generated text |
+
+---
+
+# 4. Define the PDF Path
+
+```python
+PDF_PATH = "document.pdf"
+```
+
+The PDF should be placed in the same directory as the notebook.
+
+```text
+kb_assistant.ipynb
+document.pdf
+```
+
+---
+
+# 5. Extract Text From the PDF
+
+```python
+def extract_text_from_pdf(pdf_path):
+    pdf = fitz.open(pdf_path)
+
+    text = ""
+
+    for page in pdf:
+        text += page.get_text()
+
+    pdf.close()
+
+    return text
+```
+
+Extract the text:
+
+```python
+pdf_text = extract_text_from_pdf(PDF_PATH)
+
+print("Total characters:", len(pdf_text))
+
+print("\nFirst 500 characters:\n")
+
+print(pdf_text[:500])
+```
+
+The process is:
+
+```text
+PDF
+ ↓
+Page 1 ─┐
+Page 2 ─┤
+Page 3 ─┤
+...     ├──→ Complete Text
+Page N ─┘
+```
+
+---
+
+# 6. Convert PDF Text Into a Document
+
+```python
+documents = [
+    Document(
+        page_content=pdf_text
+    )
+]
+```
+
+LangChain components work with `Document` objects.
+
+```text
+Raw PDF Text
+      ↓
+LangChain Document
+```
+
+---
+
+# 7. Split the PDF Into Chunks
+
+```python
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=100
+)
+
+chunks = text_splitter.split_documents(
+    documents
+)
+
+print("Number of chunks:", len(chunks))
+```
+
+Example:
+
+```text
+PDF Text
+    ↓
+Chunking
+
+Chunk 1
+────────────
+Chunk 2
+────────────
+Chunk 3
+────────────
+Chunk 4
+```
+
+The overlap helps preserve information between chunks.
+
+```text
+Chunk 1
+
+A B C D E F G
+
+
+Chunk 2
+
+F G H I J K
+```
+
+---
+
+# 8. Display the First Few Chunks
+
+```python
+for index, chunk in enumerate(
+    chunks[:3],
+    start=1
+):
+    print(f"\nChunk {index}")
+    print(chunk.page_content)
+```
+
+This helps verify that the PDF text was extracted and split correctly.
+
+---
+
+# 9. Load the Embedding Model
+
+```python
+embeddings = HuggingFaceEmbeddings(
+    model_name="all-MiniLM-L6-v2"
+)
+```
+
+The embedding model converts each chunk into a numerical vector.
+
+```text
+Chunk Text
+     ↓
+Embedding Model
+     ↓
+Vector
+
+[0.12, -0.43, 0.78, ...]
+```
+
+---
+
+# 10. Create the FAISS Vector Store
+
+```python
+vector_store = FAISS.from_documents(
+    chunks,
+    embeddings
+)
+```
+
+The process is:
+
+```text
+PDF Chunks
+    ↓
+Embeddings
+    ↓
+FAISS Index
+```
+
+---
+
+# 11. Create the Retriever
+
+```python
+retriever = vector_store.as_retriever(
+    search_kwargs={"k": 3}
+)
+```
+
+`k=3` means the system retrieves the three most relevant chunks.
+
+```text
+User Question
+      ↓
+Embedding
+      ↓
+FAISS Similarity Search
+      ↓
+Top 3 Relevant Chunks
+```
+
+---
+
+# 12. Load the Fine-Tuned GPT-2 Model
+
+This uses the model created in `llm_finetune.py`.
+
+```python
+hf_pipeline = pipeline(
+    task="text-generation",
+    model="./finetuned_gpt2",
+    tokenizer="./finetuned_gpt2",
+    max_new_tokens=150,
+    do_sample=False
+)
+```
+
+Convert it into a LangChain LLM:
+
+```python
+llm = HuggingFacePipeline(
+    pipeline=hf_pipeline
+)
+```
+
+Architecture:
+
+```text
+Fine-Tuned GPT-2
+       ↓
+Transformers Pipeline
+       ↓
+HuggingFacePipeline
+       ↓
+LangChain LLM
+```
+
+---
+
+# 13. Create the Knowledge-Base Prompt
+
+```python
+prompt = PromptTemplate.from_template("""
+Answer the question using only the information
+provided in the context.
+
+If the answer cannot be found in the context, say:
+
+"I could not find the answer in the knowledge base."
+
+Context:
+
+{context}
+
+Question:
+
+{question}
+
+Answer:
+""")
+```
+
+The prompt is important because it attempts to keep the answer grounded in the retrieved PDF content.
+
+---
+
+# 14. Create the Output Parser
+
+```python
+output_parser = StrOutputParser()
+```
+
+The output parser extracts the final generated text.
+
+---
+
+# 15. Build the Knowledge-Base Chain
+
+```python
+chain = prompt | llm | output_parser
+```
+
+The flow is:
+
+```text
+Prompt
+   ↓
+Fine-Tuned LLM
+   ↓
+Output Parser
+   ↓
+Final Answer
+```
+
+---
+
+# 16. Ask a Question
+
+```python
+question = input(
+    "\nAsk a question about the PDF: "
+)
+```
+
+Example:
+
+```text
+Ask a question about the PDF:
+
+What is Retrieval-Augmented Generation?
+```
+
+---
+
+# 17. Retrieve Relevant PDF Chunks
+
+```python
+retrieved_documents = retriever.invoke(
+    question
+)
+```
+
+Display the retrieved chunks:
+
+```python
+print("\nRetrieved Documents:")
+
+for rank, document in enumerate(
+    retrieved_documents,
+    start=1
+):
+    print(f"\nRank {rank}")
+    print(document.page_content)
+```
+
+This is an important debugging step.
+
+It shows exactly what information is being sent to the language model.
+
+---
+
+# 18. Combine Retrieved Chunks Into Context
+
+```python
+context = "\n\n".join(
+    document.page_content
+    for document in retrieved_documents
+)
+```
+
+Example:
+
+```text
+Retrieved Chunk 1
+
+RAG retrieves relevant information before generation.
+
+
+Retrieved Chunk 2
+
+Embeddings convert text into numerical vectors.
+
+
+Retrieved Chunk 3
+
+FAISS performs similarity search.
+```
+
+These chunks become the context.
+
+---
+
+# 19. Generate the Answer
+
+```python
+response = chain.invoke(
+    {
+        "context": context,
+        "question": question
+    }
+)
+```
+
+Print the result:
+
+```python
+print("\nAnswer:")
+
+print(response)
+```
+
+---
+
+# Complete `kb_assistant.ipynb` Code
+
+The following can be placed into the notebook as separate cells or run as a complete script.
+
+```python
+import fitz
+
+from transformers import pipeline
+
+from langchain_core.documents import Document
+from langchain_community.vectorstores import FAISS
+
+from langchain_huggingface import (
+    HuggingFaceEmbeddings,
+    HuggingFacePipeline
+)
+
+from langchain_text_splitters import (
+    RecursiveCharacterTextSplitter
+)
+
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+
+# 1. Define the PDF path
+
+PDF_PATH = "document.pdf"
+
+
+# 2. Extract text from the PDF
+
+def extract_text_from_pdf(pdf_path):
+    pdf = fitz.open(pdf_path)
+
+    text = ""
+
+    for page in pdf:
+        text += page.get_text()
+
+    pdf.close()
+
+    return text
+
+
+pdf_text = extract_text_from_pdf(
+    PDF_PATH
+)
+
+print("Total characters:", len(pdf_text))
+
+
+# 3. Convert PDF text into a document
+
+documents = [
+    Document(
+        page_content=pdf_text
+    )
+]
+
+
+# 4. Create a text splitter
+
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=100
+)
+
+
+# 5. Split the document into chunks
+
+chunks = text_splitter.split_documents(
+    documents
+)
+
+print("Number of chunks:", len(chunks))
+
+
+# 6. Load the embedding model
+
+embeddings = HuggingFaceEmbeddings(
+    model_name="all-MiniLM-L6-v2"
+)
+
+
+# 7. Create the FAISS vector store
+
+vector_store = FAISS.from_documents(
+    chunks,
+    embeddings
+)
+
+
+# 8. Create the retriever
+
+retriever = vector_store.as_retriever(
+    search_kwargs={"k": 3}
+)
+
+
+# 9. Load the fine-tuned GPT-2 model
+
+hf_pipeline = pipeline(
+    task="text-generation",
+    model="./finetuned_gpt2",
+    tokenizer="./finetuned_gpt2",
+    max_new_tokens=150,
+    do_sample=False
+)
+
+
+# 10. Convert the pipeline into a LangChain LLM
+
+llm = HuggingFacePipeline(
+    pipeline=hf_pipeline
+)
+
+
+# 11. Create the prompt
+
+prompt = PromptTemplate.from_template("""
+Answer the question using only the provided context.
+
+If the answer cannot be found in the context, say:
+
+I could not find the answer in the knowledge base.
+
+Context:
+
+{context}
+
+Question:
+
+{question}
+
+Answer:
+""")
+
+
+# 12. Create the output parser
+
+output_parser = StrOutputParser()
+
+
+# 13. Build the chain
+
+chain = prompt | llm | output_parser
+
+
+# 14. Ask a question
+
+question = input(
+    "\nAsk a question about the PDF: "
+)
+
+
+# 15. Retrieve relevant chunks
+
+retrieved_documents = retriever.invoke(
+    question
+)
+
+
+# 16. Display retrieved documents
+
+print("\nRetrieved Documents:")
+
+for rank, document in enumerate(
+    retrieved_documents,
+    start=1
+):
+    print(f"\nRank {rank}")
+    print(document.page_content)
+
+
+# 17. Combine chunks into context
+
+context = "\n\n".join(
+    document.page_content
+    for document in retrieved_documents
+)
+
+
+# 18. Generate the answer
+
+response = chain.invoke(
+    {
+        "context": context,
+        "question": question
+    }
+)
+
+
+# 19. Print the final answer
+
+print("\nFinal Answer:")
+
+print(response)
+```
+
+# Complete System Architecture
+
+```text
+                    KNOWLEDGE BASE
+
+                        PDF
+                         │
+                         ▼
+                  Text Extraction
+                         │
+                         ▼
+                     Chunking
+                         │
+                         ▼
+                    Embeddings
+                         │
+                         ▼
+                   FAISS Index
+                         │
+                         │
+                  ┌──────┴──────┐
+                  │             │
+                  │             │
+              User Question     │
+                  │             │
+                  ▼             │
+           Query Embedding      │
+                  │             │
+                  ▼             │
+             Similarity Search ◄┘
+                  │
+                  ▼
+          Relevant PDF Chunks
+                  │
+                  ▼
+             Build Context
+                  │
+                  ▼
+        Fine-Tuned GPT-2 Model
+                  │
+                  ▼
+              Final Answer
+```
+
+# Important Concepts Covered
+
+| Concept | Usage |
+| --- | --- |
+| PDF Extraction | Reads the knowledge source |
+| Chunking | Divides the PDF into smaller pieces |
+| Chunk Overlap | Preserves context between chunks |
+| Embeddings | Converts text into vectors |
+| FAISS | Stores and searches vectors |
+| Retriever | Finds relevant PDF chunks |
+| Fine-Tuned LLM | Generates domain-adapted responses |
+| Prompt Engineering | Controls answer generation |
+| Context Grounding | Uses retrieved information |
+| RAG | Combines retrieval and generation |
+
+## Final Learning Flow
+
+```text
+Fine-Tuning
+    ↓
+Adapt the model's behavior
+
+        +
+
+RAG
+    ↓
+Provide relevant knowledge
+
+        =
+
+Knowledge-Base Assistant
+```
+
+A practical note: the architecture is correct for learning retrieval plus generation, but a small GPT-2 model fine-tuned on only a 10-page PDF may not reliably follow instructions or answer questions. Retrieval will still work, but answer quality can be limited by the generator. For stronger results without an API, a small instruction-following local model is generally a better replacement for GPT-2.

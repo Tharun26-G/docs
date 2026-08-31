@@ -358,6 +358,12 @@
             "pages": [
               "KB-assistant"
             ]
+          },
+          {
+            "group": "Day 43",
+            "pages": [
+              "docker"
+            ]
           }
         ]
       }

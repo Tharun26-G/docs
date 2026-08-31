@@ -1,0 +1,1736 @@
+---
+title: "Docker Basics"
+---
+
+## Overview
+
+**Docker** is a platform for building, packaging, and running applications inside isolated environments called **containers**.
+
+Docker helps solve the common problem:
+
+> "The application works on my machine but not on another machine."
+
+A container packages the application along with its dependencies and configuration.
+
+```text
+Application
+    +
+Dependencies
+    +
+Runtime
+    +
+Configuration
+    ↓
+Docker Container
+```
+
+---
+
+# 1. Why Docker?
+
+Without Docker:
+
+```text
+Developer Machine
+    ↓
+Python Version
+Libraries
+Operating System Differences
+Environment Variables
+    ↓
+Application Issues
+```
+
+With Docker:
+
+```text
+Application
+    +
+Dependencies
+    +
+Docker Image
+    ↓
+Runs Consistently
+```
+
+Benefits:
+
+- Consistent environments
+- Easy application deployment
+- Dependency isolation
+- Portability
+- Faster setup
+- Reproducible builds
+- Easy scaling
+- Better development and deployment workflows
+
+---
+
+# 2. Important Docker Concepts
+
+The main Docker concepts are:
+
+```text
+Dockerfile
+    ↓
+Docker Build
+    ↓
+Docker Image
+    ↓
+Docker Run
+    ↓
+Docker Container
+```
+
+| Concept | Description |
+| --- | --- |
+| Dockerfile | Instructions for building an image |
+| Image | Read-only application template |
+| Container | Running instance of an image |
+| Docker Engine | Runs and manages containers |
+| Docker Hub | Registry for Docker images |
+| Volume | Persistent data storage |
+| Network | Communication between containers |
+| Docker Compose | Run multi-container applications |
+| Registry | Storage location for Docker images |
+
+---
+
+# 3. Docker Architecture
+
+Docker follows a client-server architecture.
+
+```text
+Docker Client
+     │
+     │ Commands
+     ▼
+Docker Engine
+     │
+     ├── Images
+     │
+     ├── Containers
+     │
+     ├── Networks
+     │
+     └── Volumes
+```
+
+Example command:
+
+```bash
+docker run hello-world
+```
+
+The Docker client sends the command to the Docker Engine.
+
+The engine:
+
+1. Checks whether the image exists locally.
+2. Downloads the image if necessary.
+3. Creates a container.
+4. Runs the container.
+
+---
+
+# 4. Docker Image
+
+A **Docker image** is a packaged template containing everything required to run an application.
+
+Example:
+
+```text
+Docker Image
+
+├── Operating System Components
+├── Runtime
+├── Libraries
+├── Dependencies
+└── Application Code
+```
+
+Images are immutable.
+
+A Docker image can create multiple containers.
+
+```text
+        Docker Image
+             │
+      ┌──────┼──────┐
+      ▼      ▼      ▼
+Container Container Container
+```
+
+Example:
+
+```bash
+docker images
+```
+
+---
+
+# 5. Docker Container
+
+A **container** is a running instance of a Docker image.
+
+```text
+Docker Image
+      ↓
+docker run
+      ↓
+Docker Container
+```
+
+Example:
+
+```bash
+docker run hello-world
+```
+
+Useful commands:
+
+```bash
+docker ps
+```
+
+Shows running containers.
+
+```bash
+docker ps -a
+```
+
+Shows all containers, including stopped containers.
+
+---
+
+# 6. Dockerfile
+
+A **Dockerfile** is a text file containing instructions for building a Docker image.
+
+Example:
+
+```dockerfile
+FROM python:3.11
+
+WORKDIR /app
+
+COPY . .
+
+RUN pip install -r requirements.txt
+
+CMD ["python", "app.py"]
+```
+
+The Dockerfile tells Docker:
+
+```text
+Start with Python
+      ↓
+Create Working Directory
+      ↓
+Copy Application Files
+      ↓
+Install Dependencies
+      ↓
+Run Application
+```
+
+---
+
+# 7. Important Dockerfile Instructions
+
+## `FROM`
+
+Defines the base image.
+
+```dockerfile
+FROM python:3.11
+```
+
+Example:
+
+```text
+Base Image
+    ↓
+Python Runtime
+```
+
+Other examples:
+
+```dockerfile
+FROM node:20
+```
+
+```dockerfile
+FROM ubuntu:22.04
+```
+
+Every Dockerfile usually starts with a `FROM` instruction.
+
+---
+
+## `WORKDIR`
+
+Sets the working directory inside the container.
+
+```dockerfile
+WORKDIR /app
+```
+
+After this:
+
+```text
+Container
+│
+└── app/
+```
+
+Commands run relative to this directory.
+
+---
+
+## `COPY`
+
+Copies files from the local machine into the container.
+
+```dockerfile
+COPY . .
+```
+
+Conceptually:
+
+```text
+Local Machine
+    ↓
+Application Files
+    ↓
+Container /app
+```
+
+A more optimized approach:
+
+```dockerfile
+COPY requirements.txt .
+COPY app.py .
+```
+
+---
+
+## `RUN`
+
+Executes commands while building the image.
+
+```dockerfile
+RUN pip install -r requirements.txt
+```
+
+Other examples:
+
+```dockerfile
+RUN apt-get update
+```
+
+```dockerfile
+RUN mkdir data
+```
+
+`RUN` executes during:
+
+```text
+docker build
+```
+
+---
+
+## `CMD`
+
+Defines the default command when the container starts.
+
+```dockerfile
+CMD ["python", "app.py"]
+```
+
+`CMD` executes when:
+
+```text
+docker run
+```
+
+---
+
+## `EXPOSE`
+
+Documents the port used by the application.
+
+```dockerfile
+EXPOSE 8000
+```
+
+For example:
+
+```text
+Container Application
+        │
+        │ Port 8000
+        ▼
+EXPOSE 8000
+```
+
+Important: `EXPOSE` does not automatically publish the port to the host.
+
+Port publishing requires:
+
+```bash
+docker run -p 8000:8000 image-name
+```
+
+---
+
+## `ENV`
+
+Sets environment variables.
+
+```dockerfile
+ENV APP_ENV=production
+```
+
+Example usage:
+
+```python
+import os
+
+environment = os.getenv("APP_ENV")
+```
+
+---
+
+## `ARG`
+
+Defines build-time variables.
+
+```dockerfile
+ARG PYTHON_VERSION=3.11
+```
+
+Example:
+
+```dockerfile
+FROM python:${PYTHON_VERSION}
+```
+
+Difference:
+
+| `ARG` | `ENV` |
+| --- | --- |
+| Build time | Runtime |
+| Available during image build | Available inside container |
+| Can configure builds | Can configure applications |
+
+---
+
+# 8. Dockerfile Example
+
+A basic Python application:
+
+### `app.py`
+
+```python
+print("Hello from Docker!")
+```
+
+### `Dockerfile`
+
+```dockerfile
+FROM python:3.11
+
+WORKDIR /app
+
+COPY app.py .
+
+CMD ["python", "app.py"]
+```
+
+Build:
+
+```bash
+docker build -t hello-python .
+```
+
+Run:
+
+```bash
+docker run hello-python
+```
+
+Output:
+
+```text
+Hello from Docker!
+```
+
+---
+
+# 9. Building an Image Locally
+
+The basic command is:
+
+```bash
+docker build -t image-name .
+```
+
+Example:
+
+```bash
+docker build -t my-python-app .
+```
+
+Breaking it down:
+
+```text
+docker build
+    ↓
+Build an image
+
+-t
+    ↓
+Assign a tag
+
+my-python-app
+    ↓
+Image name
+
+.
+    ↓
+Current directory as build context
+```
+
+The workflow:
+
+```text
+Dockerfile
+    ↓
+docker build
+    ↓
+Docker Image
+```
+
+Check images:
+
+```bash
+docker images
+```
+
+---
+
+# 10. Running a Docker Image
+
+Run an image:
+
+```bash
+docker run my-python-app
+```
+
+Run with a custom container name:
+
+```bash
+docker run --name my-container my-python-app
+```
+
+Run in detached mode:
+
+```bash
+docker run -d my-python-app
+```
+
+Detached mode means the container runs in the background.
+
+---
+
+# 11. Docker Layers
+
+One of the most important Docker concepts is **layers**.
+
+Each Dockerfile instruction generally creates a layer.
+
+Example:
+
+```dockerfile
+FROM python:3.11
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY . .
+
+CMD ["python", "app.py"]
+```
+
+Conceptually:
+
+```text
+Layer 1
+FROM python:3.11
+       ↓
+Layer 2
+WORKDIR /app
+       ↓
+Layer 3
+COPY requirements.txt
+       ↓
+Layer 4
+RUN pip install
+       ↓
+Layer 5
+COPY application
+       ↓
+Layer 6
+CMD
+```
+
+Docker combines these layers into an image.
+
+---
+
+# 12. Docker Layer Caching
+
+Docker caches previously built layers.
+
+Suppose this Dockerfile exists:
+
+```dockerfile
+FROM python:3.11
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY . .
+
+CMD ["python", "app.py"]
+```
+
+During the first build:
+
+```text
+Build Layer 1
+Build Layer 2
+Build Layer 3
+Build Layer 4
+Build Layer 5
+```
+
+During the next build, Docker checks whether instructions and files have changed.
+
+```text
+Layer 1 → Cached
+Layer 2 → Cached
+Layer 3 → Cached
+Layer 4 → Cached
+Layer 5 → Rebuild if changed
+```
+
+This makes builds faster.
+
+---
+
+# 13. Why Dockerfile Order Matters
+
+Consider this Dockerfile:
+
+```dockerfile
+FROM python:3.11
+
+WORKDIR /app
+
+COPY . .
+
+RUN pip install -r requirements.txt
+
+CMD ["python", "app.py"]
+```
+
+If any application file changes:
+
+```text
+COPY . .
+    ↓
+Layer Changed
+    ↓
+RUN pip install
+    ↓
+Runs Again
+```
+
+This is inefficient.
+
+A better version:
+
+```dockerfile
+FROM python:3.11
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY . .
+
+CMD ["python", "app.py"]
+```
+
+Now:
+
+```text
+Application Code Changes
+        ↓
+Dependency Layer
+        ↓
+Cached
+        ↓
+Only Application Layer Rebuilds
+```
+
+This is an important Docker optimization technique.
+
+---
+
+# 14. `.dockerignore`
+
+A `.dockerignore` file prevents unnecessary files from being copied into the Docker build context.
+
+Example:
+
+```text
+__pycache__/
+*.pyc
+.env
+.git/
+venv/
+node_modules/
+```
+
+Without `.dockerignore`:
+
+```text
+Project Folder
+    ↓
+Everything Sent to Docker
+```
+
+With `.dockerignore`:
+
+```text
+Project Folder
+    ↓
+Ignore Unnecessary Files
+    ↓
+Smaller Build Context
+    ↓
+Faster Build
+```
+
+Benefits:
+
+- Smaller images
+- Faster builds
+- Prevent accidental copying of secrets
+- Better caching
+
+---
+
+# 15. Docker Image Tags
+
+Images can have tags.
+
+Example:
+
+```bash
+docker build -t my-app:1.0 .
+```
+
+Format:
+
+```text
+image-name:tag
+```
+
+Examples:
+
+```text
+my-app:latest
+my-app:1.0
+my-app:2.0
+python:3.11
+```
+
+If no tag is specified:
+
+```text
+latest
+```
+
+is generally used by default.
+
+---
+
+# 16. Container Lifecycle
+
+A container has different states.
+
+```text
+Created
+   ↓
+Running
+   ↓
+Stopped
+   ↓
+Removed
+```
+
+Commands:
+
+Create and start:
+
+```bash
+docker run my-app
+```
+
+Stop:
+
+```bash
+docker stop container-id
+```
+
+Start again:
+
+```bash
+docker start container-id
+```
+
+Restart:
+
+```bash
+docker restart container-id
+```
+
+Remove:
+
+```bash
+docker rm container-id
+```
+
+Remove a running container:
+
+```bash
+docker rm -f container-id
+```
+
+---
+
+# 17. Useful Container Commands
+
+List running containers:
+
+```bash
+docker ps
+```
+
+List all containers:
+
+```bash
+docker ps -a
+```
+
+View logs:
+
+```bash
+docker logs container-id
+```
+
+Follow logs:
+
+```bash
+docker logs -f container-id
+```
+
+Open a shell:
+
+```bash
+docker exec -it container-id bash
+```
+
+For smaller images:
+
+```bash
+docker exec -it container-id sh
+```
+
+Inspect container details:
+
+```bash
+docker inspect container-id
+```
+
+---
+
+# 18. Port Mapping
+
+Containers have their own network environment.
+
+Suppose a web application runs on:
+
+```text
+Container Port: 8000
+```
+
+To access it from the host:
+
+```bash
+docker run -p 8000:8000 my-app
+```
+
+Format:
+
+```text
+Host Port : Container Port
+```
+
+Example:
+
+```text
+Browser
+   ↓
+localhost:8000
+   ↓
+Host Port 8000
+   ↓
+Container Port 8000
+   ↓
+Application
+```
+
+Another example:
+
+```bash
+docker run -p 8080:8000 my-app
+```
+
+```text
+localhost:8080
+       ↓
+Container:8000
+```
+
+---
+
+# 19. Volumes
+
+Containers are designed to be temporary.
+
+Data inside a container may disappear when the container is removed.
+
+Docker volumes provide persistent storage.
+
+```text
+Container
+    │
+    ▼
+Docker Volume
+    │
+    ▼
+Persistent Data
+```
+
+Create a volume:
+
+```bash
+docker volume create my-data
+```
+
+Use it:
+
+```bash
+docker run -v my-data:/app/data my-app
+```
+
+Example:
+
+```text
+Docker Container
+       │
+       ▼
+/app/data
+       │
+       ▼
+Docker Volume
+       │
+       ▼
+Persistent Storage
+```
+
+---
+
+# 20. Bind Mounts
+
+A bind mount connects a local directory to a container directory.
+
+Example:
+
+```bash
+docker run -v $(pwd):/app my-app
+```
+
+Conceptually:
+
+```text
+Local Project Folder
+        │
+        ▼
+Mounted Into
+        │
+        ▼
+Container /app
+```
+
+This is commonly used during development.
+
+---
+
+# 21. Docker Networking
+
+Docker containers can communicate through networks.
+
+Create a network:
+
+```bash
+docker network create app-network
+```
+
+Run containers:
+
+```bash
+docker run --network app-network --name database postgres
+```
+
+```bash
+docker run --network app-network --name backend my-backend
+```
+
+Architecture:
+
+```text
+Backend Container
+       │
+       │ Docker Network
+       ▼
+Database Container
+```
+
+Containers in the same network can communicate using container names.
+
+Example:
+
+```text
+backend
+   ↓
+database
+```
+
+---
+
+# 22. Docker Compose
+
+Docker Compose is used to manage multi-container applications.
+
+Example architecture:
+
+```text
+Frontend
+    │
+    ▼
+Backend
+    │
+    ▼
+Database
+```
+
+Instead of running multiple commands manually, Docker Compose defines services in one configuration file.
+
+Example `compose.yaml`:
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+
+  database:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: password
+```
+
+Start all services:
+
+```bash
+docker compose up
+```
+
+Run in background:
+
+```bash
+docker compose up -d
+```
+
+Stop:
+
+```bash
+docker compose down
+```
+
+---
+
+# 23. Docker Registry
+
+A registry stores Docker images.
+
+The common workflow:
+
+```text
+Dockerfile
+    ↓
+Build Image
+    ↓
+Local Image
+    ↓
+Push
+    ↓
+Docker Registry
+    ↓
+Pull
+    ↓
+Server
+```
+
+Examples of registries include [Docker Hub](https://hub.docker.com/?utm_source=chatgpt.com) and private container registries.
+
+Basic commands:
+
+```bash
+docker login
+```
+
+```bash
+docker push username/image-name:tag
+```
+
+```bash
+docker pull username/image-name:tag
+```
+
+---
+
+# 24. Multi-Stage Builds
+
+Multi-stage builds help reduce final image size.
+
+Example:
+
+```dockerfile
+FROM node:20 AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+
+FROM nginx:alpine
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+```
+
+Architecture:
+
+```text
+Build Stage
+    ↓
+Install Dependencies
+    ↓
+Build Application
+    ↓
+Copy Only Final Output
+    ↓
+Production Image
+```
+
+Benefits:
+
+- Smaller production images
+- Fewer unnecessary dependencies
+- Improved security
+- Faster deployment
+
+---
+
+# 25. Image Size Optimization
+
+Large images can cause:
+
+- Slow builds
+- Slow downloads
+- More storage usage
+- Larger attack surface
+
+Best practices:
+
+### Use smaller base images
+
+```dockerfile
+FROM python:3.11-slim
+```
+
+instead of unnecessarily large images.
+
+### Use `.dockerignore`
+
+Avoid copying:
+
+```text
+venv/
+.git/
+__pycache__/
+node_modules/
+```
+
+### Remove unnecessary dependencies
+
+Install only required packages.
+
+### Use multi-stage builds
+
+Keep build dependencies out of production images.
+
+---
+
+# 26. Docker Environment Variables
+
+Environment variables help configure applications.
+
+Example:
+
+```bash
+docker run -e APP_ENV=production my-app
+```
+
+Inside Python:
+
+```python
+import os
+
+environment = os.getenv("APP_ENV")
+
+print(environment)
+```
+
+Using an environment file:
+
+```bash
+docker run --env-file .env my-app
+```
+
+Example `.env`:
+
+```text
+DATABASE_URL=database-url
+APP_ENV=development
+```
+
+Important: secrets should not be permanently copied into Docker images.
+
+---
+
+# 27. Docker Image vs Container
+
+| Docker Image | Docker Container |
+| --- | --- |
+| Blueprint | Running instance |
+| Read-only template | Executable environment |
+| Created using Dockerfile | Created from an image |
+| Can create multiple containers | Runs application |
+| Immutable layers | Writable container layer |
+
+Example:
+
+```text
+Dockerfile
+    ↓
+Image
+    ↓
+Container 1
+
+    ↓
+Container 2
+
+    ↓
+Container 3
+```
+
+---
+
+# 28. `RUN` vs `CMD` vs `ENTRYPOINT`
+
+These instructions are commonly confused.
+
+## `RUN`
+
+Executes during image build.
+
+```dockerfile
+RUN pip install -r requirements.txt
+```
+
+```text
+docker build
+     ↓
+RUN executes
+```
+
+---
+
+## `CMD`
+
+Defines the default command when a container starts.
+
+```dockerfile
+CMD ["python", "app.py"]
+```
+
+```text
+docker run
+     ↓
+CMD executes
+```
+
+---
+
+## `ENTRYPOINT`
+
+Defines the main executable for the container.
+
+```dockerfile
+ENTRYPOINT ["python"]
+CMD ["app.py"]
+```
+
+Result:
+
+```text
+python app.py
+```
+
+Comparison:
+
+| Instruction | Purpose |
+| --- | --- |
+| `RUN` | Execute during build |
+| `CMD` | Default runtime command |
+| `ENTRYPOINT` | Main container executable |
+
+---
+
+# 29. Docker Build Context
+
+The build context is the set of files Docker can access during a build.
+
+Example:
+
+```bash
+docker build -t my-app .
+```
+
+The `.` means:
+
+```text
+Current Directory
+       ↓
+Docker Build Context
+```
+
+Docker sends files from the build context to the Docker Engine.
+
+This is why `.dockerignore` is important.
+
+---
+
+# 30. Docker Caching Best Practices
+
+Consider dependencies:
+
+```dockerfile
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+```
+
+Then application code:
+
+```dockerfile
+COPY . .
+```
+
+Recommended order:
+
+```text
+Rarely Changing Files
+        ↓
+Dependency Installation
+        ↓
+Frequently Changing Files
+```
+
+This maximizes Docker layer caching.
+
+---
+
+# 31. Basic Docker Workflow
+
+A typical development workflow:
+
+```text
+Write Application
+       ↓
+Create requirements.txt
+       ↓
+Create Dockerfile
+       ↓
+Build Image
+       ↓
+Run Container
+       ↓
+Test Application
+       ↓
+Push Image
+       ↓
+Deploy
+```
+
+Commands:
+
+```bash
+docker build -t my-app .
+```
+
+```bash
+docker run my-app
+```
+
+```bash
+docker ps
+```
+
+```bash
+docker logs container-id
+```
+
+---
+
+# 32. Common Docker Commands Cheat Sheet
+
+## Images
+
+```bash
+docker images
+```
+
+```bash
+docker build -t my-app .
+```
+
+```bash
+docker pull python:3.11
+```
+
+```bash
+docker rmi image-id
+```
+
+---
+
+## Containers
+
+```bash
+docker run my-app
+```
+
+```bash
+docker run -d my-app
+```
+
+```bash
+docker ps
+```
+
+```bash
+docker ps -a
+```
+
+```bash
+docker stop container-id
+```
+
+```bash
+docker start container-id
+```
+
+```bash
+docker restart container-id
+```
+
+```bash
+docker rm container-id
+```
+
+---
+
+## Logs and Debugging
+
+```bash
+docker logs container-id
+```
+
+```bash
+docker logs -f container-id
+```
+
+```bash
+docker exec -it container-id bash
+```
+
+```bash
+docker inspect container-id
+```
+
+---
+
+## Cleanup
+
+Remove stopped containers:
+
+```bash
+docker container prune
+```
+
+Remove unused images:
+
+```bash
+docker image prune
+```
+
+Remove unused resources:
+
+```bash
+docker system prune
+```
+
+Use caution:
+
+```bash
+docker system prune -a
+```
+
+This can remove unused images and other Docker resources.
+
+---
+
+# 33. Docker Security Basics
+
+Important practices:
+
+- Use trusted base images.
+- Keep base images updated.
+- Do not store secrets inside Dockerfiles.
+- Use `.dockerignore`.
+- Run containers with minimal permissions.
+- Avoid running applications as root when possible.
+- Keep images small.
+- Scan images for vulnerabilities.
+
+Example of creating a non-root user:
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN useradd -m appuser
+
+COPY . .
+
+RUN pip install -r requirements.txt
+
+USER appuser
+
+CMD ["python", "app.py"]
+```
+
+---
+
+# 34. Health Checks
+
+A health check allows Docker to determine whether an application is healthy.
+
+Example:
+
+```dockerfile
+HEALTHCHECK CMD python healthcheck.py
+```
+
+Conceptually:
+
+```text
+Container Running
+       ↓
+Health Check
+       ↓
+Healthy / Unhealthy
+```
+
+This is useful for production applications.
+
+---
+
+# 35. Important Docker Best Practices
+
+```text
+1. Use small base images
+2. Use .dockerignore
+3. Optimize Docker layer caching
+4. Copy dependency files first
+5. Avoid unnecessary dependencies
+6. Use environment variables
+7. Do not store secrets in images
+8. Use specific image versions
+9. Run applications as non-root
+10. Use multi-stage builds
+11. Keep one main process per container
+12. Use volumes for persistent data
+13. Add health checks when needed
+14. Tag images properly
+15. Clean unused Docker resources
+```
+
+---
+
+# 36. Complete Docker Learning Roadmap
+
+```text
+Docker Fundamentals
+│
+├── Docker Architecture
+├── Docker Engine
+├── Images
+├── Containers
+│
+├── Dockerfile
+│   ├── FROM
+│   ├── WORKDIR
+│   ├── COPY
+│   ├── RUN
+│   ├── CMD
+│   ├── ENTRYPOINT
+│   ├── ENV
+│   ├── ARG
+│   └── EXPOSE
+│
+├── Image Building
+│   ├── Build Context
+│   ├── Tags
+│   ├── Layers
+│   └── Caching
+│
+├── Container Management
+│   ├── Run
+│   ├── Stop
+│   ├── Restart
+│   ├── Logs
+│   └── Exec
+│
+├── Storage
+│   ├── Volumes
+│   └── Bind Mounts
+│
+├── Networking
+│   ├── Port Mapping
+│   └── Container Networks
+│
+├── Docker Compose
+│
+├── Docker Registry
+│
+├── Optimization
+│   ├── Small Images
+│   ├── .dockerignore
+│   ├── Layer Caching
+│   └── Multi-Stage Builds
+│
+└── Security
+    ├── Non-root Users
+    ├── Secrets
+    └── Image Updates
+```
+
+# Summary
+
+The fundamental Docker workflow is:
+
+```text
+Application Code
+       +
+Dependencies
+       ↓
+Dockerfile
+       ↓
+docker build
+       ↓
+Docker Image
+       ↓
+docker run
+       ↓
+Docker Container
+```
+
+The most important concepts to master first are:
+
+```text
+Dockerfile
+    ↓
+Images
+    ↓
+Containers
+    ↓
+Layers
+    ↓
+Caching
+    ↓
+Volumes
+    ↓
+Networking
+    ↓
+Docker Compose
+    ↓
+Registries
+    ↓
+Multi-Stage Builds
+```

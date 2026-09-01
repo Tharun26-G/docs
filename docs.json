@@ -364,6 +364,12 @@
             "pages": [
               "docker"
             ]
+          },
+          {
+            "group": "Day 44",
+            "pages": [
+              "fastapi-docker"
+            ]
           }
         ]
       }

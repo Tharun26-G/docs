@@ -1,0 +1,1588 @@
+---
+title: "FastAPI Deployment (Docker Compose)"
+---
+
+Docker Compose is a tool used to define and run **multiple Docker containers as a single application stack**.
+
+A RAG application may contain multiple components such as:
+
+- FastAPI application
+- FAISS vector index
+- Embedding model
+- Database
+- LLM service
+
+Docker Compose manages these services using a single YAML configuration file.
+
+```text
+docker compose up
+```
+
+This command can build and start the entire application stack.
+
+---
+
+# 1. Why Docker Compose?
+
+A single Docker container can be started using:
+
+```bash
+docker run
+```
+
+However, applications often require multiple containers.
+
+Example:
+
+```text
+FastAPI Application
+        │
+        ▼
+Vector Store
+        │
+        ▼
+Persistent Storage
+```
+
+Managing every container manually becomes difficult.
+
+Docker Compose simplifies this process.
+
+```text
+docker compose up
+```
+
+Docker Compose can:
+
+1. Build images
+2. Create containers
+3. Create networks
+4. Create volumes
+5. Manage dependencies
+6. Start multiple services together
+
+---
+
+# 2. What is a Multi-Service Stack?
+
+A **multi-service stack** is an application consisting of multiple services running independently.
+
+Example:
+
+```text
+                 Docker Compose
+
+        ┌──────────────────────────┐
+        │                          │
+        │    FastAPI Container     │
+        │                          │
+        └────────────┬─────────────┘
+                     │
+                     ▼
+              Shared Volume
+                     ▲
+                     │
+        ┌────────────┴─────────────┐
+        │                          │
+        │  FAISS Index Container   │
+        │                          │
+        └──────────────────────────┘
+```
+
+Each service has a specific responsibility.
+
+| Service | Responsibility |
+| --- | --- |
+| FastAPI | Handles API requests |
+| Vector Store | Builds the FAISS index |
+| Volume | Stores shared index data |
+
+---
+
+# 3. What is Docker Compose?
+
+Docker Compose uses a YAML configuration file.
+
+Common filenames:
+
+```text
+docker-compose.yml
+```
+
+or:
+
+```text
+compose.yaml
+```
+
+The file can define:
+
+- Services
+- Images
+- Build instructions
+- Ports
+- Volumes
+- Networks
+- Environment variables
+- Dependencies
+- Health checks
+
+Basic structure:
+
+```yaml
+services:
+
+  service_name:
+    build: .
+```
+
+---
+
+# 4. Main Docker Compose Concepts
+
+## 4.1 Services
+
+A service represents an application component.
+
+Example:
+
+```yaml
+services:
+
+  api:
+    build: ./api
+
+  vector_store:
+    build: ./vector_store
+```
+
+This creates two services:
+
+```text
+services
+│
+├── api
+│
+└── vector_store
+```
+
+Each service can have its own:
+
+- Dockerfile
+- Dependencies
+- Ports
+- Environment variables
+- Volumes
+
+---
+
+## 4.2 Build
+
+The `build` instruction tells Docker Compose how to build an image.
+
+```yaml
+build:
+  context: ./api
+```
+
+The context points to the directory containing the application files.
+
+Example:
+
+```text
+api/
+├── Dockerfile
+├── requirements.txt
+└── llm_api.py
+```
+
+Flow:
+
+```text
+Source Code
+    ↓
+Dockerfile
+    ↓
+Docker Image
+    ↓
+Docker Container
+```
+
+---
+
+## 4.3 Port Mapping
+
+Ports expose a container application to the host machine.
+
+Example:
+
+```yaml
+ports:
+  - "8000:8000"
+```
+
+Format:
+
+```text
+HOST_PORT:CONTAINER_PORT
+```
+
+Architecture:
+
+```text
+Browser
+   │
+   ▼
+localhost:8000
+   │
+   ▼
+Host Port 8000
+   │
+   ▼
+Container Port 8000
+   │
+   ▼
+FastAPI Application
+```
+
+---
+
+# 5. Docker Volumes
+
+Containers are temporary.
+
+Data stored inside a container can be lost when the container is removed.
+
+Docker volumes provide persistent storage.
+
+Example:
+
+```yaml
+volumes:
+  vector_data:
+```
+
+This creates a named volume:
+
+```text
+vector_data
+```
+
+---
+
+## 5.1 Shared Volumes
+
+A shared volume allows multiple containers to access the same data.
+
+Example:
+
+```yaml
+services:
+
+  api:
+    volumes:
+      - vector_data:/vector_data
+
+  vector_store:
+    volumes:
+      - vector_data:/vector_data
+
+
+volumes:
+  vector_data:
+```
+
+Architecture:
+
+```text
+FAISS Container
+      │
+      │ Write
+      ▼
+Shared Docker Volume
+/vector_data
+      │
+      │ Read
+      ▼
+FastAPI Container
+```
+
+The FAISS index can be stored as:
+
+```text
+/vector_data/faiss.index
+```
+
+---
+
+# 6. `depends_on`
+
+The `depends_on` instruction defines service dependencies.
+
+Example:
+
+```yaml
+api:
+  depends_on:
+    vector_store:
+      condition: service_completed_successfully
+```
+
+This means:
+
+```text
+Vector Store Starts
+        ↓
+Build FAISS Index
+        ↓
+Save Index
+        ↓
+Completes Successfully
+        ↓
+FastAPI Starts
+```
+
+This is useful when the API requires the FAISS index before starting.
+
+---
+
+# 7. Docker Compose Networking
+
+Docker Compose automatically creates a network for services.
+
+Example:
+
+```text
+Docker Compose Network
+│
+├── API Container
+│
+└── Database Container
+```
+
+Containers can communicate using service names.
+
+Example:
+
+```text
+api
+ │
+ │ communicates with
+ ▼
+database
+```
+
+The service name acts as a hostname.
+
+Example:
+
+```text
+http://database:5432
+```
+
+---
+
+# 8. Environment Variables
+
+Environment variables store configuration values.
+
+Example:
+
+```yaml
+api:
+  environment:
+    APP_ENV: production
+    VECTOR_PATH: /vector_data/faiss.index
+```
+
+Python can access them using:
+
+```python
+import os
+
+environment = os.getenv("APP_ENV")
+
+vector_path = os.getenv("VECTOR_PATH")
+```
+
+Useful for:
+
+- API keys
+- Database URLs
+- Application configuration
+- Model names
+- File paths
+
+Sensitive values should not be hardcoded in source code.
+
+---
+
+# 9. Restart Policies
+
+Docker Compose can automatically restart containers.
+
+Example:
+
+```yaml
+api:
+  restart: unless-stopped
+```
+
+Common policies:
+
+| Policy | Description |
+| --- | --- |
+| `no` | No automatic restart |
+| `always` | Always restart |
+| `on-failure` | Restart when a failure occurs |
+| `unless-stopped` | Restart unless manually stopped |
+
+---
+
+# 10. Health Checks
+
+Health checks monitor whether a container is functioning correctly.
+
+Example:
+
+```yaml
+healthcheck:
+  test:
+    [
+      "CMD",
+      "python",
+      "-c",
+      "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+    ]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+```
+
+Possible states:
+
+```text
+starting
+   ↓
+healthy
+```
+
+or:
+
+```text
+starting
+   ↓
+unhealthy
+```
+
+---
+
+# 11. FastAPI \+ FAISS Architecture
+
+This example contains two services.
+
+### Service 1: FastAPI
+
+Responsible for:
+
+- Receiving HTTP requests
+- Loading the FAISS index
+- Providing API endpoints
+
+### Service 2: Vector Store
+
+Responsible for:
+
+- Loading documents
+- Creating embeddings
+- Creating a FAISS index
+- Saving the index
+
+### Shared Volume
+
+Responsible for:
+
+- Storing the FAISS index
+- Sharing the index between containers
+
+Architecture:
+
+```text
+                 Docker Compose
+
+       ┌───────────────────────────────┐
+       │                               │
+       │      Vector Store Service     │
+       │                               │
+       │   Documents → Embeddings      │
+       │            ↓                  │
+       │         FAISS Index           │
+       │            ↓                  │
+       │      Shared Docker Volume     │
+       │            ↓                  │
+       │       FastAPI Service         │
+       │            ↓                  │
+       │        Load FAISS Index       │
+       │            ↓                  │
+       │         API Endpoints         │
+       │                               │
+       └───────────────────────────────┘
+```
+
+---
+
+# 12. Important Note About FAISS
+
+FAISS is a **vector similarity search library**.
+
+It is not typically used as a standalone database server.
+
+For this Docker Compose example, the architecture is:
+
+```text
+Vector Store Container
+        ↓
+Creates FAISS Index
+        ↓
+Writes Index File
+        ↓
+Shared Docker Volume
+        ↓
+FastAPI Container
+        ↓
+Reads FAISS Index
+```
+
+This architecture is useful for learning:
+
+- Docker Compose
+- Multi-container applications
+- Shared volumes
+- Service dependencies
+
+---
+
+# 13. Project Structure
+
+```text
+FastAPI Deployment/
+│
+├── docker-compose.yml
+│
+├── api/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── llm_api.py
+│
+└── vector_store/
+    ├── Dockerfile
+    ├── requirements.txt
+    └── build_index.py
+```
+
+---
+
+# 14. Example: FastAPI Application
+
+## `api/llm_api.py`
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/")
+def home():
+    return {
+        "message": "LLM API is running"
+    }
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy"
+    }
+```
+
+### Explanation
+
+```python
+from fastapi import FastAPI
+```
+
+Imports the FastAPI framework.
+
+```python
+app = FastAPI()
+```
+
+Creates the FastAPI application.
+
+```python
+@app.get("/")
+```
+
+Creates a GET endpoint for the root URL.
+
+```python
+@app.get("/health")
+```
+
+Creates a health-check endpoint.
+
+Endpoints:
+
+```text
+GET /
+GET /health
+```
+
+---
+
+# 15. API Requirements
+
+## `api/requirements.txt`
+
+```text
+fastapi
+uvicorn
+faiss-cpu
+```
+
+### Explanation
+
+| Package | Purpose |
+| --- | --- |
+| `fastapi` | Builds the API |
+| `uvicorn` | Runs the FastAPI server |
+| `faiss-cpu` | Loads and searches the FAISS index |
+
+---
+
+# 16. API Dockerfile
+
+## `api/Dockerfile`
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "llm_api:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Step-by-Step Explanation
+
+### Base Image
+
+```dockerfile
+FROM python:3.11-slim
+```
+
+Uses Python 3.11 as the base image.
+
+---
+
+### Working Directory
+
+```dockerfile
+WORKDIR /app
+```
+
+Sets `/app` as the working directory.
+
+---
+
+### Copy Requirements
+
+```dockerfile
+COPY requirements.txt .
+```
+
+Copies the dependency file.
+
+---
+
+### Install Dependencies
+
+```dockerfile
+RUN pip install --no-cache-dir -r requirements.txt
+```
+
+Installs required Python packages.
+
+---
+
+### Copy Application
+
+```dockerfile
+COPY . .
+```
+
+Copies the application files.
+
+---
+
+### Expose Port
+
+```dockerfile
+EXPOSE 8000
+```
+
+Documents that the application uses port 8000.
+
+---
+
+### Start Application
+
+```dockerfile
+CMD ["uvicorn", "llm_api:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+Starts the FastAPI server.
+
+---
+
+# 17. Example: FAISS Index Builder
+
+## `vector_store/build_index.py`
+
+```python
+import os
+
+import faiss
+
+from sentence_transformers import SentenceTransformer
+
+
+documents = [
+    "FAISS performs efficient similarity search.",
+    "FastAPI is used to build Python APIs.",
+    "Docker packages applications into containers.",
+    "RAG retrieves relevant documents before generating answers.",
+    "Embeddings convert text into numerical vectors.",
+]
+
+
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+
+
+embeddings = model.encode(
+    documents,
+    normalize_embeddings=True
+)
+
+
+dimension = embeddings.shape[1]
+
+
+index = faiss.IndexFlatIP(
+    dimension
+)
+
+
+index.add(
+    embeddings
+)
+
+
+os.makedirs(
+    "/vector_data",
+    exist_ok=True
+)
+
+
+faiss.write_index(
+    index,
+    "/vector_data/faiss.index"
+)
+
+
+print(
+    "FAISS index created successfully"
+)
+
+print(
+    "Number of vectors:",
+    index.ntotal
+)
+```
+
+---
+
+## Step 1: Import Libraries
+
+```python
+import os
+
+import faiss
+
+from sentence_transformers import SentenceTransformer
+```
+
+- `os` handles directories
+- `faiss` creates the vector index
+- `SentenceTransformer` creates embeddings
+
+---
+
+## Step 2: Create Documents
+
+```python
+documents = [
+    "FAISS performs efficient similarity search.",
+    "FastAPI is used to build Python APIs.",
+    "Docker packages applications into containers.",
+]
+```
+
+Documents represent the knowledge source.
+
+---
+
+## Step 3: Load Embedding Model
+
+```python
+model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+```
+
+The model converts text into numerical vectors.
+
+```text
+Text
+ ↓
+Embedding Model
+ ↓
+Vector
+```
+
+---
+
+## Step 4: Create Embeddings
+
+```python
+embeddings = model.encode(
+    documents,
+    normalize_embeddings=True
+)
+```
+
+Each document becomes a vector.
+
+```text
+Document 1 → [0.12, -0.34, 0.56, ...]
+Document 2 → [0.45, 0.21, -0.12, ...]
+Document 3 → [0.67, -0.45, 0.32, ...]
+```
+
+---
+
+## Step 5: Get Vector Dimension
+
+```python
+dimension = embeddings.shape[1]
+```
+
+Gets the number of values in each embedding.
+
+---
+
+## Step 6: Create FAISS Index
+
+```python
+index = faiss.IndexFlatIP(
+    dimension
+)
+```
+
+Creates a FAISS similarity index.
+
+`IndexFlatIP` performs inner-product similarity search.
+
+Because embeddings are normalized:
+
+```text
+Inner Product ≈ Cosine Similarity
+```
+
+---
+
+## Step 7: Add Embeddings
+
+```python
+index.add(
+    embeddings
+)
+```
+
+Stores embeddings inside the FAISS index.
+
+---
+
+## Step 8: Create Directory
+
+```python
+os.makedirs(
+    "/vector_data",
+    exist_ok=True
+)
+```
+
+Creates the directory used for storing the FAISS index.
+
+---
+
+## Step 9: Save FAISS Index
+
+```python
+faiss.write_index(
+    index,
+    "/vector_data/faiss.index"
+)
+```
+
+Saves the vector index.
+
+The resulting file:
+
+```text
+/vector_data/faiss.index
+```
+
+This file will be stored inside the shared Docker volume.
+
+---
+
+# 18. Vector Store Requirements
+
+## `vector_store/requirements.txt`
+
+```text
+faiss-cpu
+sentence-transformers
+```
+
+| Package | Purpose |
+| --- | --- |
+| `faiss-cpu` | Vector similarity search |
+| `sentence-transformers` | Generates embeddings |
+
+---
+
+# 19. Vector Store Dockerfile
+
+## `vector_store/Dockerfile`
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY build_index.py .
+
+CMD ["python", "build_index.py"]
+```
+
+Flow:
+
+```text
+Start Container
+      ↓
+Run build_index.py
+      ↓
+Create Embeddings
+      ↓
+Create FAISS Index
+      ↓
+Save to /vector_data
+      ↓
+Container Completes
+```
+
+---
+
+# 20. Complete Docker Compose File
+
+## `docker-compose.yml`
+
+```yaml
+services:
+
+  api:
+    build:
+      context: ./api
+
+    container_name: llm-api
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - vector_data:/vector_data
+
+    depends_on:
+      vector_store:
+        condition: service_completed_successfully
+
+
+  vector_store:
+    build:
+      context: ./vector_store
+
+    container_name: faiss-index
+
+    volumes:
+      - vector_data:/vector_data
+
+
+volumes:
+
+  vector_data:
+```
+
+---
+
+# 21. Understanding the Docker Compose File
+
+## API Service
+
+```yaml
+api:
+```
+
+Defines the FastAPI service.
+
+---
+
+## Build Context
+
+```yaml
+build:
+  context: ./api
+```
+
+Builds the API image using:
+
+```text
+api/
+├── Dockerfile
+├── requirements.txt
+└── llm_api.py
+```
+
+---
+
+## Container Name
+
+```yaml
+container_name: llm-api
+```
+
+Assigns a custom name to the API container.
+
+---
+
+## Port Mapping
+
+```yaml
+ports:
+  - "8000:8000"
+```
+
+Maps:
+
+```text
+Host Port 8000
+       ↓
+Container Port 8000
+       ↓
+FastAPI
+```
+
+---
+
+## Volume
+
+```yaml
+volumes:
+  - vector_data:/vector_data
+```
+
+Mounts the shared volume.
+
+Both services access:
+
+```text
+/vector_data
+```
+
+---
+
+## Dependency
+
+```yaml
+depends_on:
+  vector_store:
+    condition: service_completed_successfully
+```
+
+Ensures the FAISS index builder completes before the API starts.
+
+---
+
+## Vector Store Service
+
+```yaml
+vector_store:
+  build:
+    context: ./vector_store
+```
+
+Builds the vector store container.
+
+Its job is:
+
+```text
+Documents
+    ↓
+Embeddings
+    ↓
+FAISS Index
+    ↓
+Save Index
+    ↓
+Exit
+```
+
+---
+
+# 22. Load the FAISS Index in FastAPI
+
+The FastAPI application should load the generated index.
+
+## Updated `api/llm_api.py`
+
+```python
+import os
+
+import faiss
+
+from fastapi import FastAPI
+
+
+app = FastAPI()
+
+
+INDEX_PATH = "/vector_data/faiss.index"
+
+
+@app.on_event("startup")
+def load_vector_index():
+
+    if os.path.exists(INDEX_PATH):
+
+        index = faiss.read_index(
+            INDEX_PATH
+        )
+
+        print(
+            "FAISS index loaded"
+        )
+
+        print(
+            "Vectors:",
+            index.ntotal
+        )
+
+    else:
+
+        print(
+            "FAISS index not found"
+        )
+
+
+@app.get("/")
+def home():
+
+    return {
+        "message": "LLM API is running"
+    }
+
+
+@app.get("/health")
+def health():
+
+    return {
+        "status": "healthy"
+    }
+```
+
+Flow:
+
+```text
+FastAPI Starts
+      ↓
+Check Index File
+      ↓
+Load FAISS Index
+      ↓
+API Ready
+```
+
+---
+
+# 23. Start the Application
+
+Run from the project root:
+
+```bash
+docker compose up --build
+```
+
+Docker will:
+
+```text
+1. Build vector_store image
+        ↓
+2. Start vector_store container
+        ↓
+3. Create FAISS index
+        ↓
+4. Save index to Docker volume
+        ↓
+5. Complete vector_store container
+        ↓
+6. Start API container
+        ↓
+7. Load FAISS index
+        ↓
+8. FastAPI available on port 8000
+```
+
+---
+
+## Run in Background
+
+```bash
+docker compose up -d --build
+```
+
+`-d` means detached mode.
+
+---
+
+# 24. Check Running Containers
+
+```bash
+docker compose ps
+```
+
+Expected:
+
+```text
+NAME          STATUS
+llm-api       running
+faiss-index   exited
+```
+
+The `faiss-index` container exiting is expected.
+
+Its job is only:
+
+```text
+Create Index
+     ↓
+Save Index
+     ↓
+Exit
+```
+
+---
+
+# 25. View Logs
+
+View all logs:
+
+```bash
+docker compose logs
+```
+
+Follow logs:
+
+```bash
+docker compose logs -f
+```
+
+View API logs:
+
+```bash
+docker compose logs api
+```
+
+View vector store logs:
+
+```bash
+docker compose logs vector_store
+```
+
+---
+
+# 26. Test the API
+
+Open:
+
+```text
+http://localhost:8000
+```
+
+Expected:
+
+```json
+{
+    "message": "LLM API is running"
+}
+```
+
+Health endpoint:
+
+```text
+http://localhost:8000/health
+```
+
+Expected:
+
+```json
+{
+    "status": "healthy"
+}
+```
+
+FastAPI documentation:
+
+```text
+http://localhost:8000/docs
+```
+
+---
+
+# 27. Docker Compose vs Dockerfile
+
+| Dockerfile | Docker Compose |
+| --- | --- |
+| Defines an image | Defines multiple services |
+| Builds one application image | Manages multiple containers |
+| Contains build instructions | Contains stack configuration |
+| Uses Docker instructions | Uses YAML |
+| Example: `FROM` | Example: `services` |
+
+Relationship:
+
+```text
+Dockerfile
+    ↓
+Build Image
+    ↓
+Docker Compose
+    ↓
+Run Multiple Containers
+```
+
+---
+
+# 28. Docker Compose vs `docker run`
+
+Without Docker Compose:
+
+```bash
+docker build -t vector-store ./vector_store
+
+docker build -t llm-api ./api
+
+docker volume create vector_data
+
+docker run --name faiss-index \
+-v vector_data:/vector_data \
+vector-store
+
+docker run --name llm-api \
+-p 8000:8000 \
+-v vector_data:/vector_data \
+llm-api
+```
+
+With Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Docker Compose stores the infrastructure configuration in one file.
+
+---
+
+# 29. Important Docker Compose Commands
+
+## Start Services
+
+```bash
+docker compose up
+```
+
+## Build and Start
+
+```bash
+docker compose up --build
+```
+
+## Run in Background
+
+```bash
+docker compose up -d
+```
+
+## Stop Services
+
+```bash
+docker compose down
+```
+
+## Check Services
+
+```bash
+docker compose ps
+```
+
+## View Logs
+
+```bash
+docker compose logs
+```
+
+## Follow Logs
+
+```bash
+docker compose logs -f
+```
+
+---
+
+# 30. Important Concepts Summary
+
+```text
+Docker Compose
+│
+├── Services
+│   ├── api
+│   └── vector_store
+│
+├── Build
+│   └── Dockerfile
+│
+├── Ports
+│   └── Host → Container
+│
+├── Volumes
+│   ├── Persistent Storage
+│   └── Shared Storage
+│
+├── Networks
+│   └── Container Communication
+│
+├── Dependencies
+│   └── depends_on
+│
+├── Environment Variables
+│
+├── Health Checks
+│
+└── Restart Policies
+```
+
+---
+
+# 31. Complete Deployment Flow
+
+```text
+Source Code
+    │
+    ├── FastAPI
+    │
+    └── FAISS Index Builder
+             │
+             ▼
+        Dockerfiles
+             │
+             ▼
+        Docker Images
+             │
+             ▼
+        Docker Compose
+             │
+      ┌──────┴───────┐
+      │              │
+      ▼              ▼
+FAISS Service    FastAPI Service
+      │              │
+      │              │
+      └──────┬───────┘
+             │
+             ▼
+       Docker Volume
+             │
+             ▼
+        FAISS Index
+```
+
+---
+
+# 32. Key Takeaways
+
+1. Docker Compose manages multiple containers using one configuration file.
+2. Services represent different components of an application.
+3. The `build` option builds Docker images.
+4. Ports expose applications outside containers.
+5. Volumes provide persistent storage.
+6. Shared volumes allow containers to access common data.
+7. `depends_on` controls service dependencies.
+8. Docker Compose automatically creates networks.
+9. Environment variables provide configuration.
+10. Health checks monitor container availability.
+11. FastAPI can load a FAISS index stored in a shared Docker volume.
+12. Docker Compose simplifies multi-service deployment.
+
+## Final Architecture
+
+```text
+                    Docker Compose
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+              ▼                         ▼
+       Vector Store Service       FastAPI Service
+              │                         │
+              │ Creates                 │ Reads
+              ▼                         ▲
+                  Shared Volume
+                  /vector_data
+                        │
+                        ▼
+                   FAISS Index
+```

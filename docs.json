@@ -370,6 +370,13 @@
             "pages": [
               "fastapi-docker"
             ]
+          },
+          {
+            "group": "Day 45",
+            "pages": [
+              "ci-cd",
+              "ci-cd-code"
+            ]
           }
         ]
       }

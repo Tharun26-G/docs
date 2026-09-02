@@ -1,0 +1,1147 @@
+---
+title: "CI/CD with GitHub Actions"
+---
+
+## 1. Overview
+
+**CI/CD** stands for:
+
+- **CI:** Continuous Integration
+- **CD:** Continuous Delivery / Continuous Deployment
+
+GitHub Actions can automate the software development workflow.
+
+A typical workflow for a Dockerized FastAPI application is:
+
+```text
+Developer pushes code
+        ↓
+GitHub Repository
+        ↓
+GitHub Actions
+        ↓
+Run Unit Tests
+        ↓
+Build Docker Image
+        ↓
+Login to GHCR
+        ↓
+Push Docker Image
+```
+
+---
+
+# 2. Continuous Integration
+
+**Continuous Integration (CI)** automatically checks new code whenever changes are pushed.
+
+Typical CI tasks:
+
+- Install dependencies
+- Run linting
+- Run unit tests
+- Check code quality
+- Build the application
+
+Example:
+
+```text
+git push
+   ↓
+GitHub Actions starts
+   ↓
+Install Python dependencies
+   ↓
+Run pytest
+   ↓
+Tests pass
+```
+
+If tests fail, the workflow stops.
+
+---
+
+# 3. Continuous Delivery / Deployment
+
+**Continuous Delivery (CD)** extends CI by preparing or deploying the application.
+
+For a Docker application:
+
+```text
+Tests
+  ↓
+Docker Build
+  ↓
+Docker Image
+  ↓
+Push to Container Registry
+  ↓
+Deployment
+```
+
+In this challenge, the CD part will push the image to **GitHub Container Registry (GHCR)**.
+
+---
+
+# 4. What is GitHub Actions?
+
+GitHub Actions is an automation platform integrated into GitHub.
+
+It can automatically execute tasks when events occur in a repository.
+
+Examples:
+
+```text
+push
+pull_request
+release
+workflow_dispatch
+```
+
+Example:
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+```
+
+This means the workflow runs whenever code is pushed to the `main` branch.
+
+---
+
+# 5. GitHub Actions Workflow
+
+A GitHub Actions workflow is normally stored inside:
+
+```text
+.github/
+└── workflows/
+    └── ci.yml
+```
+
+Example project:
+
+```text
+project/
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+├── api/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── llm_api.py
+│
+├── tests/
+│   └── test_api.py
+│
+└── requirements.txt
+```
+
+---
+
+# 6. Workflow Syntax
+
+A basic workflow:
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: pytest
+```
+
+A workflow contains:
+
+```text
+Workflow
+   │
+   ├── Trigger
+   │
+   └── Jobs
+        │
+        └── Steps
+```
+
+---
+
+# 7. `name`
+
+```yaml
+name: CI
+```
+
+Defines the name displayed in GitHub Actions.
+
+Example:
+
+```text
+CI
+Docker Build and Push
+FastAPI CI/CD
+```
+
+---
+
+# 8. `on`
+
+The `on` section defines **when the workflow runs**.
+
+Example:
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+```
+
+The workflow runs when code is pushed to `main`.
+
+Another example:
+
+```yaml
+on:
+  pull_request:
+    branches:
+      - main
+```
+
+The workflow runs when a pull request targets `main`.
+
+Multiple triggers:
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+```
+
+---
+
+# 9. `jobs`
+
+Jobs define the tasks that GitHub Actions performs.
+
+```yaml
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+  build:
+    runs-on: ubuntu-latest
+```
+
+This creates two jobs:
+
+```text
+Jobs
+│
+├── test
+│
+└── build
+```
+
+---
+
+# 10. `runs-on`
+
+```yaml
+runs-on: ubuntu-latest
+```
+
+Specifies the operating system used by the GitHub-hosted runner.
+
+Common options include:
+
+```yaml
+ubuntu-latest
+```
+
+```yaml
+windows-latest
+```
+
+```yaml
+macos-latest
+```
+
+For Docker-based applications, Ubuntu is commonly used.
+
+---
+
+# 11. Steps
+
+A job consists of multiple steps.
+
+```yaml
+steps:
+
+  - name: Checkout code
+    uses: actions/checkout@v4
+
+  - name: Install dependencies
+    run: pip install -r requirements.txt
+
+  - name: Run tests
+    run: pytest
+```
+
+Each step performs one task.
+
+---
+
+# 12. `uses`
+
+`uses` executes a reusable GitHub Action.
+
+Example:
+
+```yaml
+uses: actions/checkout@v4
+```
+
+This checks the repository code into the GitHub Actions runner.
+
+---
+
+# 13. `run`
+
+`run` executes shell commands.
+
+Example:
+
+```yaml
+run: pip install -r requirements.txt
+```
+
+Multiple commands:
+
+```yaml
+run: |
+  pip install -r requirements.txt
+  pytest
+```
+
+---
+
+# 14. Checkout Repository
+
+The first step is usually:
+
+```yaml
+- name: Checkout code
+  uses: actions/checkout@v4
+```
+
+Without checkout, the runner does not have the repository files available for testing or Docker builds.
+
+Flow:
+
+```text
+GitHub Repository
+       ↓
+actions/checkout
+       ↓
+GitHub Runner
+       ↓
+Project Files
+```
+
+---
+
+# 15. Setting Up Python
+
+For a Python application:
+
+```yaml
+- name: Set up Python
+  uses: actions/setup-python@v5
+  with:
+    python-version: "3.11"
+```
+
+This installs/configures Python 3.11 on the runner.
+
+---
+
+# 16. Installing Dependencies
+
+Example:
+
+```yaml
+- name: Install dependencies
+  run: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+    pip install pytest
+```
+
+The runner now has the packages required to execute tests.
+
+---
+
+# 17. Automated Testing
+
+Testing can be performed using `pytest`.
+
+Example:
+
+```yaml
+- name: Run tests
+  run: pytest
+```
+
+Possible result:
+
+```text
+========================
+5 passed
+========================
+```
+
+If a test fails:
+
+```text
+========================
+1 failed, 4 passed
+========================
+```
+
+The workflow fails.
+
+---
+
+# 18. Example Unit Test
+
+## `tests/test_api.py`
+
+```python
+from fastapi.testclient import TestClient
+
+from api.llm_api import app
+
+
+client = TestClient(app)
+
+
+def test_home():
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert response.json()["message"] == "LLM API is running"
+
+
+def test_health():
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
+```
+
+Tests verify that the FastAPI endpoints work correctly.
+
+---
+
+# 19. Docker Image Build
+
+GitHub Actions can build the Docker image using:
+
+```yaml
+- name: Build Docker image
+  run: |
+    docker build -t my-fastapi-app .
+```
+
+Flow:
+
+```text
+Dockerfile
+    ↓
+docker build
+    ↓
+Docker Image
+```
+
+---
+
+# 20. Image Tags
+
+Docker images normally use tags.
+
+Example:
+
+```text
+my-fastapi-app:latest
+```
+
+For GHCR:
+
+```text
+ghcr.io/USERNAME/REPOSITORY:latest
+```
+
+Example structure:
+
+```text
+ghcr.io/
+    └── username/
+        └── fastapi-rag:latest
+```
+
+A tag can also represent a commit:
+
+```text
+ghcr.io/username/fastapi-rag:abc123
+```
+
+Using commit-based tags makes it possible to identify exactly which source version produced an image.
+
+---
+
+# 21. GitHub Container Registry
+
+**GHCR** stands for **GitHub Container Registry**.
+
+It allows Docker/OCI container images to be stored alongside GitHub repositories.
+
+Flow:
+
+```text
+GitHub Repository
+       ↓
+GitHub Actions
+       ↓
+Docker Build
+       ↓
+Docker Image
+       ↓
+GHCR
+```
+
+Image format:
+
+```text
+ghcr.io/<username>/<repository>:<tag>
+```
+
+---
+
+# 22. `GITHUB_TOKEN`
+
+GitHub Actions automatically provides a `GITHUB_TOKEN` for workflows.
+
+It can be used to authenticate with GitHub services, including GHCR, when the workflow has appropriate permissions.
+
+Example:
+
+```yaml
+permissions:
+  contents: read
+  packages: write
+```
+
+Important:
+
+```text
+contents: read
+```
+
+Allows the workflow to read repository contents.
+
+```text
+packages: write
+```
+
+Allows the workflow to publish packages/images to GHCR.
+
+---
+
+# 23. Login to GHCR
+
+Docker can authenticate to GHCR using:
+
+```yaml
+- name: Login to GHCR
+  uses: docker/login-action@v3
+  with:
+    registry: ghcr.io
+    username: ${{ github.actor }}
+    password: ${{ secrets.GITHUB_TOKEN }}
+```
+
+The workflow now has permission to push the image.
+
+---
+
+# 24. Docker Build and Push Action
+
+Instead of manually running separate Docker commands, the Docker GitHub Actions can build and push the image.
+
+Example:
+
+```yaml
+- name: Build and push Docker image
+  uses: docker/build-push-action@v6
+  with:
+    context: .
+    push: true
+    tags: ghcr.io/${{ github.repository }}:latest
+```
+
+Flow:
+
+```text
+Source Code
+    ↓
+Dockerfile
+    ↓
+Docker Build
+    ↓
+Docker Image
+    ↓
+GHCR
+```
+
+---
+
+# 25. Complete `ci.yml`
+
+For a FastAPI application whose Dockerfile is in the repository root:
+
+```yaml
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+
+permissions:
+  contents: read
+  packages: write
+
+
+jobs:
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run unit tests
+        run: pytest
+
+
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+```
+
+---
+
+# 26. Understanding `needs`
+
+The second job contains:
+
+```yaml
+needs: test
+```
+
+This creates a dependency.
+
+Without `needs`:
+
+```text
+test ──────────┐
+               ├──→ Build
+               │
+```
+
+With:
+
+```yaml
+needs: test
+```
+
+the flow becomes:
+
+```text
+Run Tests
+    ↓
+Tests Pass
+    ↓
+Build Image
+    ↓
+Push to GHCR
+```
+
+If tests fail:
+
+```text
+Run Tests
+    ↓
+Tests Fail
+    ↓
+STOP
+```
+
+The Docker image is not pushed.
+
+---
+
+# 27. Complete CI/CD Pipeline
+
+```text
+                 Git Push
+                    │
+                    ▼
+            GitHub Actions
+                    │
+                    ▼
+             Checkout Code
+                    │
+                    ▼
+             Setup Python
+                    │
+                    ▼
+          Install Dependencies
+                    │
+                    ▼
+              Run pytest
+                    │
+             ┌──────┴──────┐
+             │             │
+           Fail           Pass
+             │             │
+             ▼             ▼
+            STOP      Docker Build
+                           │
+                           ▼
+                     GHCR Login
+                           │
+                           ▼
+                    Push Image
+                           │
+                           ▼
+                         GHCR
+```
+
+---
+
+# 28. Docker Image Naming
+
+The expression:
+
+```yaml
+${{ github.repository }}
+```
+
+automatically produces:
+
+```text
+OWNER/REPOSITORY
+```
+
+Therefore:
+
+```yaml
+ghcr.io/${{ github.repository }}:latest
+```
+
+becomes something similar to:
+
+```text
+ghcr.io/example-user/fastapi-rag:latest
+```
+
+This avoids hardcoding the GitHub username and repository name.
+
+---
+
+# 29. Important GitHub Actions Variables
+
+GitHub provides predefined variables called **contexts**.
+
+Examples:
+
+```yaml
+${{ github.actor }}
+```
+
+The user who triggered the workflow.
+
+```yaml
+${{ github.repository }}
+```
+
+Repository name.
+
+```yaml
+${{ github.sha }}
+```
+
+Commit SHA.
+
+```yaml
+${{ github.ref }}
+```
+
+Git reference that triggered the workflow.
+
+---
+
+# 30. Better Docker Image Tags
+
+Instead of only using:
+
+```text
+latest
+```
+
+images can also be tagged using the commit SHA.
+
+Example:
+
+```yaml
+tags: |
+  ghcr.io/${{ github.repository }}:latest
+  ghcr.io/${{ github.repository }}:${{ github.sha }}
+```
+
+This produces:
+
+```text
+fastapi-rag:latest
+fastapi-rag:abc123...
+```
+
+Benefits:
+
+- `latest` points to the latest build.
+- Commit SHA identifies an exact version.
+
+---
+
+# 31. GitHub Actions Secrets
+
+Secrets should be used for sensitive credentials.
+
+Examples:
+
+```text
+API keys
+Cloud credentials
+Registry credentials
+Deployment tokens
+```
+
+Access syntax:
+
+```yaml
+${{ secrets.SECRET_NAME }}
+```
+
+Do not write credentials directly in:
+
+```yaml
+run: echo "secret-value"
+```
+
+or inside application source code.
+
+For GHCR authentication with the built-in `GITHUB_TOKEN`, a separate registry password secret is generally unnecessary.
+
+---
+
+# 32. Workflow Status
+
+GitHub displays the workflow status.
+
+```text
+✓ Tests
+✓ Docker Build
+✓ Push to GHCR
+```
+
+If something fails:
+
+```text
+✓ Tests
+✗ Docker Build
+```
+
+This provides immediate feedback after a code change.
+
+---
+
+# 33. Pull Request Workflow
+
+CI is especially useful with pull requests.
+
+```yaml
+on:
+  pull_request:
+    branches:
+      - main
+```
+
+Flow:
+
+```text
+Developer
+    ↓
+Create Pull Request
+    ↓
+GitHub Actions
+    ↓
+Run Tests
+    ↓
+Check Build
+    ↓
+Review Results
+    ↓
+Merge
+```
+
+This prevents broken code from being merged into the main branch.
+
+---
+
+# 34. Important CI/CD Best Practices
+
+### Run tests before building
+
+```text
+Tests → Build → Push
+```
+
+This prevents publishing an image from code that does not pass tests.
+
+### Pin important versions
+
+Example:
+
+```text
+pytest==8.x.x
+```
+
+and use stable base images where appropriate.
+
+### Use image tags
+
+Avoid relying only on:
+
+```text
+latest
+```
+
+Use commit-based or release-based tags.
+
+### Never hardcode secrets
+
+Use:
+
+```text
+GitHub Secrets
+```
+
+or:
+
+```text
+GITHUB_TOKEN
+```
+
+where appropriate.
+
+### Keep workflows focused
+
+Separate workflows can be created for:
+
+```text
+CI
+CD
+Release
+Deployment
+```
+
+when the application becomes more complex.
+
+---
+
+# 35. CI/CD with Docker Compose
+
+For a Docker Compose application, the workflow can also validate the Compose configuration.
+
+Example:
+
+```yaml
+- name: Validate Docker Compose
+  run: docker compose config
+```
+
+This checks whether the Compose configuration can be parsed successfully.
+
+A more complete pipeline could be:
+
+```text
+Checkout
+   ↓
+Install Dependencies
+   ↓
+Unit Tests
+   ↓
+Docker Compose Config Validation
+   ↓
+Docker Build
+   ↓
+Push Image
+```
+
+---
+
+# 36. Local vs GitHub Actions
+
+### Local Development
+
+```text
+Developer Computer
+      ↓
+pytest
+      ↓
+docker build
+```
+
+### CI/CD
+
+```text
+GitHub
+   ↓
+GitHub Actions Runner
+   ↓
+pytest
+   ↓
+docker build
+   ↓
+GHCR
+```
+
+The goal of CI/CD is to automate tasks that would otherwise be performed manually.
+
+---
+
+# 37. Key Takeaways
+
+1. **GitHub Actions** automates development workflows.
+2. A workflow is stored in `.github/workflows/`.
+3. `on` defines when a workflow runs.
+4. `jobs` defines tasks.
+5. `steps` define individual operations.
+6. `uses` runs reusable GitHub Actions.
+7. `run` executes shell commands.
+8. `pytest` can automate unit testing.
+9. Docker images can be built automatically.
+10. **GHCR** stores Docker images.
+11. `GITHUB_TOKEN` can authenticate workflows with GitHub services.
+12. `permissions` controls what the workflow can access.
+13. `needs` controls job order.
+14. Tests should pass before an image is pushed.
+15. Commit-based image tags provide version traceability.
+
+## Final CI/CD Architecture
+
+```text
+                    GitHub Repository
+                           │
+                         Push
+                           │
+                           ▼
+                  GitHub Actions
+                           │
+                           ▼
+                    Checkout Code
+                           │
+                           ▼
+                    Run Unit Tests
+                           │
+                    ┌──────┴──────┐
+                    │             │
+                  FAIL           PASS
+                    │             │
+                    ▼             ▼
+                   STOP       Docker Build
+                                  │
+                                  ▼
+                              GHCR Login
+                                  │
+                                  ▼
+                           Push Docker Image
+                                  │
+                                  ▼
+                         GitHub Container
+                             Registry
+```

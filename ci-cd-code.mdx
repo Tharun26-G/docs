@@ -1,0 +1,692 @@
+---
+title: "CI/CD Example"
+---
+
+## Overview
+
+**CI/CD** stands for:
+
+- **CI: Continuous Integration**
+- **CD: Continuous Delivery / Continuous Deployment**
+
+GitHub Actions automates software development tasks such as:
+
+- Running tests
+- Building Docker images
+- Checking code
+- Publishing Docker images
+- Deploying applications
+
+### Basic CI/CD workflow
+
+```text
+Developer pushes code
+        ↓
+GitHub Actions starts
+        ↓
+Checkout source code
+        ↓
+Setup environment
+        ↓
+Install dependencies
+        ↓
+Run tests
+        ↓
+Build Docker image
+        ↓
+Push image to GHCR
+```
+
+---
+
+# 1. GitHub Actions
+
+GitHub Actions is a CI/CD automation platform integrated with GitHub repositories.
+
+A workflow is defined using a YAML file.
+
+The standard location is:
+
+```text
+.github/workflows/ci.yml
+```
+
+Example project structure:
+
+```text
+ai-engineer/
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+└── Day 45 - Github Actions/
+    ├── app.py
+    ├── test_app.py
+    ├── requirements.txt
+    └── Dockerfile
+```
+
+---
+
+# 2. Workflow
+
+A **workflow** is an automated process containing one or more jobs.
+
+Example:
+
+```yaml
+name: CI/CD
+```
+
+`name` defines the name displayed in the GitHub Actions interface.
+
+---
+
+# 3. Workflow Trigger
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+```
+
+This workflow runs when:
+
+- Code is pushed to `main`
+- A pull request targets `main`
+
+### Example
+
+```text
+git push
+    ↓
+GitHub detects push
+    ↓
+CI/CD workflow starts
+```
+
+---
+
+# 4. Permissions
+
+```yaml
+permissions:
+  contents: read
+  packages: write
+```
+
+### `contents: read`
+
+Allows the workflow to read repository contents.
+
+### `packages: write`
+
+Allows the workflow to push packages/images to **GitHub Container Registry (GHCR)**.
+
+---
+
+# 5. Jobs
+
+A workflow can contain multiple jobs.
+
+Example:
+
+```yaml
+jobs:
+  test:
+    ...
+    
+  build:
+    ...
+```
+
+Here there are two jobs:
+
+```text
+test
+ ↓
+build
+```
+
+---
+
+# 6. Runner
+
+```yaml
+runs-on: ubuntu-latest
+```
+
+A **runner** is the machine that executes the workflow.
+
+Common runners include:
+
+```text
+ubuntu-latest
+windows-latest
+macos-latest
+```
+
+For Docker-based applications, Ubuntu runners are commonly used.
+
+---
+
+# 7. Checkout Code
+
+```yaml
+- name: Checkout code
+  uses: actions/checkout@v4
+```
+
+This downloads the repository code into the GitHub Actions runner.
+
+Without this step, the runner does not have access to the repository files.
+
+---
+
+# 8. Setup Python
+
+```yaml
+- name: Setup Python
+  uses: actions/setup-python@v5
+  with:
+    python-version: "3.11"
+```
+
+This installs/configures Python 3.11 in the runner.
+
+Important:
+
+```yaml
+actions/setup-python@v5
+```
+
+Correct action name:
+
+```text
+setup-python
+```
+
+Not:
+
+```text
+setup=python
+```
+
+---
+
+# 9. Install Dependencies
+
+Because `requirements.txt` is inside the Day 45 folder:
+
+```yaml
+- name: Install dependencies
+  run: pip install -r "Day 45 - Github Actions/requirements.txt"
+```
+
+The path is relative to the repository root.
+
+Repository:
+
+```text
+ai-engineer/
+```
+
+File:
+
+```text
+ai-engineer/Day 45 - Github Actions/requirements.txt
+```
+
+Therefore:
+
+```text
+Day 45 - Github Actions/requirements.txt
+```
+
+is the correct path.
+
+---
+
+# 10. Run Unit Tests
+
+```yaml
+- name: Run tests
+  run: pytest "Day 45 - Github Actions/test_app.py"
+```
+
+This executes the Python unit tests.
+
+Example `test_app.py`:
+
+```python
+from app import add
+
+
+def test_add():
+    assert add(2, 3) == 5
+
+
+def test_add_zero():
+    assert add(10, 0) == 10
+```
+
+If the tests pass:
+
+```text
+2 passed
+```
+
+the next job can execute.
+
+---
+
+# 11. Job Dependencies
+
+The build job can depend on the test job:
+
+```yaml
+build:
+  needs: test
+```
+
+This means:
+
+```text
+test
+ ↓
+if successful
+ ↓
+build
+```
+
+If the tests fail:
+
+```text
+test ❌
+ ↓
+build skipped
+```
+
+This prevents a broken application from being packaged and pushed.
+
+---
+
+# 12. Login to GHCR
+
+GHCR stands for:
+
+**GitHub Container Registry**
+
+The workflow can authenticate using the automatically provided `GITHUB_TOKEN`.
+
+```yaml
+- name: Login to GHCR
+  uses: docker/login-action@v3
+  with:
+    registry: ghcr.io
+    username: ${{ github.actor }}
+    password: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Important values
+
+```text
+ghcr.io
+```
+
+GitHub Container Registry.
+
+```text
+github.actor
+```
+
+The GitHub user that triggered the workflow.
+
+```text
+GITHUB_TOKEN
+```
+
+Automatically provided authentication token for the workflow.
+
+---
+
+# 13. Build Docker Image
+
+```yaml
+- name: Build and Push
+  uses: docker/build-push-action@v6
+```
+
+This action builds and optionally pushes a Docker image.
+
+The Docker context is:
+
+```yaml
+context: "./Day 45 - Github Actions"
+```
+
+This tells Docker where the `Dockerfile` and application files are located.
+
+---
+
+# 14. Push Docker Image
+
+```yaml
+push: true
+```
+
+This tells Docker to push the image to the configured registry.
+
+Without it:
+
+```yaml
+push: false
+```
+
+the image is only built.
+
+---
+
+# 15. Docker Image Tag
+
+Example:
+
+```yaml
+tags: ghcr.io/tharun26-g/ai-engineer:latest
+```
+
+The general format is:
+
+```text
+registry/username/repository:tag
+```
+
+Example:
+
+```text
+ghcr.io/tharun26-g/ai-engineer:latest
+```
+
+Where:
+
+```text
+ghcr.io       → GitHub Container Registry
+tharun26-g    → GitHub username
+ai-engineer   → repository
+latest        → image tag
+```
+
+---
+
+# 16. Docker Repository Names Must Be Lowercase
+
+An error occurred with:
+
+```text
+ghcr.io/Tharun26-G/ai-engineer:latest
+```
+
+Docker returned:
+
+```text
+repository name must be lowercase
+```
+
+The problem was:
+
+```text
+Tharun26-G
+```
+
+contains uppercase letters.
+
+Correct:
+
+```text
+tharun26-g
+```
+
+Therefore:
+
+```yaml
+tags: ghcr.io/tharun26-g/ai-engineer:latest
+```
+
+### Rule
+
+Use lowercase names for Docker image repositories:
+
+```text
+✓ ghcr.io/tharun26-g/ai-engineer:latest
+
+✗ ghcr.io/Tharun26-G/ai-engineer:latest
+```
+
+---
+
+# 17. Complete `ci.yml`
+
+```yaml
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r "Day 45 - Github Actions/requirements.txt"
+
+      - name: Run tests
+        run: pytest "Day 45 - Github Actions/test_app.py"
+
+
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: "./Day 45 - Github Actions"
+          push: true
+          tags: ghcr.io/tharun26-g/ai-engineer:latest
+```
+
+---
+
+# 18. Example `app.py`
+
+```python
+def add(a, b):
+    return a + b
+
+
+if __name__ == "__main__":
+    print("Result:", add(10, 20))
+```
+
+---
+
+# 19. Example `requirements.txt`
+
+```text
+pytest
+```
+
+---
+
+# 20. Example `Dockerfile`
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY . .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD ["python", "app.py"]
+```
+
+---
+
+# 21. Running the Workflow
+
+After modifying the workflow:
+
+```bash
+git add .
+git commit -m "Add CI/CD workflow"
+git push origin main
+```
+
+GitHub automatically starts the workflow.
+
+Check:
+
+```text
+GitHub Repository
+       ↓
+Actions
+       ↓
+CI/CD
+```
+
+---
+
+# 22. Expected GitHub Actions Result
+
+```text
+CI/CD
+│
+├── Run Tests
+│   ├── Checkout code       ✓
+│   ├── Setup Python        ✓
+│   ├── Install dependencies ✓
+│   └── Run tests           ✓
+│
+└── Build and Push Docker Image
+    ├── Checkout code       ✓
+    ├── Login to GHCR       ✓
+    └── Build and Push      ✓
+```
+
+The final Docker image will be available in:
+
+```text
+GitHub Repository
+    ↓
+Packages
+    ↓
+Container image
+```
+
+---
+
+# 23. Important GitHub Actions Concepts
+
+| Concept | Purpose |
+| --- | --- |
+| Workflow | Complete automation process |
+| Job | Group of related steps |
+| Step | Individual command/action |
+| Runner | Machine executing the workflow |
+| `on` | Defines workflow triggers |
+| `uses` | Uses an existing GitHub Action |
+| `run` | Executes a shell command |
+| `needs` | Defines job dependency |
+| `secrets` | Stores sensitive values |
+| `GITHUB_TOKEN` | Automatic GitHub authentication token |
+| GHCR | GitHub Container Registry |
+| Artifact | Files produced by a workflow |
+| Matrix | Runs a job across multiple configurations |
+
+---
+
+# 24. CI/CD Pipeline Summary
+
+```text
+Code
+ ↓
+Git Push
+ ↓
+GitHub Actions
+ ↓
+Checkout
+ ↓
+Setup Python
+ ↓
+Install Dependencies
+ ↓
+Run Unit Tests
+ ↓
+Tests Pass?
+ ├── No  → Stop
+ │
+ └── Yes
+       ↓
+   Build Docker Image
+       ↓
+   Login to GHCR
+       ↓
+   Push Docker Image
+```
+
+### Key learning points
+
+- GitHub Actions automates CI/CD workflows.
+- YAML files define workflows.
+- `actions/checkout` retrieves repository code.
+- `actions/setup-python` configures Python.
+- `pytest` runs automated tests.
+- `needs` controls job execution order.
+- Docker can be built directly inside GitHub Actions.
+- GHCR can store Docker images.
+- `GITHUB_TOKEN` can authenticate the workflow.
+- Docker image repository names should use lowercase.
+- CI should run **before** the Docker image is built and published.

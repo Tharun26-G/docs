@@ -1,0 +1,719 @@
+---
+title: "ML flow"
+---
+
+# Experiment Tracking with MLflow
+
+**MLflow** is an open-source platform for tracking and managing machine learning experiments.
+
+It can record:
+
+- **Parameters** used during training
+- **Metrics** produced during training
+- **Artifacts** such as models, plots, and files
+- **Runs** representing individual training experiments
+- **Experiments** grouping related runs
+
+### MLflow workflow
+
+```text
+Train Model
+     ↓
+MLflow Experiment
+     ↓
+Start Run
+     ↓
+Log Parameters
+     ↓
+Train Model
+     ↓
+Log Metrics
+     ↓
+Log Artifacts
+     ↓
+View Results in MLflow UI
+```
+
+---
+
+# 1. Install MLflow
+
+```bash
+pip install mlflow
+```
+
+For the example below, also install scikit-learn:
+
+```bash
+pip install scikit-learn
+```
+
+---
+
+# 2. Important MLflow Concepts
+
+## Experiment
+
+An **experiment** groups related machine learning runs.
+
+Example:
+
+```text
+Experiment: House Price Prediction
+│
+├── Run 1
+├── Run 2
+├── Run 3
+└── Run 4
+```
+
+Create or select an experiment using:
+
+```python
+mlflow.set_experiment("Linear Regression Experiment")
+```
+
+---
+
+## Run
+
+A **run** represents one execution of a machine learning experiment.
+
+For example, changing the learning rate and training the model again creates another run.
+
+```text
+Run 1 → learning_rate = 0.01
+Run 2 → learning_rate = 0.001
+Run 3 → learning_rate = 0.0001
+```
+
+---
+
+# 3. Logging Parameters
+
+Parameters are values configured **before or during training**.
+
+Examples:
+
+```text
+learning_rate
+epochs
+batch_size
+max_depth
+n_estimators
+```
+
+Log a parameter:
+
+```python
+mlflow.log_param("n_estimators", 100)
+```
+
+Multiple parameters:
+
+```python
+mlflow.log_params({
+    "n_estimators": 100,
+    "max_depth": 5
+})
+```
+
+---
+
+# 4. Logging Metrics
+
+Metrics measure model performance.
+
+Examples:
+
+```text
+accuracy
+precision
+recall
+f1_score
+mae
+mse
+rmse
+r2_score
+```
+
+Example:
+
+```python
+mlflow.log_metric("accuracy", accuracy)
+```
+
+Multiple metrics:
+
+```python
+mlflow.log_metrics({
+    "mae": mae,
+    "r2": r2
+})
+```
+
+---
+
+# 5. Logging Artifacts
+
+Artifacts are files generated during an experiment.
+
+Examples:
+
+- Trained model
+- CSV files
+- Images
+- Confusion matrix
+- Training plots
+- Text reports
+
+Example:
+
+```python
+mlflow.log_artifact("result.txt")
+```
+
+---
+
+# 6. Starting an MLflow Run
+
+Use:
+
+```python
+with mlflow.start_run():
+    ...
+```
+
+Everything logged inside this block belongs to that run.
+
+Example:
+
+```python
+with mlflow.start_run():
+    mlflow.log_param("model", "LinearRegression")
+    mlflow.log_metric("r2", 0.92)
+```
+
+---
+
+# 7. Simple Training Example
+
+The following example trains a Linear Regression model and tracks the experiment.
+
+### `mlflow_code.py`
+
+```python
+import mlflow
+import mlflow.sklearn
+
+from sklearn.datasets import load_diabetes
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
+
+
+# 1. Set MLflow tracking location
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
+
+# 1.1. Creating/selecting an experiment
+mlflow.set_experiment("Linear Regression Experiment")
+
+
+# 2. Load the dataset
+data = load_diabetes()
+
+X = data.data
+y = data.target
+
+
+# 3. Split the dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+)
+
+
+# 4. Start an MLflow run
+with mlflow.start_run():
+
+    # 5. Create the model
+    model = LinearRegression()
+
+    # 6. Log parameters
+    mlflow.log_param("model", "LinearRegression")
+    mlflow.log_param("test_size", 0.2)
+    mlflow.log_param("random_state", 42)
+
+    # 7. Train the model
+    model.fit(X_train, y_train)
+
+    # 8. Generate predictions
+    predictions = model.predict(X_test)
+
+    # 9. Calculate metrics
+    mae = mean_absolute_error(y_test, predictions)
+    mse = mean_squared_error(y_test, predictions)
+    rmse = mse ** 0.5
+    r2 = r2_score(y_test, predictions)
+
+    # 10. Log metrics
+    mlflow.log_metric("mae", mae)
+    mlflow.log_metric("mse", mse)
+    mlflow.log_metric("rmse", rmse)
+    mlflow.log_metric("r2", r2)
+
+    # 11. Log the trained model
+    mlflow.sklearn.log_model(
+        model,
+        name="linear_regression_model",
+    )
+
+    # 12. Print results
+    print("Model trained successfully")
+    print(f"MAE: {mae:.4f}")
+    print(f"MSE: {mse:.4f}")
+    print(f"RMSE: {rmse:.4f}")
+    print(f"R2 Score: {r2:.4f}")
+```
+
+### Install dependencies
+
+```bash
+pip install mlflow scikit-learn
+```
+
+### Run the program
+
+```bash
+python mlflow_code.py
+```
+
+### Start MLflow UI
+
+After the training run:
+
+```bash
+mlflow ui
+```
+
+Then open the local MLflow address shown in the terminal.
+
+### Output:
+
+```text
+
+Model trained successfully
+MAE: 42.7941
+MSE: 2900.1936
+RMSE: 53.8534
+R2 Score: 0.4526
+```
+
+![Mlflow](/images/mlflow.png "Mlflow")
+
+The run will contain:
+
+```text
+Linear Regression Experiment
+│
+└── Run
+    ├── Parameters
+    │   ├── model
+    │   ├── test_size
+    │   └── random_state
+    │
+    ├── Metrics
+    │   ├── MAE
+    │   ├── MSE
+    │   ├── RMSE
+    │   └── R2
+    │
+    └── Artifacts
+        └── linear_regression_model
+```
+
+---
+
+# 8. Step-by-Step Explanation
+
+### Step 1: Import MLflow
+
+```python
+import mlflow
+```
+
+Provides MLflow functionality for experiment tracking.
+
+### Step 2: Load Dataset
+
+```python
+data = load_diabetes()
+```
+
+Loads the built-in Diabetes regression dataset from scikit-learn.
+
+### Step 3: Separate Features and Target
+
+```python
+X = data.data
+y = data.target
+```
+
+`X` contains the input features.
+
+`y` contains the target values.
+
+### Step 4: Split the Dataset
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+)
+```
+
+80% of the data is used for training and 20% for testing.
+
+### Step 5: Create an Experiment
+
+```python
+mlflow.set_experiment("Linear Regression Experiment")
+```
+
+Creates or selects an MLflow experiment.
+
+### Step 6: Start a Run
+
+```python
+with mlflow.start_run():
+```
+
+Starts a new MLflow run.
+
+### Step 7: Create the Model
+
+```python
+model = LinearRegression()
+```
+
+Creates a Linear Regression model.
+
+### Step 8: Log Parameters
+
+```python
+mlflow.log_param("model", "LinearRegression")
+mlflow.log_param("test_size", 0.2)
+mlflow.log_param("random_state", 42)
+```
+
+Stores the configuration used for the experiment.
+
+### Step 9: Train the Model
+
+```python
+model.fit(X_train, y_train)
+```
+
+Trains the model using the training data.
+
+### Step 10: Generate Predictions
+
+```python
+predictions = model.predict(X_test)
+```
+
+Generates predictions for the test dataset.
+
+### Step 11: Calculate Metrics
+
+```python
+mae = mean_absolute_error(y_test, predictions)
+mse = mean_squared_error(y_test, predictions)
+r2 = r2_score(y_test, predictions)
+```
+
+Calculates model performance.
+
+### Step 12: Log Metrics
+
+```python
+mlflow.log_metric("mae", mae)
+mlflow.log_metric("mse", mse)
+mlflow.log_metric("r2", r2)
+```
+
+Stores the performance metrics in MLflow.
+
+---
+
+# 9. Run the Example
+
+```bash
+python mlflow_demo.py
+```
+
+Example output:
+
+```text
+Model trained successfully
+MAE: 42.1234
+MSE: 2900.1234
+R2 Score: 0.4521
+```
+
+---
+
+# 10. Start MLflow UI
+
+Run:
+
+```bash
+mlflow ui
+```
+
+MLflow starts a local tracking server.
+
+The terminal will provide the local address.
+
+Open the displayed address in a browser.
+
+The MLflow UI provides information such as:
+
+```text
+Experiments
+    ↓
+Runs
+    ↓
+Parameters
+Metrics
+Artifacts
+```
+
+---
+
+# 11. Comparing Runs
+
+Suppose three experiments are performed:
+
+```text
+Run 1
+model = LinearRegression
+r2 = 0.45
+
+Run 2
+model = Ridge
+r2 = 0.51
+
+Run 3
+model = RandomForest
+r2 = 0.68
+```
+
+MLflow makes it possible to compare these runs.
+
+This helps determine which configuration produced better results.
+
+---
+
+# 12. Parameters vs Metrics vs Artifacts
+
+| Type | Meaning | Examples |
+| --- | --- | --- |
+| Parameter | Training configuration | `learning_rate`, `max_depth` |
+| Metric | Model performance | `accuracy`, `RMSE`, `R²` |
+| Artifact | Generated file | Model, plot, CSV |
+| Run | One experiment execution | Run 1, Run 2 |
+| Experiment | Collection of related runs | Image Classification |
+
+---
+
+# 13. Important MLflow Components
+
+MLflow commonly includes four major areas:
+
+### MLflow Tracking
+
+Tracks:
+
+- Parameters
+- Metrics
+- Artifacts
+- Models
+- Runs
+
+### MLflow Projects
+
+Packages machine learning code in a reproducible format.
+
+### MLflow Models
+
+Provides a standard format for saving and serving models.
+
+### MLflow Model Registry
+
+Manages model versions and lifecycle stages.
+
+Example:
+
+```text
+Model
+ ↓
+Version 1
+ ↓
+Version 2
+ ↓
+Version 3
+```
+
+---
+
+# 14. MLflow Model Registry
+
+The Model Registry can be used to manage models through their lifecycle.
+
+Typical workflow:
+
+```text
+Training
+   ↓
+Experiment
+   ↓
+Best Run
+   ↓
+Register Model
+   ↓
+Model Version
+   ↓
+Production
+```
+
+Important concepts include:
+
+- Model versions
+- Model aliases
+- Model metadata
+- Model lifecycle management
+
+---
+
+# 15. Why Experiment Tracking Is Important
+
+Without experiment tracking:
+
+```text
+Model A → ?
+Model B → ?
+Model C → ?
+```
+
+It becomes difficult to remember which configuration produced a particular result.
+
+With MLflow:
+
+```text
+Run 1
+├── Parameters
+├── Metrics
+└── Artifacts
+
+Run 2
+├── Parameters
+├── Metrics
+└── Artifacts
+
+Run 3
+├── Parameters
+├── Metrics
+└── Artifacts
+```
+
+This makes experiments reproducible and easier to compare.
+
+---
+
+# 16. Key Commands
+
+Install:
+
+```bash
+pip install mlflow
+```
+
+Run training:
+
+```bash
+python mlflow_demo.py
+```
+
+Start UI:
+
+```bash
+mlflow ui
+```
+
+Start a run:
+
+```python
+with mlflow.start_run():
+    ...
+```
+
+Log parameter:
+
+```python
+mlflow.log_param("parameter", value)
+```
+
+Log metric:
+
+```python
+mlflow.log_metric("metric", value)
+```
+
+Log artifact:
+
+```python
+mlflow.log_artifact("file.txt")
+```
+
+Set experiment:
+
+```python
+mlflow.set_experiment("Experiment Name")
+```
+
+---
+
+# 17. Complete Experiment Tracking Flow
+
+```text
+Dataset
+   ↓
+Model Configuration
+   ↓
+MLflow Experiment
+   ↓
+Start Run
+   ↓
+Log Parameters
+   ↓
+Train Model
+   ↓
+Calculate Metrics
+   ↓
+Log Metrics
+   ↓
+Save Files / Model
+   ↓
+Log Artifacts
+   ↓
+MLflow UI
+   ↓
+Compare Runs
+   ↓
+Select Best Model
+```

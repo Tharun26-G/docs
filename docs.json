@@ -377,6 +377,12 @@
               "ci-cd",
               "ci-cd-code"
             ]
+          },
+          {
+            "group": "Day 46",
+            "pages": [
+              "mlflow"
+            ]
           }
         ]
       }

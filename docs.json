@@ -383,6 +383,12 @@
             "pages": [
               "mlflow"
             ]
+          },
+          {
+            "group": "Day 47",
+            "pages": [
+              "monitoring"
+            ]
           }
         ]
       }

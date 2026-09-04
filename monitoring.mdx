@@ -1,0 +1,974 @@
+---
+title: "Monitoring"
+---
+
+# Monitoring with Prometheus & Grafana
+
+## 1. What is Monitoring?
+
+Monitoring is the process of collecting and visualizing application metrics to understand application health, performance, and usage.
+
+Important metrics include:
+
+- API request count
+- Request rate
+- Error count
+- Response latency
+- CPU and memory usage
+- Model inference time
+- Application uptime
+
+Basic architecture:
+
+```text
+FastAPI
+   │
+   │ /metrics
+   ▼
+Prometheus
+   │
+   │ PromQL
+   ▼
+Grafana
+   │
+   ▼
+Dashboard
+```
+
+---
+
+# 2. Prometheus
+
+Prometheus is an open-source monitoring system that collects and stores metrics as time-series data.
+
+Prometheus periodically **scrapes** metrics from configured targets.
+
+Example:
+
+```text
+FastAPI
+http://localhost:8000/metrics
+        ↓
+    Prometheus
+    http://localhost:9090
+```
+
+---
+
+# 3. Grafana
+
+Grafana is a visualization platform used to create dashboards from data collected by Prometheus.
+
+```text
+Prometheus → Grafana → Dashboard
+```
+
+Grafana can display:
+
+- Counters
+- Graphs
+- Request rates
+- Error rates
+- Latency
+- System metrics
+
+---
+
+# 4. Project Structure
+
+```text
+Day 47 - Monitoring/
+│
+├── metrics.py
+├── prometheus.yml
+├── requirements.txt
+└── .gitignore
+```
+
+---
+
+# 5. Install Python Dependencies
+
+### `requirements.txt`
+
+```text
+fastapi
+uvicorn
+prometheus-client
+```
+
+Install:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# 6. Create FastAPI Metrics Application
+
+### `metrics.py`
+
+```python
+from fastapi import FastAPI
+from fastapi.responses import Response
+from prometheus_client import Counter, generate_latest
+
+app = FastAPI()
+
+request_counter = Counter(
+    "api_requests_total",
+    "Total number of API requests"
+)
+
+
+@app.get("/")
+def home():
+    request_counter.inc()
+
+    return {"message": "Hello from tharun"}
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(
+        content=generate_latest(),
+        media_type="text/plain"
+    )
+```
+
+---
+
+# 7. Understanding the Counter
+
+```python
+request_counter = Counter(
+    "api_requests_total",
+    "Total number of API requests"
+)
+```
+
+Creates a Prometheus counter called:
+
+```text
+api_requests_total
+```
+
+Every request to `/` increases the counter:
+
+```python
+request_counter.inc()
+```
+
+Example:
+
+```text
+Request 1 → 1
+Request 2 → 2
+Request 3 → 3
+Request 4 → 4
+```
+
+---
+
+# 8. Run FastAPI
+
+Start the application:
+
+```bash
+uvicorn metrics:app --reload
+```
+
+FastAPI runs at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Test the application:
+
+```text
+http://127.0.0.1:8000/
+```
+
+Test the metrics:
+
+```text
+http://127.0.0.1:8000/metrics
+```
+
+The metrics page should contain something similar to:
+
+```text
+# HELP api_requests_total Total number of API requests
+# TYPE api_requests_total counter
+api_requests_total 5.0
+```
+
+---
+
+# 9. Prometheus Configuration
+
+### `prometheus.yml`
+
+```yaml
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "fastapi"
+    static_configs:
+      - targets: ["host.docker.internal:8000"]
+```
+
+### Important
+
+When Prometheus runs inside Docker and FastAPI runs directly on Windows:
+
+```yaml
+targets: ["host.docker.internal:8000"]
+```
+
+is used to allow the Prometheus container to access the host machine.
+
+Do not use:
+
+```yaml
+targets: ["localhost:8000"]
+```
+
+for this setup because `localhost` inside the Prometheus container refers to the container itself.
+
+---
+
+# 10. Run Prometheus with Docker
+
+Remove an existing Prometheus container if necessary:
+
+```bash
+docker rm -f prometheus
+```
+
+From the `Day 47 - Monitoring` directory, run:
+
+```bash
+MSYS_NO_PATHCONV=1 docker run -d \
+  --name prometheus \
+  -p 9090:9090 \
+  -v "$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml" \
+  prom/prometheus
+```
+
+### Command explanation
+
+```text
+MSYS_NO_PATHCONV=1
+```
+
+Prevents Git Bash on Windows from incorrectly converting Linux-style Docker paths.
+
+```text
+docker run -d
+```
+
+Starts the container in detached mode.
+
+```text
+--name prometheus
+```
+
+Names the container `prometheus`.
+
+```text
+-p 9090:9090
+```
+
+Maps the Prometheus container port to the host.
+
+```text
+-v "$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml"
+```
+
+Mounts the local configuration file into the Prometheus container.
+
+```text
+prom/prometheus
+```
+
+Uses the official Prometheus Docker image.
+
+---
+
+# 11. Check Prometheus Container
+
+Run:
+
+```bash
+docker ps
+```
+
+Expected:
+
+```text
+prometheus
+```
+
+Check logs:
+
+```bash
+docker logs prometheus
+```
+
+---
+
+# 12. Open Prometheus
+
+Open:
+
+```text
+http://localhost:9090
+```
+
+Prometheus UI should appear.
+
+---
+
+# 13. Check Prometheus Targets
+
+Open:
+
+```text
+http://localhost:9090/targets
+```
+
+Two targets should appear:
+
+```text
+prometheus    UP
+fastapi       UP
+```
+
+### `UP`
+
+Prometheus successfully connected to the target.
+
+### `DOWN`
+
+Prometheus could not scrape the target.
+
+---
+
+# 14. Test the FastAPI Target
+
+If `fastapi` is `UP`, Prometheus is successfully accessing:
+
+```text
+http://host.docker.internal:8000/metrics
+```
+
+The architecture is:
+
+```text
+Windows
+┌───────────────────────┐
+│ FastAPI               │
+│ localhost:8000        │
+│                       │
+│ /metrics              │
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Prometheus Container  │
+│ :9090                 │
+└───────────────────────┘
+```
+
+---
+
+# 15. Query Metrics in Prometheus
+
+Open:
+
+```text
+http://localhost:9090
+```
+
+Enter:
+
+```promql
+api_requests_total
+```
+
+Click **Execute**.
+
+Example result:
+
+```text
+api_requests_total{
+    instance="host.docker.internal:8000",
+    job="fastapi"
+} 10
+```
+
+---
+
+# 16. Generate Requests
+
+Open:
+
+```text
+http://127.0.0.1:8000/
+```
+
+Refresh the page several times.
+
+Then run:
+
+```promql
+api_requests_total
+```
+
+again in Prometheus.
+
+The value should increase.
+
+---
+
+# 17. Useful PromQL Queries
+
+### Total requests
+
+```promql
+api_requests_total
+```
+
+### Requests per second
+
+```promql
+rate(api_requests_total[1m])
+```
+
+### Requests during the last 5 minutes
+
+```promql
+increase(api_requests_total[5m])
+```
+
+---
+
+# 18. Install Grafana with Docker
+
+Remove an existing Grafana container if necessary:
+
+```bash
+docker rm -f grafana
+```
+
+Run Grafana:
+
+```bash
+docker run -d \
+  --name grafana \
+  -p 3000:3000 \
+  grafana/grafana
+```
+
+Check:
+
+```bash
+docker ps
+```
+
+You should see:
+
+```text
+prometheus
+grafana
+```
+
+---
+
+# 19. Open Grafana
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+The Grafana login page will appear.
+
+For a fresh local Grafana installation, the initial credentials are commonly:
+
+```text
+Username: admin
+Password: admin
+```
+
+Grafana may ask for a new password after login.
+
+---
+
+# 20. Connect Grafana to Prometheus
+
+In Grafana:
+
+```text
+Connections
+    ↓
+Data sources
+    ↓
+Add data source
+    ↓
+Prometheus
+```
+
+If both Prometheus and Grafana are Docker containers on the same Docker network, use:
+
+```text
+http://prometheus:9090
+```
+
+Click:
+
+```text
+Save & test
+```
+
+---
+
+# 21. Create a Grafana Dashboard
+
+Go to:
+
+```text
+Dashboards
+    ↓
+New
+    ↓
+New Dashboard
+    ↓
+Add visualization
+```
+
+Select:
+
+```text
+Prometheus
+```
+
+Use this query:
+
+```promql
+api_requests_total
+```
+
+Select a **Stat** visualization.
+
+This displays the total number of API requests.
+
+---
+
+# 22. Requests Per Second Panel
+
+Create another visualization.
+
+Use:
+
+```promql
+rate(api_requests_total[1m])
+```
+
+Select:
+
+```text
+Time series
+```
+
+This displays the request rate over time.
+
+---
+
+# 23. Example Dashboard
+
+A basic monitoring dashboard can contain:
+
+```text
+┌──────────────────────────────┐
+│      Total API Requests      │
+│             125              │
+└──────────────────────────────┘
+
+┌──────────────────────────────┐
+│       Requests / Second      │
+│                              │
+│      ╱╲      ╱╲             │
+│  ╱──╯  ╰────╯  ╰──          │
+│                              │
+└──────────────────────────────┘
+```
+
+---
+
+# 24. Additional Metrics
+
+Monitoring can be extended beyond request counts.
+
+## Error Counter
+
+```python
+from prometheus_client import Counter
+
+error_counter = Counter(
+    "api_errors_total",
+    "Total number of API errors"
+)
+```
+
+Increment when an error occurs:
+
+```python
+error_counter.inc()
+```
+
+Query:
+
+```promql
+api_errors_total
+```
+
+---
+
+# 25. Gauge
+
+A Gauge represents a value that can increase or decrease.
+
+```python
+from prometheus_client import Gauge
+
+active_users = Gauge(
+    "active_users",
+    "Number of active users"
+)
+```
+
+Set value:
+
+```python
+active_users.set(10)
+```
+
+Increase:
+
+```python
+active_users.inc()
+```
+
+Decrease:
+
+```python
+active_users.dec()
+```
+
+---
+
+# 26. Histogram
+
+A Histogram is useful for measuring request latency.
+
+```python
+from prometheus_client import Histogram
+
+request_latency = Histogram(
+    "api_request_duration_seconds",
+    "API request duration"
+)
+```
+
+Measure execution time:
+
+```python
+with request_latency.time():
+    # application logic
+    pass
+```
+
+This is useful for monitoring:
+
+- API response time
+- Model inference time
+- Database operations
+
+---
+
+# 27. Labels
+
+Labels provide additional dimensions for metrics.
+
+```python
+from prometheus_client import Counter
+
+requests = Counter(
+    "http_requests_total",
+    "Total HTTP requests",
+    ["method", "endpoint"]
+)
+```
+
+Use:
+
+```python
+requests.labels(
+    method="GET",
+    endpoint="/"
+).inc()
+```
+
+The resulting metric can look like:
+
+```text
+http_requests_total{
+    method="GET",
+    endpoint="/"
+} 20
+```
+
+---
+
+# 28. Monitoring an ML Application
+
+For AI/ML applications, useful custom metrics include:
+
+```text
+model_predictions_total
+model_errors_total
+model_inference_duration_seconds
+model_confidence_score
+```
+
+Example:
+
+```python
+prediction_counter = Counter(
+    "model_predictions_total",
+    "Total number of model predictions"
+)
+```
+
+After a prediction:
+
+```python
+prediction_counter.inc()
+```
+
+---
+
+# 29. Complete Monitoring Architecture
+
+```text
+                    Monitoring System
+
+┌──────────────────────────────┐
+│          FastAPI             │
+│                              │
+│  /                           │
+│  /metrics                    │
+└──────────────┬───────────────┘
+               │
+               │ Prometheus metrics
+               ▼
+┌──────────────────────────────┐
+│         Prometheus           │
+│                              │
+│  Scrape every 5 seconds      │
+│  Store time-series metrics   │
+└──────────────┬───────────────┘
+               │
+               │ PromQL
+               ▼
+┌──────────────────────────────┐
+│           Grafana            │
+│                              │
+│  Charts                      │
+│  Statistics                  │
+│  Dashboards                  │
+└──────────────────────────────┘
+```
+
+---
+
+# 30. Complete Setup Commands
+
+### Terminal 1: FastAPI
+
+```bash
+cd "Day 47 - Monitoring"
+
+pip install -r requirements.txt
+
+uvicorn metrics:app --reload
+```
+
+### Terminal 2: Prometheus
+
+From the same directory:
+
+```bash
+MSYS_NO_PATHCONV=1 docker rm -f prometheus
+```
+
+Then:
+
+```bash
+MSYS_NO_PATHCONV=1 docker run -d \
+  --name prometheus \
+  -p 9090:9090 \
+  -v "$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml" \
+  prom/prometheus
+```
+
+### Terminal 3: Grafana
+
+```bash
+docker rm -f grafana
+```
+
+Then:
+
+```bash
+docker run -d \
+  --name grafana \
+  -p 3000:3000 \
+  grafana/grafana
+```
+
+---
+
+# 31. Verification Checklist
+
+### FastAPI
+
+```text
+http://127.0.0.1:8000/
+```
+
+Should return:
+
+```json
+{
+  "message": "Hello from tharun"
+}
+```
+
+### Metrics
+
+```text
+http://127.0.0.1:8000/metrics
+```
+
+Should contain:
+
+```text
+api_requests_total
+```
+
+### Prometheus
+
+```text
+http://localhost:9090
+```
+
+Query:
+
+```promql
+api_requests_total
+```
+
+### Prometheus Targets
+
+```text
+http://localhost:9090/targets
+```
+
+Expected:
+
+```text
+prometheus    UP
+fastapi       UP
+```
+
+### Grafana
+
+```text
+http://localhost:3000
+```
+
+Prometheus data source:
+
+```text
+http://prometheus:9090
+```
+
+Dashboard query:
+
+```promql
+api_requests_total
+```
+
+---
+
+# 32. Key Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Monitoring | Tracking application health and performance |
+| Metric | Numerical measurement |
+| Prometheus | Collects and stores metrics |
+| Scraping | Collecting metrics from a target |
+| Target | Application being monitored |
+| PromQL | Query language for Prometheus |
+| Grafana | Metric visualization platform |
+| Counter | Increasing metric |
+| Gauge | Increasing/decreasing metric |
+| Histogram | Measures distributions such as latency |
+| Labels | Dimensions attached to metrics |
+| `/metrics` | Endpoint exposing Prometheus metrics |
+
+---
+
+## Final Flow
+
+```text
+1. Create FastAPI application
+        ↓
+2. Add Prometheus Counter
+        ↓
+3. Expose /metrics
+        ↓
+4. Start FastAPI
+        ↓
+5. Configure prometheus.yml
+        ↓
+6. Start Prometheus with Docker
+        ↓
+7. Check /targets
+        ↓
+8. Confirm FastAPI = UP
+        ↓
+9. Query api_requests_total
+        ↓
+10. Start Grafana with Docker
+        ↓
+11. Add Prometheus data source
+        ↓
+12. Create Grafana dashboard
+        ↓
+13. Visualize API metrics
+```
+
+This gives the complete **Day 47 Monitoring** setup, including the Python application, Prometheus configuration, Docker commands for Prometheus and Grafana, PromQL queries, and dashboard creation.

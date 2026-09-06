@@ -395,6 +395,12 @@
             "pages": [
               "versioning"
             ]
+          },
+          {
+            "group": "Day 49",
+            "pages": [
+              "mlops"
+            ]
           }
         ]
       }

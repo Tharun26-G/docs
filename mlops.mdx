@@ -1,0 +1,1426 @@
+---
+title: "MLOps"
+---
+
+## 1. What is MLOps?
+
+**MLOps (Machine Learning Operations)** is the practice of applying software engineering and DevOps principles to the complete machine-learning lifecycle.
+
+A typical ML project involves:
+
+```text
+Data
+  ↓
+Preprocessing
+  ↓
+Training
+  ↓
+Evaluation
+  ↓
+Model Registry
+  ↓
+Deployment
+  ↓
+Monitoring
+  ↓
+Retraining
+```
+
+MLOps automates and manages this entire workflow.
+
+### Why MLOps is needed
+
+A model working inside a Jupyter Notebook is not enough for a production application.
+
+An ML system needs to handle:
+
+- Data ingestion
+- Data preprocessing
+- Model training
+- Model evaluation
+- Experiment tracking
+- Model versioning
+- Model deployment
+- API serving
+- Monitoring
+- Retraining
+- Automation
+
+---
+
+# 2. Traditional ML vs MLOps
+
+### Without MLOps
+
+```text
+Developer
+   ↓
+Jupyter Notebook
+   ↓
+Train Model
+   ↓
+Save model.pkl
+   ↓
+Manually deploy
+```
+
+Problems:
+
+- Difficult to reproduce experiments
+- Model versions can be confusing
+- Manual deployment
+- Difficult to monitor
+- Difficult to retrain
+- Difficult to track data/model changes
+
+### With MLOps
+
+```text
+Data
+ ↓
+Pipeline
+ ↓
+Training
+ ↓
+MLflow
+ ↓
+Model Registry
+ ↓
+FastAPI
+ ↓
+Docker
+ ↓
+Prometheus
+ ↓
+Grafana
+```
+
+---
+
+# 3. End-to-End MLOps Pipeline
+
+The main pipeline can be divided into four stages:
+
+```text
+INGEST
+   ↓
+TRAIN
+   ↓
+SERVE
+   ↓
+MONITOR
+```
+
+### 1. Ingest
+
+Collect and prepare data.
+
+```text
+Dataset
+   ↓
+Validation
+   ↓
+Preprocessing
+   ↓
+Training Data
+```
+
+### 2. Train
+
+Train and evaluate the ML model.
+
+```text
+Training Data
+     ↓
+Model Training
+     ↓
+Evaluation
+     ↓
+MLflow
+```
+
+### 3. Serve
+
+Expose the trained model through an API.
+
+```text
+Registered Model
+      ↓
+    FastAPI
+      ↓
+Prediction API
+```
+
+### 4. Monitor
+
+Monitor the deployed application.
+
+```text
+FastAPI
+   ↓
+Prometheus
+   ↓
+Grafana
+```
+
+---
+
+# 4. Project Structure
+
+A simple MLOps project can be organized as:
+
+```text
+Day 49 - MLOps Pipeline/
+│
+├── data/
+│   └── data.csv
+│
+├── models/
+│
+├── scripts/
+│   ├── train.py
+│   ├── serve.py
+│   └── monitor.py
+│
+├── mlops_demo.ipynb
+├── requirements.txt
+├── mlflow.db
+└── .gitignore
+```
+
+For the learning example, the pipeline will use the **Diabetes dataset** from scikit-learn.
+
+---
+
+# 5. Technologies Used
+
+| Tool | Purpose |
+| --- | --- |
+| Python | Pipeline implementation |
+| Pandas | Data processing |
+| Scikit-learn | Model training |
+| MLflow | Experiment tracking and model registry |
+| FastAPI | Model serving |
+| Uvicorn | API server |
+| Prometheus | Metrics collection |
+| Grafana | Metrics visualization |
+| Docker | Containerization |
+| GitHub Actions | CI/CD automation |
+
+---
+
+# 6. Step 1 – Data Ingestion
+
+Data ingestion means obtaining data and making it available to the ML pipeline.
+
+For this example, use the Diabetes dataset.
+
+## Cell 1 – Imports
+
+```python
+import pandas as pd
+
+from sklearn.datasets import load_diabetes
+```
+
+---
+
+## Cell 2 – Load Dataset
+
+```python
+data = load_diabetes(as_frame=True)
+
+df = data.frame
+
+print(df.head())
+print("Shape:", df.shape)
+```
+
+Example output:
+
+```text
+        age       sex       bmi  ...        s5        s6       target
+0  0.038076  0.050680  0.061696  ...  0.019907 -0.017646  151.0
+1 -0.001882 -0.044642 -0.051474  ... -0.068330 -0.092204   75.0
+...
+```
+
+---
+
+## Cell 3 – Save Data
+
+```python
+import os
+
+os.makedirs("data", exist_ok=True)
+
+df.to_csv("data/data.csv", index=False)
+
+print("data.csv created successfully")
+```
+
+The resulting structure:
+
+```text
+data/
+└── data.csv
+```
+
+---
+
+# 7. Step 2 – Data Preparation
+
+Separate the features and target.
+
+```python
+X = df.drop("target", axis=1)
+
+y = df["target"]
+
+print("Features:", X.shape)
+print("Target:", y.shape)
+```
+
+Here:
+
+```text
+X → Input features
+y → Target value
+```
+
+---
+
+# 8. Step 3 – Train/Test Split
+
+The dataset is divided into training and testing data.
+
+```python
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+print("Training data:", X_train.shape)
+print("Testing data:", X_test.shape)
+```
+
+### Why split the dataset?
+
+The training set is used to learn patterns.
+
+The testing set is used to evaluate how well the model performs on unseen data.
+
+```text
+Dataset
+   │
+   ├── 80% → Training
+   │
+   └── 20% → Testing
+```
+
+---
+
+# 9. Step 4 – Model Training
+
+Use Linear Regression.
+
+```python
+from sklearn.linear_model import LinearRegression
+
+model = LinearRegression()
+
+model.fit(X_train, y_train)
+
+print("Model trained successfully")
+```
+
+---
+
+# 10. Step 5 – Model Evaluation
+
+Generate predictions:
+
+```python
+predictions = model.predict(X_test)
+```
+
+Calculate metrics:
+
+```python
+from sklearn.metrics import mean_squared_error, r2_score
+
+mse = mean_squared_error(y_test, predictions)
+
+rmse = mse ** 0.5
+
+r2 = r2_score(y_test, predictions)
+
+print("MSE:", mse)
+print("RMSE:", rmse)
+print("R2:", r2)
+```
+
+### Important metrics
+
+**MSE**
+
+```text
+MSE = average((actual - predicted)²)
+```
+
+**RMSE**
+
+```text
+RMSE = √MSE
+```
+
+**R²**
+
+Measures how much of the target variation is explained by the model.
+
+---
+
+# 11. Step 6 – Experiment Tracking with MLflow
+
+MLflow records information about ML experiments.
+
+It can track:
+
+```text
+Parameters
+Metrics
+Models
+Artifacts
+Experiments
+Runs
+```
+
+For example:
+
+```text
+Experiment: MLOps Demo 1
+
+Run 1
+├── model = LinearRegression
+├── test_size = 0.2
+├── random_state = 42
+├── mse = ...
+├── rmse = ...
+└── r2 = ...
+```
+
+---
+
+# 12. MLflow Configuration
+
+Install MLflow:
+
+```bash
+pip install mlflow
+```
+
+Then configure it.
+
+## Cell 4 – MLflow
+
+```python
+import mlflow
+import mlflow.sklearn
+
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
+
+mlflow.set_experiment("MLOps Demo 1")
+
+print("MLflow experiment configured")
+```
+
+---
+
+# 13. Step 7 – Log the Training Run
+
+```python
+with mlflow.start_run():
+
+    model = LinearRegression()
+
+    model.fit(X_train, y_train)
+
+    predictions = model.predict(X_test)
+
+    mse = mean_squared_error(y_test, predictions)
+
+    rmse = mse ** 0.5
+
+    r2 = r2_score(y_test, predictions)
+
+    # Parameters
+    mlflow.log_param("model", "LinearRegression")
+    mlflow.log_param("test_size", 0.2)
+    mlflow.log_param("random_state", 42)
+
+    # Metrics
+    mlflow.log_metric("mse", mse)
+    mlflow.log_metric("rmse", rmse)
+    mlflow.log_metric("r2", r2)
+
+    print("Training run logged successfully")
+```
+
+---
+
+# 14. Step 8 – Register the Model
+
+The trained model can be registered in MLflow.
+
+```python
+with mlflow.start_run():
+
+    model = LinearRegression()
+
+    model.fit(X_train, y_train)
+
+    predictions = model.predict(X_test)
+
+    mse = mean_squared_error(y_test, predictions)
+    rmse = mse ** 0.5
+    r2 = r2_score(y_test, predictions)
+
+    mlflow.log_param("model", "LinearRegression")
+
+    mlflow.log_metric("mse", mse)
+    mlflow.log_metric("rmse", rmse)
+    mlflow.log_metric("r2", r2)
+
+    mlflow.sklearn.log_model(
+        model,
+        name="diabetes_model",
+        registered_model_name="DiabetesRegression"
+    )
+
+    print("Model registered successfully")
+```
+
+MLflow will create something like:
+
+```text
+DiabetesRegression
+└── Version 1
+```
+
+If another model is registered later:
+
+```text
+DiabetesRegression
+├── Version 1
+└── Version 2
+```
+
+---
+
+# 15. Viewing MLflow UI
+
+Start MLflow from the project directory:
+
+```bash
+mlflow ui \
+  --backend-store-uri sqlite:///mlflow.db \
+  --port 5000
+```
+
+On Git Bash, this can also be written as:
+
+```bash
+mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5000
+```
+
+Open:
+
+```text
+http://127.0.0.1:5000
+```
+
+The UI allows inspection of:
+
+```text
+Experiments
+    ↓
+Runs
+    ↓
+Parameters
+    ↓
+Metrics
+    ↓
+Artifacts
+    ↓
+Registered Models
+```
+
+---
+
+# 16. Step 9 – Model Serving
+
+After registering the model, expose it through FastAPI.
+
+Create:
+
+```text
+scripts/serve.py
+```
+
+```python
+import mlflow
+import mlflow.sklearn
+
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+
+app = FastAPI(title="Diabetes Prediction API")
+
+
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
+
+model = mlflow.sklearn.load_model(
+    "models:/DiabetesRegression/1"
+)
+
+
+class PredictionInput(BaseModel):
+
+    features: list[float]
+
+
+@app.get("/")
+def home():
+
+    return {
+        "message": "Diabetes Prediction API"
+    }
+
+
+@app.post("/predict")
+def predict(data: PredictionInput):
+
+    prediction = model.predict(
+        [data.features]
+    )
+
+    return {
+        "prediction": float(prediction[0])
+    }
+```
+
+---
+
+# 17. Start FastAPI
+
+From the project root:
+
+```bash
+uvicorn scripts.serve:app --reload
+```
+
+API:
+
+```text
+http://127.0.0.1:8000
+```
+
+Swagger documentation:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# 18. Test the Prediction API
+
+The Diabetes dataset contains **10 features**, so the request should contain 10 values.
+
+Example:
+
+```json
+{
+    "features": [
+        0.038,
+        0.050,
+        0.061,
+        0.021,
+        -0.044,
+        -0.034,
+        -0.043,
+        -0.002,
+        0.019,
+        -0.017
+    ]
+}
+```
+
+Example response:
+
+```json
+{
+    "prediction": 152.34
+}
+```
+
+---
+
+# 19. Step 10 – Monitoring
+
+Once the model is deployed, the application should be monitored.
+
+Important metrics include:
+
+```text
+Request count
+Request latency
+Error count
+CPU usage
+Memory usage
+Prediction statistics
+```
+
+Prometheus collects metrics.
+
+Grafana visualizes them.
+
+```text
+FastAPI
+   ↓
+/metrics
+   ↓
+Prometheus
+   ↓
+Grafana
+```
+
+---
+
+# 20. Prometheus Metrics
+
+Install:
+
+```bash
+pip install prometheus-client
+```
+
+Example:
+
+```python
+from prometheus_client import Counter, generate_latest
+from fastapi.responses import Response
+```
+
+Create a counter:
+
+```python
+request_counter = Counter(
+    "api_requests_total",
+    "Total number of API requests"
+)
+```
+
+Increment it:
+
+```python
+request_counter.inc()
+```
+
+Expose `/metrics`:
+
+```python
+@app.get("/metrics")
+def metrics():
+
+    return Response(
+        content=generate_latest(),
+        media_type="text/plain"
+    )
+```
+
+Prometheus can then scrape:
+
+```text
+http://host.docker.internal:8000/metrics
+```
+
+---
+
+# 21. Prometheus Configuration
+
+Create:
+
+```text
+prometheus.yml
+```
+
+```yaml
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "fastapi"
+    static_configs:
+      - targets: ["host.docker.internal:8000"]
+```
+
+---
+
+# 22. Run Prometheus with Docker
+
+From Git Bash:
+
+```bash
+MSYS_NO_PATHCONV=1 docker run -d \
+  --name prometheus \
+  -p 9090:9090 \
+  -v "$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml" \
+  prom/prometheus
+```
+
+Open:
+
+```text
+http://localhost:9090
+```
+
+Check:
+
+```text
+Status
+→ Targets
+```
+
+You should see:
+
+```text
+fastapi
+1 / 1 up
+```
+
+---
+
+# 23. Query API Metrics
+
+In Prometheus, go to:
+
+```text
+Graph
+```
+
+Run:
+
+```text
+api_requests_total
+```
+
+After requesting:
+
+```text
+http://127.0.0.1:8000/
+```
+
+the counter increases.
+
+For example:
+
+```text
+api_requests_total = 5
+```
+
+---
+
+# 24. Grafana
+
+Grafana provides dashboards for visualizing Prometheus metrics.
+
+Architecture:
+
+```text
+FastAPI
+   ↓
+Prometheus
+   ↓
+Grafana
+```
+
+Typical dashboard panels:
+
+```text
+┌─────────────────────────────┐
+│ Total API Requests          │
+├─────────────────────────────┤
+│ Request Rate                │
+├─────────────────────────────┤
+│ API Errors                  │
+├─────────────────────────────┤
+│ Request Latency             │
+└─────────────────────────────┘
+```
+
+Prometheus:
+
+```text
+http://localhost:9090
+```
+
+Grafana commonly runs at:
+
+```text
+http://localhost:3000
+```
+
+---
+
+# 25. Step 11 – Docker
+
+Docker packages the application and its dependencies.
+
+Instead of:
+
+```text
+Python
+MLflow
+FastAPI
+Scikit-learn
+Dependencies
+```
+
+being manually installed on every machine, Docker creates a reproducible environment.
+
+Example:
+
+```text
+Dockerfile
+     ↓
+Docker Image
+     ↓
+Docker Container
+```
+
+Build:
+
+```bash
+docker build -t diabetes-api .
+```
+
+Run:
+
+```bash
+docker run -p 8000:8000 diabetes-api
+```
+
+---
+
+# 26. Step 12 – Automation
+
+An MLOps pipeline should eventually be automated.
+
+For example:
+
+```text
+Git Push
+   ↓
+GitHub Actions
+   ↓
+Run Tests
+   ↓
+Build Docker Image
+   ↓
+Push Image
+   ↓
+Deploy
+```
+
+This removes many manual steps.
+
+---
+
+# 27. Complete MLOps Architecture
+
+The complete learning architecture is:
+
+```text
+                    ┌──────────────┐
+                    │    Dataset   │
+                    └──────┬───────┘
+                           ↓
+                    ┌──────────────┐
+                    │ Data Ingest  │
+                    └──────┬───────┘
+                           ↓
+                    ┌──────────────┐
+                    │ Model Train  │
+                    └──────┬───────┘
+                           ↓
+                    ┌──────────────┐
+                    │   MLflow     │
+                    │ Experiment   │
+                    │  Tracking    │
+                    └──────┬───────┘
+                           ↓
+                    ┌──────────────┐
+                    │    Model     │
+                    │   Registry   │
+                    └──────┬───────┘
+                           ↓
+                    ┌──────────────┐
+                    │   FastAPI    │
+                    │   Serving    │
+                    └──────┬───────┘
+                           ↓
+                    ┌──────────────┐
+                    │    Docker    │
+                    └──────┬───────┘
+                           ↓
+                    ┌──────────────┐
+                    │  Prometheus  │
+                    └──────┬───────┘
+                           ↓
+                    ┌──────────────┐
+                    │   Grafana    │
+                    └──────────────┘
+```
+
+---
+
+# 28. Automation with Scripts
+
+Instead of putting everything into one notebook, production pipelines usually separate responsibilities.
+
+### `train.py`
+
+```text
+Load data
+   ↓
+Preprocess
+   ↓
+Train
+   ↓
+Evaluate
+   ↓
+MLflow
+   ↓
+Register model
+```
+
+### `serve.py`
+
+```text
+Load registered model
+        ↓
+FastAPI
+        ↓
+Prediction endpoint
+```
+
+### `monitor.py`
+
+```text
+Application metrics
+        ↓
+Prometheus
+```
+
+---
+
+# 29. Example `train.py`
+
+A simple standalone training script:
+
+```python
+import mlflow
+import mlflow.sklearn
+
+from sklearn.datasets import load_diabetes
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+# Load data
+data = load_diabetes(as_frame=True)
+
+df = data.frame
+
+X = df.drop("target", axis=1)
+y = df["target"]
+
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+
+# MLflow
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
+
+mlflow.set_experiment("MLOps Demo 1")
+
+
+with mlflow.start_run():
+
+    # Train
+    model = LinearRegression()
+
+    model.fit(X_train, y_train)
+
+    # Predict
+    predictions = model.predict(X_test)
+
+    # Metrics
+    mse = mean_squared_error(
+        y_test,
+        predictions
+    )
+
+    rmse = mse ** 0.5
+
+    r2 = r2_score(
+        y_test,
+        predictions
+    )
+
+    # Log parameters
+    mlflow.log_param(
+        "model",
+        "LinearRegression"
+    )
+
+    mlflow.log_param(
+        "test_size",
+        0.2
+    )
+
+    # Log metrics
+    mlflow.log_metric("mse", mse)
+    mlflow.log_metric("rmse", rmse)
+    mlflow.log_metric("r2", r2)
+
+    # Register model
+    mlflow.sklearn.log_model(
+        model,
+        name="diabetes_model",
+        registered_model_name="DiabetesRegression"
+    )
+
+    print("Training completed")
+    print(f"MSE: {mse:.4f}")
+    print(f"RMSE: {rmse:.4f}")
+    print(f"R2: {r2:.4f}")
+```
+
+Run:
+
+```bash
+python scripts/train.py
+```
+
+---
+
+# 30. MLOps Pipeline Execution
+
+The complete execution becomes:
+
+### Step 1 — Install dependencies
+
+```bash
+pip install pandas scikit-learn mlflow fastapi uvicorn prometheus-client
+```
+
+### Step 2 — Train
+
+```bash
+python scripts/train.py
+```
+
+### Step 3 — Start MLflow
+
+```bash
+mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5000
+```
+
+### Step 4 — Start FastAPI
+
+```bash
+uvicorn scripts.serve:app --reload
+```
+
+### Step 5 — Start Prometheus
+
+```bash
+MSYS_NO_PATHCONV=1 docker run -d \
+  --name prometheus \
+  -p 9090:9090 \
+  -v "$(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml" \
+  prom/prometheus
+```
+
+### Step 6 — Start Grafana
+
+```bash
+docker run -d \
+  --name grafana \
+  -p 3000:3000 \
+  grafana/grafana
+```
+
+---
+
+# 31. Important MLOps Concepts
+
+These are important topics to understand beyond the basic pipeline:
+
+### Experiment Tracking
+
+Track:
+
+```text
+Parameters
+Metrics
+Artifacts
+Models
+```
+
+Tool:
+
+```text
+MLflow
+```
+
+### Model Registry
+
+Store and manage:
+
+```text
+Model
+Version
+Stage/status
+Metadata
+```
+
+### Model Versioning
+
+Example:
+
+```text
+DiabetesRegression
+├── v1
+├── v2
+└── v3
+```
+
+### Model Serving
+
+Expose models through:
+
+```text
+REST API
+FastAPI
+Flask
+```
+
+### Containerization
+
+Package the application using:
+
+```text
+Docker
+```
+
+### Monitoring
+
+Track:
+
+```text
+Latency
+Errors
+Requests
+Resource usage
+Model behavior
+```
+
+Tools:
+
+```text
+Prometheus
+Grafana
+```
+
+### CI/CD
+
+Automate:
+
+```text
+Testing
+Building
+Deployment
+```
+
+Tool:
+
+```text
+GitHub Actions
+```
+
+### Data Drift
+
+A change in the distribution of input data over time.
+
+```text
+Training Data
+      ↓
+   Model
+      ↓
+Production Data
+      ↓
+Distribution changes
+      ↓
+Data Drift
+```
+
+### Model Drift
+
+When model performance decreases because the relationship between inputs and target changes.
+
+```text
+Model accuracy
+     ↓
+  95%
+     ↓
+  90%
+     ↓
+  82%
+     ↓
+Model Drift
+```
+
+### Retraining
+
+When drift or new data requires the model to be trained again:
+
+```text
+New Data
+   ↓
+Validation
+   ↓
+Retraining
+   ↓
+Evaluation
+   ↓
+Register New Version
+   ↓
+Deploy
+```
+
+---
+
+# 32. Final MLOps Lifecycle
+
+```text
+              ┌───────────────┐
+              │     DATA      │
+              └───────┬───────┘
+                      ↓
+              ┌───────────────┐
+              │   INGESTION   │
+              └───────┬───────┘
+                      ↓
+              ┌───────────────┐
+              │  PREPROCESS   │
+              └───────┬───────┘
+                      ↓
+              ┌───────────────┐
+              │    TRAIN      │
+              └───────┬───────┘
+                      ↓
+              ┌───────────────┐
+              │   EVALUATE    │
+              └───────┬───────┘
+                      ↓
+              ┌───────────────┐
+              │    MLFLOW     │
+              └───────┬───────┘
+                      ↓
+              ┌───────────────┐
+              │ MODEL REGISTRY│
+              └───────┬───────┘
+                      ↓
+              ┌───────────────┐
+              │    SERVE      │
+              │   FastAPI     │
+              └───────┬───────┘
+                      ↓
+              ┌───────────────┐
+              │    DOCKER     │
+              └───────┬───────┘
+                      ↓
+              ┌───────────────┐
+              │   MONITOR     │
+              │ Prometheus    │
+              │ Grafana       │
+              └───────┬───────┘
+                      ↓
+                Detect Drift
+                      ↓
+                  RETRAIN
+                      │
+                      └──────────→ TRAIN
+```
+
+## Key takeaway
+
+The main idea of MLOps is:
+
+```text
+Build
+  ↓
+Track
+  ↓
+Register
+  ↓
+Deploy
+  ↓
+Monitor
+  ↓
+Improve
+  ↓
+Retrain
+```
+
+For this  project, the practical flow is:
+
+```text
+Diabetes Dataset
+      ↓
+Python / Scikit-learn
+      ↓
+MLflow Tracking
+      ↓
+MLflow Model Registry
+      ↓
+FastAPI
+      ↓
+Docker
+      ↓
+Prometheus
+      ↓
+Grafana
+      ↓
+Monitoring
+```

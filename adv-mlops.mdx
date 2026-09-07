@@ -1,0 +1,542 @@
+---
+title: "Advanced MLOps – Canary Deployment"
+---
+
+Canary deployment is a release strategy where a **new model version is gradually exposed to a small percentage of users/requests** before being rolled out to everyone.
+
+---
+
+## 1. What is Canary Deployment?
+
+In a traditional deployment:
+
+```text
+Users
+  │
+  ▼
+Model v1
+```
+
+The entire production traffic uses the existing model.
+
+With canary deployment:
+
+```text
+                 ┌─── Model v1 ── 95% traffic
+Users ── API ────┤
+                 └─── Model v2 ──  5% traffic
+```
+
+The new model is initially exposed to a small portion of traffic.
+
+If the new model performs well:
+
+```text
+5% → 10% → 25% → 50% → 100%
+```
+
+If problems are detected:
+
+```text
+Model v2 → Rollback
+             ↓
+          Model v1
+```
+
+---
+
+# 2. Why Use Canary Deployment?
+
+Canary deployment reduces the risk of deploying a new ML model directly to production.
+
+### Main benefits
+
+- Detect model performance problems early.
+- Detect API or infrastructure failures.
+- Compare old and new model behavior.
+- Reduce the impact of a faulty model.
+- Enable gradual production rollout.
+- Make rollback easier.
+
+---
+
+# 3. Canary Deployment Architecture
+
+```text
+                     ┌──────────────┐
+                     │   Client     │
+                     └──────┬───────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │   API Server  │
+                    └───────┬───────┘
+                            │
+                    Feature Flag
+                            │
+                ┌───────────┴───────────┐
+                │                       │
+                ▼                       ▼
+          ┌──────────┐             ┌──────────┐
+          │ Model v1 │             │ Model v2 │
+          │ Stable   │             │ Canary   │
+          └──────────┘             └──────────┘
+```
+
+The API decides which model should process the request.
+
+---
+
+# 4. Canary Rollout Strategy
+
+A common rollout process is:
+
+### Step 1 — Deploy new model
+
+Deploy Model v2 alongside Model v1.
+
+```text
+Model v1 → Production
+Model v2 → Canary
+```
+
+### Step 2 — Send small traffic
+
+For example:
+
+```text
+95% → Model v1
+5%  → Model v2
+```
+
+### Step 3 — Monitor
+
+Monitor metrics such as:
+
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- Latency
+- Error rate
+- Throughput
+- CPU/Memory usage
+- Prediction distribution
+
+### Step 4 — Increase traffic
+
+If Model v2 is healthy:
+
+```text
+95/5
+ ↓
+90/10
+ ↓
+75/25
+ ↓
+50/50
+ ↓
+0/100
+```
+
+### Step 5 — Rollback if necessary
+
+If Model v2 causes problems:
+
+```text
+Model v2
+   ↓
+Rollback
+   ↓
+Model v1
+```
+
+---
+
+# 5. Feature Flags
+
+A **feature flag** is a mechanism that controls whether a particular feature or model version is enabled.
+
+For ML systems, a feature flag can determine:
+
+```text
+Use Model v1
+OR
+Use Model v2
+```
+
+For example:
+
+```http
+X-Model-Version: v2
+```
+
+The API can inspect this header and select the model.
+
+---
+
+# 6. Feature Flag Based Model Switching
+
+```text
+Request
+   │
+   ▼
+Read Header
+   │
+   ├── X-Model-Version: v1 ──→ Model v1
+   │
+   └── X-Model-Version: v2 ──→ Model v2
+```
+
+This is useful for:
+
+- Canary testing
+- A/B testing
+- Manual rollback
+- Internal testing
+- Model comparison
+
+---
+
+# 7. `canary_demo.py`
+
+The following example uses FastAPI and switches between two models based on a request header.
+
+```python
+from fastapi import FastAPI, Header
+from pydantic import BaseModel
+
+
+app = FastAPI(title="Canary Deployment Demo")
+
+
+# Model implementations
+
+
+def old_model(value: float) -> str:
+    """
+    Simulated production model.
+    """
+    if value >= 50:
+        return "Class A"
+
+    return "Class B"
+
+
+def new_model(value: float) -> str:
+    """
+    Simulated canary model.
+    """
+    if value >= 60:
+        return "Class A"
+
+    return "Class B"
+
+
+
+# Request schema
+
+
+class PredictionRequest(BaseModel):
+    value: float
+
+
+
+# Prediction API
+
+
+@app.post("/predict")
+def predict(
+    request: PredictionRequest,
+    x_model_version: str = Header(default="v1")
+):
+    """
+    Select the model based on the X-Model-Version header.
+    """
+
+    if x_model_version == "v2":
+        prediction = new_model(request.value)
+        model_used = "new-model-v2"
+
+    else:
+        prediction = old_model(request.value)
+        model_used = "old-model-v1"
+
+    return {
+        "input": request.value,
+        "prediction": prediction,
+        "model": model_used
+    }
+
+
+
+# Health check
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy"
+    }
+```
+
+---
+
+# 8. Running the API
+
+Install dependencies:
+
+```bash
+pip install fastapi uvicorn
+```
+
+Run the server:
+
+```bash
+uvicorn canary_demo:app --reload
+```
+
+API:
+
+```text
+http://127.0.0.1:8000
+```
+
+Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# 9. Testing Model v1
+
+Request:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/predict" ^
+-H "Content-Type: application/json" ^
+-H "X-Model-Version: v1" ^
+-d "{\"value\":55}"
+```
+
+Response:
+
+```json
+{
+    "input": 55.0,
+    "prediction": "Class A",
+    "model": "old-model-v1"
+}
+```
+
+---
+
+# 10. Testing Model v2
+
+Request:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/predict" ^
+-H "Content-Type: application/json" ^
+-H "X-Model-Version: v2" ^
+-d "{\"value\":55}"
+```
+
+Response:
+
+```json
+{
+    "input": 55.0,
+    "prediction": "Class B",
+    "model": "new-model-v2"
+}
+```
+
+Here the same input produces different predictions because the request was routed to different model versions.
+
+---
+
+# 11. Canary Header
+
+The important part is:
+
+```python
+x_model_version: str = Header(default="v1")
+```
+
+and:
+
+```python
+if x_model_version == "v2":
+    prediction = new_model(request.value)
+else:
+    prediction = old_model(request.value)
+```
+
+This creates a simple **feature-flag mechanism**.
+
+---
+
+# 12. Header-Based Canary vs Percentage-Based Canary
+
+The above example is **header-based routing**.
+
+### Header-based
+
+```text
+X-Model-Version: v1 → Model v1
+X-Model-Version: v2 → Model v2
+```
+
+Useful for:
+
+- Developers
+- Testing teams
+- Internal users
+- Debugging
+- Controlled experiments
+
+### Percentage-based
+
+Production systems can instead route traffic automatically:
+
+```text
+             API
+              │
+        ┌─────┴─────┐
+        │           │
+       95%          5%
+        │           │
+        ▼           ▼
+     Model v1    Model v2
+```
+
+For example:
+
+```python
+import random
+
+if random.random() < 0.05:
+    model = new_model
+else:
+    model = old_model
+```
+
+This sends approximately **5% of requests** to the canary model.
+
+For production systems, routing is often handled by an API gateway, service mesh, load balancer, or deployment platform rather than implementing random routing directly inside the application.
+
+---
+
+# 13. Canary Monitoring
+
+A canary deployment should not only route traffic—it should **measure the canary**.
+
+Example:
+
+| Metric | Model v1 | Model v2 |
+| --- | --: | --: |
+| Error Rate | 0.5% | 0.7% |
+| Latency | 120 ms | 135 ms |
+| Accuracy | 91% | 93% |
+| F1 Score | 0.89 | 0.91 |
+
+The new model can be promoted when its metrics satisfy predefined thresholds.
+
+Example:
+
+```text
+Error Rate < 1%
+Latency < 200 ms
+Accuracy > 90%
+```
+
+---
+
+# 14. Automated Canary Decision
+
+A more advanced pipeline can automatically make the rollout decision:
+
+```text
+Deploy Model v2
+      │
+      ▼
+Send 5% Traffic
+      │
+      ▼
+Collect Metrics
+      │
+      ▼
+Are metrics healthy?
+    /       \
+  Yes        No
+   │          │
+   ▼          ▼
+Increase    Rollback
+Traffic     to v1
+   │
+   ▼
+Repeat
+```
+
+This creates an **automated progressive delivery pipeline**.
+
+---
+
+# 15. Canary vs Blue-Green vs A/B Testing
+
+| Strategy | Main Purpose |
+| --- | --- |
+| Canary | Gradually expose new version |
+| Blue-Green | Switch between two complete environments |
+| A/B Testing | Compare behavior between variants |
+| Feature Flag | Dynamically enable/disable functionality |
+
+Canary deployment is particularly useful for **reducing production risk when releasing a new ML model**.
+
+---
+
+# 16. MLOps Canary Pipeline
+
+A complete MLOps workflow can look like:
+
+```text
+Data
+ │
+ ▼
+Training
+ │
+ ▼
+Model Validation
+ │
+ ▼
+Model Registry
+ │
+ ▼
+Deploy Model v2
+ │
+ ▼
+Canary Release
+ │
+ ├── 5% Traffic → v2
+ │
+ └── 95% Traffic → v1
+ │
+ ▼
+Monitoring
+ │
+ ├── Good → Increase Traffic
+ │
+ └── Bad → Rollback
+ │
+ ▼
+100% Traffic → v2
+```
+
+### Key idea
+
+**Canary deployment = gradual model rollout + monitoring + controlled traffic + rollback capability.**
+
+The `X-Model-Version` header example is a simple way to understand the mechanism in a production MLOps system, the same concept is usually combined with **model registries, monitoring, automated evaluation, feature-flag services, and deployment infrastructure**.

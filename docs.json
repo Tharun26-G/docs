@@ -401,6 +401,12 @@
             "pages": [
               "mlops"
             ]
+          },
+          {
+            "group": "Day 50",
+            "pages": [
+              "adv-mlops"
+            ]
           }
         ]
       }

@@ -1,0 +1,847 @@
+---
+title: "Model Explainability (SHAP, LIME)"
+---
+
+Model explainability helps understand **why a machine learning model produced a particular prediction**.
+
+Two important techniques are:
+
+- **SHAP** — SHapley Additive exPlanations
+- **LIME** — Local Interpretable Model-agnostic Explanations
+
+---
+
+# 1. Why Model Explainability?
+
+Machine learning models can make accurate predictions but may be difficult to interpret.
+
+For example:
+
+```text
+Input:
+Age = 45
+Income = ₹80,000
+Credit Score = 720
+Loan Amount = ₹5,00,000
+
+Prediction:
+Loan Approved
+```
+
+Explainability answers:
+
+> **Why did the model approve this loan?**
+
+A model explanation might show:
+
+```text
+Credit Score     → +0.35
+Income           → +0.25
+Age              → +0.08
+Loan Amount      → -0.12
+```
+
+This indicates which features contributed positively or negatively to the prediction.
+
+---
+
+# 2. SHAP
+
+**SHAP** stands for **SHapley Additive exPlanations**.
+
+It is based on **Shapley values** from cooperative game theory.
+
+The basic idea is:
+
+> Each feature receives a contribution value showing how much it influenced the prediction.
+
+For a prediction:
+
+```text
+Base Prediction
+      +
+Feature Contributions
+      =
+Final Prediction
+```
+
+Conceptually:
+
+```text
+Prediction = Base Value + Σ Feature Contributions
+```
+
+---
+
+# 3. SHAP Values
+
+Suppose a model predicts whether a customer will churn.
+
+```text
+Base probability = 0.40
+
+Age        = +0.10
+Contract   = -0.20
+Usage      = +0.15
+Support    = +0.05
+
+Final prediction = 0.50
+```
+
+Positive SHAP value:
+
+```text
+Feature pushes prediction higher
+```
+
+Negative SHAP value:
+
+```text
+Feature pushes prediction lower
+```
+
+The magnitude indicates the strength of the contribution.
+
+---
+
+# 4. SHAP Workflow
+
+```text
+Training Data
+      │
+      ▼
+Train ML Model
+      │
+      ▼
+Create SHAP Explainer
+      │
+      ▼
+Give Input to Explainer
+      │
+      ▼
+Calculate SHAP Values
+      │
+      ▼
+Interpret Feature Contributions
+```
+
+---
+
+# 5. Local vs Global Explainability
+
+### Local explanation
+
+Explains **one particular prediction**.
+
+```text
+Why was this customer predicted to churn?
+```
+
+SHAP and LIME can both provide local explanations.
+
+### Global explanation
+
+Explains the model's behavior across the dataset.
+
+```text
+Which features are generally most important?
+```
+
+SHAP is particularly useful for both local and global analysis.
+
+---
+
+# 6. LIME
+
+**LIME** stands for:
+
+> **Local Interpretable Model-agnostic Explanations**
+
+LIME explains a prediction by creating small variations around the input and observing how the model behaves.
+
+Conceptually:
+
+```text
+Original Input
+      │
+      ▼
+Create Perturbed Samples
+      │
+      ▼
+Get Model Predictions
+      │
+      ▼
+Fit Simple Interpretable Model
+      │
+      ▼
+Explain Original Prediction
+```
+
+---
+
+# 7. SHAP vs LIME
+
+| Feature | SHAP | LIME |
+| --- | --- | --- |
+| Full form | SHapley Additive exPlanations | Local Interpretable Model-agnostic Explanations |
+| Main purpose | Feature contribution | Local approximation |
+| Local explanation | Yes | Yes |
+| Global explanation | Yes | Limited |
+| Model agnostic | Mostly | Yes |
+| Mathematical basis | Shapley values | Local surrogate model |
+| Stability | Generally more consistent | Can vary with sampling |
+| Common use | Feature contribution analysis | Individual prediction explanation |
+
+---
+
+# 8. Install SHAP
+
+```bash
+pip install shap scikit-learn pandas numpy
+```
+
+---
+
+# 9. `explain_demo.py`
+
+A simple example using the **Iris dataset** and a Random Forest classifier:
+
+```python
+# 1. Imports
+
+import shap
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
+# 2. load dataset
+
+iris = load_iris()
+
+X = pd.DataFrame(iris.data, columns=iris.feature_names)
+y = iris.target
+
+# 3. Split the dataset into training and testing sets
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# 4. Train a Random Forest Classifier
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# 5. Select one prediction to explain
+
+sample = X_test.iloc[0:1]  # Select the first sample from the test set
+
+prediction = model.predict(sample)
+
+print("Input:")
+print(sample)
+print("Prediction:")
+print(iris.target_names[prediction][0])
+
+# 6. Create a SHAP explainer
+
+explainer = shap.TreeExplainer(model)
+
+# 7. Generate SHAP values for the selected sample
+shap_values = explainer.shap_values(sample)
+
+print("SHAP values:")
+print(shap_values)
+
+# 8. Which feature contributed the most to the predicted class?
+
+for feature, value in zip(X.columns, shap_values[0][:, prediction[0]]):
+    print(f"Feature: {feature}, SHAP value: {value:.4f}")
+
+# 9. Visualize the SHAP values
+
+shap.plots.waterfall(
+    shap.Explanation(
+        values=shap_values[0][:, prediction[0]],
+        base_values=explainer.expected_value[prediction[0]],
+        data=sample.iloc[0],
+        feature_names=X.columns,
+    )
+)
+
+plt.show()
+```
+
+Output
+
+```text
+Input:
+    sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)
+73                6.1               2.8                4.7               1.2
+Prediction:
+versicolor
+SHAP values:
+[[[-0.03122627  0.02906332  0.00216296]
+  [-0.00541958  0.00074618  0.0046734 ]
+  [-0.15474785  0.31726498 -0.16251713]
+  [-0.14593963  0.30034219 -0.15440256]]]
+Feature: sepal length (cm), SHAP value: 0.0291
+Feature: sepal width (cm), SHAP value: 0.0007
+Feature: petal length (cm), SHAP value: 0.3173
+Feature: petal width (cm), SHAP value: 0.3003
+```
+
+---
+
+# 10. Understanding the Code
+
+### Load the model
+
+```python
+model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+```
+
+A Random Forest is used because SHAP has an efficient **TreeExplainer** specifically designed for tree-based models.
+
+---
+
+### Create the explainer
+
+```python
+explainer = shap.TreeExplainer(model)
+```
+
+The explainer understands the trained tree model and calculates feature contributions.
+
+---
+
+### Explain one prediction
+
+```python
+sample = X_test.iloc[[0]]
+```
+
+Only one test sample is selected.
+
+Then:
+
+```python
+shap_values = explainer.shap_values(sample)
+```
+
+SHAP calculates how each feature contributed to the prediction.
+
+---
+
+# 11. Example Interpretation
+
+Suppose the output contains:
+
+```text
+Class: setosa
+
+sepal length (cm):  0.020
+sepal width (cm):   0.010
+petal length (cm):  0.320
+petal width (cm):   0.410
+```
+
+The important observation is:
+
+```text
+petal width  → strong contribution
+petal length → strong contribution
+```
+
+Therefore, these features had a stronger influence on the model's prediction for that particular sample.
+
+**Important:** the exact SHAP values depend on the trained model and selected sample.
+
+---
+
+# 12. SHAP Visualization
+
+SHAP provides several useful visualizations.
+
+### Waterfall plot
+
+Explains one prediction:
+
+```python
+shap.plots.waterfall(shap.Explanation(...))
+```
+
+Conceptually:
+
+```text
+Base Value
+    │
+    ├── Feature A ──► +
+    ├── Feature B ──► -
+    ├── Feature C ──► +
+    │
+    ▼
+Final Prediction
+```
+
+### Summary plot
+
+Shows feature importance across many samples:
+
+```python
+shap.summary_plot(shap_values, X_test)
+```
+
+### Bar plot
+
+Shows average feature importance:
+
+```python
+shap.summary_plot(
+    shap_values,
+    X_test,
+    plot_type="bar"
+)
+```
+
+---
+
+# 13. LIME Example
+
+LIME can also explain the same prediction.
+
+Install:
+
+```bash
+pip install lime
+```
+
+Basic workflow:
+
+```python
+from lime.lime_tabular import LimeTabularExplainer
+
+explainer = LimeTabularExplainer(
+    X_train.values,
+    feature_names=X_train.columns,
+    class_names=iris.target_names,
+    mode="classification"
+)
+```
+
+Explain a sample:
+
+```python
+explanation = explainer.explain_instance(
+    X_test.iloc[0].values,
+    model.predict_proba
+)
+```
+
+Display the explanation:
+
+```python
+print(explanation.as_list())
+```
+
+Example:
+
+```text
+[
+    ("petal width > 1.50", 0.42),
+    ("petal length > 5.00", 0.31),
+    ("sepal width <= 2.80", -0.08)
+]
+```
+
+This tells which local conditions influenced the prediction.
+
+Full code:
+
+```python
+# 1. Imports
+
+from lime.lime_tabular import LimeTabularExplainer
+
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
+
+# 2. Load dataset
+
+iris = load_iris()
+
+X = iris.data
+y = iris.target
+
+
+# 3. Split dataset
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+
+# 4. Train model
+
+model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+
+model.fit(X_train, y_train)
+
+
+# 5. Create LIME explainer
+
+explainer = LimeTabularExplainer(
+    X_train,
+    feature_names=iris.feature_names,
+    class_names=iris.target_names,
+    mode="classification"
+)
+
+
+# 6. Select one sample
+
+sample = X_test[0]
+
+
+# 7. Explain prediction
+
+explanation = explainer.explain_instance(
+    sample,
+    model.predict_proba
+)
+
+
+# 8. Print explanation
+
+print("Prediction:")
+print(iris.target_names[model.predict([sample])[0]])
+
+print("\nLIME Explanation:")
+
+for feature, contribution in explanation.as_list():
+    print(f"{feature}: {contribution:.4f}")
+```
+
+Ouput
+
+```text
+Prediction:
+versicolor
+
+LIME Explanation:
+4.25 < petal length (cm) <= 5.10: 0.2184
+0.30 < petal width (cm) <= 1.30: 0.1741
+5.75 < sepal length (cm) <= 6.40: 0.0197
+sepal width (cm) <= 2.80: -0.0175
+```
+
+---
+
+# 14. Important Difference
+
+SHAP:
+
+```text
+Feature
+   ↓
+Calculate contribution
+   ↓
+SHAP value
+```
+
+LIME:
+
+```text
+Input
+ ↓
+Perturb input
+ ↓
+Generate predictions
+ ↓
+Fit local simple model
+ ↓
+Explanation
+```
+
+So:
+
+**SHAP asks:**
+
+> How much did each feature contribute?
+
+**LIME asks:**
+
+> What simple local relationship explains this prediction?
+
+---
+
+# 15. Explainability in MLOps
+
+Model explainability is especially useful in production ML systems.
+
+```text
+Data
+  ↓
+Training
+  ↓
+Model Validation
+  ↓
+Model Registry
+  ↓
+Deployment
+  ↓
+Prediction
+  ↓
+Explainability
+  ↓
+Monitoring
+```
+
+It can help detect:
+
+- Unexpected feature dependence
+- Data leakage
+- Model bias
+- Distribution changes
+- Incorrect predictions
+- Feature importance changes
+
+---
+
+# 16. Advanced MLOps Example
+
+For a production model:
+
+```text
+             Prediction API
+                   │
+                   ▼
+              ML Model
+             /         \
+            /           \
+     Prediction       SHAP
+                       │
+                       ▼
+                Explanation
+                       │
+                       ▼
+                 Monitoring
+```
+
+The prediction response could conceptually contain:
+
+```json
+{
+    "prediction": "approved",
+    "model_version": "v2",
+    "explanation": {
+        "credit_score": 0.35,
+        "income": 0.21,
+        "loan_amount": -0.12
+    }
+}
+```
+
+This makes the model's decision more transparent and can be combined with **model versioning, monitoring, and canary deployment**.
+
+### Key takeaway
+
+```text
+SHAP → Feature contribution based explanation
+LIME → Local surrogate-model explanation
+```
+
+For the MLOps pipeline, **SHAP is particularly valuable because explanations can be tracked alongside model versions and production predictions.**
+
+The main learning from **SHAP and LIME** is not just how to run the libraries. It is understanding **why an ML model made a particular prediction**.
+
+## Main Difference
+
+| SHAP | LIME |
+| --- | --- |
+| Explains feature contribution | Explains local model behavior |
+| Based on Shapley values | Uses a simple local surrogate model |
+| Shows how much each feature contributes | Shows which features influence the prediction |
+| Can provide local + global explanations | Mainly local explanations |
+| Generally more mathematically consistent | Depends on generated/perturbed samples |
+| Useful for detailed model analysis | Useful for quick individual explanations |
+
+### Simple example
+
+Suppose the model predicts:
+
+```text
+Prediction: Loan Approved
+```
+
+SHAP might tell:
+
+```text
+Income        → +0.30
+Credit Score  → +0.45
+Loan Amount   → -0.15
+Age           → +0.05
+```
+
+So SHAP answers:
+
+> **How much did each feature contribute to this prediction?**
+
+LIME might tell:
+
+```text
+Credit Score > 700 → strongly supports approval
+Income > ₹50,000   → supports approval
+Loan Amount high   → works against approval
+```
+
+So LIME answers:
+
+> **What local conditions explain this particular prediction?**
+
+---
+
+# Should Learn From This Topic
+
+### 1. ML prediction ≠ explanation
+
+A model can say:
+
+```text
+Prediction = Class A
+```
+
+but explainability tells:
+
+```text
+Why Class A?
+```
+
+This is the fundamental concept.
+
+---
+
+### 2. Understand feature contribution
+
+You should be able to interpret:
+
+```text
+SHAP value > 0
+```
+
+as a feature pushing the prediction **toward the explained output**, and:
+
+```text
+SHAP value < 0
+```
+
+as pushing it **away from the explained output**.
+
+The exact interpretation depends on the model/output being explained.
+
+---
+
+### 3. Understand local explainability
+
+For your coding challenge, you selected:
+
+```python
+sample = X_test[0]
+```
+
+You are not explaining the entire model.
+
+You are asking:
+
+```text
+Why did the model make THIS prediction for THIS sample?
+```
+
+That's called a **local explanation**.
+
+---
+
+### 4. Understand global explainability
+
+Instead of one sample:
+
+```text
+Why did this sample get Class A?
+```
+
+global explainability asks:
+
+```text
+Which features are generally important across the dataset?
+```
+
+SHAP can be used for both.
+
+---
+
+# Where This Fits in MLOps
+
+This is the most important connection for your MLOps learning.
+
+Your pipeline is becoming:
+
+```text
+Data
+  ↓
+Training
+  ↓
+Model Validation
+  ↓
+Model Registry
+  ↓
+Deployment
+  ↓
+Canary Release
+  ↓
+Prediction
+  ↓
+Explainability
+  ↓
+Monitoring
+```
+
+For example:
+
+```text
+Model v2
+   ↓
+Prediction: Class A
+   ↓
+SHAP
+   ↓
+Feature 1 → +0.40
+Feature 2 → +0.25
+Feature 3 → -0.10
+```
+
+This helps investigate **why a production model is behaving the way it does**.
+
+## What to remember
+
+> **SHAP and LIME are model explainability techniques used to understand why a machine learning model makes a particular prediction. SHAP calculates feature contributions using Shapley-value-based reasoning, while LIME explains a prediction by approximating the model locally with an interpretable model.**
+
+And the one-line takeaway:
+
+```text
+SHAP → "How much did each feature contribute?"
+LIME → "What local behavior explains this prediction?"
+```

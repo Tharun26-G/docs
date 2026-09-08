@@ -407,6 +407,12 @@
             "pages": [
               "adv-mlops"
             ]
+          },
+          {
+            "group": "Day 51",
+            "pages": [
+              "model-explainability"
+            ]
           }
         ]
       }

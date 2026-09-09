@@ -1,0 +1,768 @@
+---
+title: "Model Compression - Quantization & Pruning"
+---
+
+## 1. Introduction
+
+Model compression is the process of reducing the **size, memory usage, and computational cost** of a machine learning model while maintaining acceptable prediction performance.
+
+The two important model compression techniques are:
+
+```text
+Model Compression
+│
+├── Quantization
+│   └── Reduce numerical precision
+│
+└── Pruning
+    └── Remove unnecessary parameters
+```
+
+### Main goals
+
+- Reduce model size
+- Reduce memory usage
+- Improve inference speed
+- Reduce deployment cost
+- Make models suitable for edge/mobile devices
+- Maintain acceptable accuracy
+
+---
+
+# 2. Quantization
+
+**Quantization** converts model parameters and/or computations from a higher numerical precision to a lower precision.
+
+A common conversion is:
+
+```text
+FP32 → INT8
+```
+
+Where:
+
+- `FP32` = 32-bit floating point
+- `INT8` = 8-bit integer
+
+---
+
+## 3. FP32
+
+Most PyTorch models initially use `float32` values.
+
+For example:
+
+```text
+0.123456
+0.789123
+-0.456789
+```
+
+Each FP32 value requires:
+
+```text
+32 bits = 4 bytes
+```
+
+Therefore, a model with many FP32 parameters requires more memory.
+
+---
+
+# 4. INT8
+
+INT8 uses 8 bits to represent values.
+
+```text
+8 bits = 1 byte
+```
+
+Therefore:
+
+```text
+FP32 → 4 bytes
+INT8  → 1 byte
+```
+
+The theoretical storage requirement for the quantized weights can therefore be approximately **one-quarter** of FP32 weight storage.
+
+Actual model size depends on the model and quantization implementation.
+
+---
+
+# 5. Why Quantization?
+
+Consider a model with:
+
+```text
+1,000,000 parameters
+```
+
+FP32 storage:
+
+```text
+1,000,000 × 4 bytes
+≈ 4 MB
+```
+
+INT8 storage:
+
+```text
+1,000,000 × 1 byte
+≈ 1 MB
+```
+
+Conceptually:
+
+```text
+FP32
+4 MB
+ ↓
+Quantization
+ ↓
+INT8
+1 MB
+```
+
+This can significantly reduce memory requirements.
+
+---
+
+# 6. Post-Training Quantization
+
+**Post-training quantization (PTQ)** applies quantization after the model has already been trained.
+
+```text
+Training
+   ↓
+FP32 Model
+   ↓
+Post-Training Quantization
+   ↓
+INT8 Model
+```
+
+The basic advantage is that the original model does not need to be trained again for the simplest PTQ approaches.
+
+---
+
+# 7. Dynamic Quantization
+
+Dynamic quantization is a simple form of post-training quantization.
+
+In PyTorch:
+
+```python
+torch.quantization.quantize_dynamic()
+```
+
+can be used to quantize supported layers.
+
+For example:
+
+```python
+quantized_model = torch.quantization.quantize_dynamic(
+    model,
+    {nn.Linear},
+    dtype=torch.qint8
+)
+```
+
+This is especially useful for learning and for CPU inference scenarios involving supported layers.
+
+---
+
+# 8. Simple Quantization Example
+
+### `quantization_demo.py`
+
+```python
+import torch
+import torch.nn as nn
+
+# 1. Create a simple model
+model = nn.Linear(10, 2)
+
+model.eval()
+
+# 2. Quantize the model
+quantized_model = torch.quantization.quantize_dynamic(
+    model,
+    {nn.Linear},
+    dtype=torch.qint8
+)
+
+# 3. Create input
+x = torch.randn(1, 10)
+
+# 4. Original model prediction
+original_output = model(x)
+
+# 5. Quantized model prediction
+quantized_output = quantized_model(x)
+
+print("Original model:")
+print(original_output)
+
+print("\nQuantized model:")
+print(quantized_output)
+```
+
+---
+
+# 9. Understanding the Example
+
+### Step 1 - Create model
+
+```python
+model = nn.Linear(10, 2)
+```
+
+This creates a simple fully connected layer.
+
+```text
+10 input features
+       ↓
+   Linear Layer
+       ↓
+2 output values
+```
+
+---
+
+### Step 2 - Set evaluation mode
+
+```python
+model.eval()
+```
+
+The model is placed in evaluation mode because the model is being used for inference rather than training.
+
+---
+
+### Step 3 - Quantize the model
+
+```python
+quantized_model = torch.quantization.quantize_dynamic(
+    model,
+    {nn.Linear},
+    dtype=torch.qint8
+)
+```
+
+The important part is:
+
+```python
+dtype=torch.qint8
+```
+
+This specifies 8-bit quantization for the supported layer.
+
+The model changes conceptually from:
+
+```text
+Linear
+FP32
+```
+
+to:
+
+```text
+Linear
+INT8 quantized implementation
+```
+
+---
+
+### Step 4 - Create input
+
+```python
+x = torch.randn(1, 10)
+```
+
+This creates one sample containing 10 input values.
+
+Example:
+
+```text
+[0.25, -0.42, 0.71, ...]
+```
+
+---
+
+### Step 5 - Generate original prediction
+
+```python
+original_output = model(x)
+```
+
+The FP32 model produces an output.
+
+---
+
+### Step 6 - Generate quantized prediction
+
+```python
+quantized_output = quantized_model(x)
+```
+
+The quantized model processes the same input.
+
+The outputs may be close but not necessarily identical because quantization introduces numerical approximation.
+
+---
+
+# 10. Important Observation
+
+Quantization does **not** mean:
+
+```text
+FP32 number → simply delete decimal digits
+```
+
+Actual quantization uses a mapping between floating-point values and a lower-precision representation.
+
+A simplified concept is:
+
+```text
+FP32 values
+     ↓
+Scaling
+     ↓
+INT8 representation
+```
+
+The quantized model keeps additional information such as scaling parameters to approximately reconstruct the required numerical range.
+
+---
+
+# 11. Quantization Trade-off
+
+Quantization provides benefits, but there can be a trade-off.
+
+```text
+Higher precision
+      ↓
+Better numerical representation
+      ↓
+Larger memory usage
+```
+
+Whereas:
+
+```text
+Lower precision
+      ↓
+Smaller representation
+      ↓
+Potentially lower accuracy
+```
+
+Therefore:
+
+```text
+Compression
+    ↕
+Model accuracy
+```
+
+The objective is to find an acceptable balance.
+
+---
+
+# 12. Pruning
+
+**Pruning** is another model compression technique.
+
+Instead of reducing the precision of parameters, pruning removes or disables parameters that contribute relatively little to the model.
+
+Example:
+
+```text
+Before:
+
+[0.82, 0.01, -0.74, 0.002, 0.61]
+
+After pruning:
+
+[0.82, 0.00, -0.74, 0.00, 0.61]
+```
+
+The small weights have been removed or set to zero.
+
+---
+
+# 13. Types of Pruning
+
+## Unstructured Pruning
+
+Individual weights are removed.
+
+```text
+Before:
+
+[0.8, 0.02, -0.7, 0.01, 0.6]
+
+After:
+
+[0.8, 0.0, -0.7, 0.0, 0.6]
+```
+
+This creates sparse weights.
+
+---
+
+## Structured Pruning
+
+Entire structures are removed.
+
+Examples:
+
+- Neurons
+- Channels
+- Filters
+- Attention heads
+
+Example:
+
+```text
+Before:
+
+Channel 1 ──┐
+Channel 2 ──┤
+Channel 3 ──┤
+Channel 4 ──┤
+Channel 5 ──┘
+
+After:
+
+Channel 1 ──┐
+Channel 3 ──┤
+Channel 5 ──┘
+```
+
+Structured pruning can produce a physically smaller architecture and can therefore be easier to exploit for actual inference speedups.
+
+---
+
+# 14. Quantization vs Pruning
+
+| Feature | Quantization | Pruning |
+| --- | --- | --- |
+| Main idea | Reduce numerical precision | Remove parameters/structures |
+| Example | FP32 → INT8 | Remove channels |
+| Main benefit | Lower memory | Lower model complexity |
+| Model size | Usually reduced | Can be reduced |
+| Accuracy | May decrease | May decrease |
+| Training | PTQ can avoid retraining | Fine-tuning is often used |
+| Main concept | Precision | Sparsity |
+
+---
+
+# 15. Quantization + Pruning
+
+Both techniques can be combined.
+
+```text
+Trained Model
+     ↓
+Pruning
+     ↓
+Fine-tuning
+     ↓
+Quantization
+     ↓
+Compressed Model
+```
+
+This can provide greater compression than using only one technique.
+
+---
+
+# 16. Model Compression Workflow
+
+```text
+Train Model
+     ↓
+Evaluate Model
+     ↓
+Compress Model
+     ↓
+Evaluate Accuracy
+     ↓
+Measure Size
+     ↓
+Measure Latency
+     ↓
+Compare Results
+     ↓
+Deploy
+```
+
+The important point is that compression should be **measured**, not assumed to be beneficial.
+
+---
+
+# 17. Size Comparison
+
+For a compression experiment:
+
+```text
+Original Model
+       │
+       ├── Size
+       ├── Accuracy
+       └── Latency
+       
+Quantized Model
+       │
+       ├── Size
+       ├── Accuracy
+       └── Latency
+```
+
+Example:
+
+| Metric | FP32 | INT8 |
+| --- | --: | --: |
+| Model Size | 40 MB | 12 MB |
+| Accuracy | 94% | 93.7% |
+| Latency | 15 ms | 10 ms |
+
+The exact values depend on the model, hardware, runtime, and quantization method.
+
+---
+
+# 18. Measuring Model Size
+
+A simple way to measure a saved model:
+
+```python
+import os
+
+size = os.path.getsize("model.pth")
+
+print(f"Size: {size / (1024 * 1024):.2f} MB")
+```
+
+For a fair comparison:
+
+```text
+model_fp32.pth
+model_int8.pth
+```
+
+can be saved and their file sizes compared.
+
+---
+
+# 19. Measuring Inference Latency
+
+A simple latency measurement:
+
+```python
+import time
+
+start = time.perf_counter()
+
+for _ in range(1000):
+    model(x)
+
+end = time.perf_counter()
+
+latency = (end - start) / 1000
+
+print(f"Latency: {latency * 1000:.4f} ms")
+```
+
+Running multiple iterations gives a more useful average than measuring a single inference.
+
+---
+
+# 20. Simple Coding Challenge
+
+### File
+
+```text
+compress_demo.py
+```
+
+### Objective
+
+Create a small PyTorch model and compare:
+
+```text
+FP32 Model
+    vs
+INT8 Model
+```
+
+Measure:
+
+1. Model size
+2. Inference latency
+3. Output values
+
+### Expected workflow
+
+```text
+Create Model
+    ↓
+FP32 Model
+    ↓
+Measure Size
+    ↓
+Measure Latency
+    ↓
+Quantize
+    ↓
+INT8 Model
+    ↓
+Measure Size
+    ↓
+Measure Latency
+    ↓
+Compare
+```
+
+---
+
+# 21. What Should Be Learned From This Challenge?
+
+The important concepts are:
+
+### Quantization
+
+```text
+FP32 → INT8
+```
+
+Reduce numerical precision.
+
+### Pruning
+
+```text
+Remove unnecessary weights/channels
+```
+
+Reduce model complexity.
+
+### Compression objective
+
+```text
+Smaller
++
+Faster
++
+Lower memory
++
+Acceptable accuracy
+```
+
+---
+
+# 22. MLOps Connection
+
+Model compression fits into the deployment part of an MLOps pipeline:
+
+```text
+Data
+ ↓
+Training
+ ↓
+Validation
+ ↓
+Model Registry
+ ↓
+Compression
+ ↓
+Benchmark
+ ↓
+Accuracy Validation
+ ↓
+Canary Deployment
+ ↓
+Production
+ ↓
+Monitoring
+```
+
+For example:
+
+```text
+Model v1
+   ↓
+FP32
+   ↓
+Quantization
+   ↓
+INT8
+   ↓
+Benchmark
+   ↓
+Canary Deployment
+   ↓
+Production
+```
+
+---
+
+# 23. Key Terms
+
+| Term | Meaning |
+| --- | --- |
+| FP32 | 32-bit floating-point representation |
+| INT8 | 8-bit integer representation |
+| Quantization | Reducing numerical precision |
+| PTQ | Post-training quantization |
+| Dynamic Quantization | Quantization performed after training with some computation handled dynamically |
+| Pruning | Removing model parameters/structures |
+| Sparsity | Proportion of parameters that are zero or absent |
+| Structured Pruning | Removing complete model structures |
+| Inference Latency | Time required to generate a prediction |
+| Model Compression | Reducing model resource requirements |
+
+---
+
+# 24. Final Summary
+
+```text
+Model Compression
+│
+├── Quantization
+│      ↓
+│   FP32 → INT8
+│      ↓
+│   Lower precision
+│      ↓
+│   Lower memory
+│
+└── Pruning
+       ↓
+   Remove unnecessary parameters
+       ↓
+   Lower model complexity
+```
+
+### One-line learning
+
+> **Quantization reduces the precision of model parameters, while pruning removes unnecessary parameters or structures to make ML models smaller and more efficient.**
+
+### For the coding 
+
+Start with:
+
+```python
+model = nn.Linear(10, 2)
+```
+
+then:
+
+```python
+quantized_model = torch.quantization.quantize_dynamic(
+    model,
+    {nn.Linear},
+    dtype=torch.qint8
+)
+```
+
+and compare the **original FP32 model and quantized INT8 model** in terms of **size, latency, and output**.

@@ -413,6 +413,12 @@
             "pages": [
               "model-explainability"
             ]
+          },
+          {
+            "group": "Day 52",
+            "pages": [
+              "model-compression"
+            ]
           }
         ]
       }

@@ -1,0 +1,837 @@
+---
+title: "Code Example"
+---
+
+The main idea of this code is:
+
+> **Give CLIP an image + several possible captions → CLIP calculates how well each caption matches the image → choose the highest score.**
+
+For example, if `image.jpg` contains a dog in a park, the output should favor **"A dog playing in the park"**.
+
+---
+
+# 1. Import PyTorch
+
+```python
+import torch
+```
+
+`torch` is **PyTorch**, a deep-learning framework.
+
+We use it here mainly for:
+
+- Running the CLIP model
+- Working with tensors
+- Calculating vector similarity
+- Disabling gradients during prediction
+
+Think of it as the mathematical engine behind the model.
+
+---
+
+# 2. Import PIL
+
+```python
+from PIL import Image
+```
+
+PIL/Pillow is used to work with images.
+
+For example:
+
+```python
+image = Image.open("image.jpg")
+```
+
+This loads your image into Python.
+
+So:
+
+```text
+image.jpg
+   ↓
+Pillow
+   ↓
+Python Image object
+```
+
+---
+
+# 3. Import CLIP
+
+```python
+from transformers import CLIPProcessor, CLIPModel
+```
+
+Here we're importing two Hugging Face classes.
+
+### `CLIPModel`
+
+```python
+CLIPModel
+```
+
+This is the actual **CLIP neural network**.
+
+It contains two important parts:
+
+```text
+              CLIP
+             /    \
+            /      \
+     Image Encoder  Text Encoder
+          ↓              ↓
+    Image Vector     Text Vector
+```
+
+The image encoder understands the image.
+
+The text encoder understands the caption.
+
+---
+
+### `CLIPProcessor`
+
+```python
+CLIPProcessor
+```
+
+The processor prepares the inputs in the format CLIP expects.
+
+For example:
+
+```text
+Image
+ ↓
+Resize
+Normalize
+Convert to tensor
+ ↓
+CLIP format
+```
+
+And text:
+
+```text
+"A dog playing in the park"
+             ↓
+        Tokenization
+             ↓
+       CLIP-compatible input
+```
+
+So:
+
+**Model = does the AI work**
+
+**Processor = prepares the input**
+
+---
+
+# 4. Load the CLIP model
+
+```python
+model = CLIPModel.from_pretrained(
+    "openai/clip-vit-base-patch32"
+)
+```
+
+This downloads/loads a pretrained CLIP model from Hugging Face.
+
+The model name:
+
+```text
+openai/clip-vit-base-patch32
+```
+
+means this is OpenAI's CLIP model using a Vision Transformer architecture.
+
+### `from_pretrained()`
+
+This means:
+
+> "Load a model that has already been trained."
+
+You don't need to train CLIP yourself.
+
+It already knows relationships between images and text.
+
+For example, it has learned that:
+
+```text
+🐶 ↔ dog
+🌳 ↔ park
+🚗 ↔ car
+🚲 ↔ bicycle
+```
+
+---
+
+# 5. Load the CLIP processor
+
+```python
+processor = CLIPProcessor.from_pretrained(
+    "openai/clip-vit-base-patch32"
+)
+```
+
+This loads the matching processor for the model.
+
+Important:
+
+```python
+model = ...
+```
+
+is the AI model.
+
+```python
+processor = ...
+```
+
+is the input preparation system.
+
+---
+
+# 6. Load the image
+
+```python
+image = Image.open("image.jpg")
+```
+
+This opens:
+
+```text
+image.jpg
+```
+
+and stores it in:
+
+```python
+image
+```
+
+For example, imagine your image looks like:
+
+```text
+        🌳
+   🐕
+       🌳
+```
+
+The variable:
+
+```python
+image
+```
+
+now contains that image.
+
+---
+
+# 7. Define possible captions
+
+```python
+captions = [
+    "A dog playing in the park",
+    "A cat sitting on a chair",
+    "A car driving on a road",
+    "A person riding a bicycle",
+]
+```
+
+This is a Python list containing **four possible descriptions**.
+
+We're asking CLIP:
+
+> "Which of these four captions best matches my image?"
+
+Conceptually:
+
+```text
+Image
+  │
+  ├── A dog playing in the park
+  ├── A cat sitting on a chair
+  ├── A car driving on a road
+  └── A person riding a bicycle
+```
+
+CLIP will compare the image against all four.
+
+---
+
+# 8. Prepare image + text
+
+```python
+inputs = processor(
+    text=captions,
+    images=image,
+    return_tensors="pt",
+    padding=True
+)
+```
+
+This is an important line.
+
+We're giving the processor:
+
+```python
+text=captions
+```
+
+and:
+
+```python
+images=image
+```
+
+So it receives both image and text.
+
+---
+
+## `return_tensors="pt"`
+
+```python
+return_tensors="pt"
+```
+
+`pt` means **PyTorch**.
+
+The processor converts the inputs into PyTorch tensors.
+
+Instead of ordinary Python data, we get something like:
+
+```text
+input_ids
+attention_mask
+pixel_values
+```
+
+These are the formats the neural network expects.
+
+---
+
+## `padding=True`
+
+The captions have different lengths:
+
+```text
+A dog playing in the park
+A cat sitting on a chair
+A car driving on a road
+...
+```
+
+Padding makes their token sequences the same length.
+
+For example:
+
+```text
+Caption 1 → [12, 43, 72, 91, 0, 0]
+Caption 2 → [18, 29, 54, 33, 81, 0]
+```
+
+The `0`s are padding tokens.
+
+---
+
+# 9. Disable gradient calculation
+
+```python
+with torch.no_grad():
+```
+
+Normally, during training, PyTorch calculates gradients.
+
+But we're **not training CLIP**.
+
+We're only using it to make predictions.
+
+Therefore:
+
+```python
+torch.no_grad()
+```
+
+means:
+
+> "Don't calculate gradients."
+
+This saves:
+
+- Memory
+- Computation
+- Time
+
+Think:
+
+```text
+Training → gradients required
+
+Prediction → gradients not required
+```
+
+---
+
+# 10. Run CLIP
+
+```python
+outputs = model(**inputs)
+```
+
+This is where the actual AI model runs.
+
+The `**inputs` means:
+
+> Take everything inside `inputs` and pass it to the model as arguments.
+
+Conceptually:
+
+```python
+model(
+    input_ids=...,
+    attention_mask=...,
+    pixel_values=...
+)
+```
+
+The model processes both:
+
+```text
+Image → Image Encoder → Image Embedding
+
+Text → Text Encoder → Text Embedding
+```
+
+---
+
+# 11. Get image embeddings
+
+```python
+image_embeddings = outputs.image_embeds
+```
+
+An **embedding** is a numerical representation of something.
+
+The image is converted into a vector:
+
+```text
+Image
+ ↓
+CLIP Image Encoder
+ ↓
+[0.12, -0.43, 0.81, ...]
+```
+
+This vector represents the semantic meaning of the image.
+
+For example:
+
+```text
+🐕 + 🌳 + 🏞️
+```
+
+might be represented by thousands of numerical values.
+
+This is called an:
+
+> **Image embedding**
+
+---
+
+# 12. Get text embeddings
+
+```python
+text_embeddings = outputs.text_embeds
+```
+
+Each caption is also converted into a vector.
+
+For example:
+
+```text
+"A dog playing in the park"
+        ↓
+Text Encoder
+        ↓
+[0.15, -0.40, 0.79, ...]
+```
+
+And:
+
+```text
+"A car driving on a road"
+        ↓
+Text Encoder
+        ↓
+[0.72, 0.11, -0.32, ...]
+```
+
+So now we have:
+
+```text
+Image embedding
+       ↓
+[ ... ]
+
+Text embeddings
+       ↓
+[ ... ]
+[ ... ]
+[ ... ]
+[ ... ]
+```
+
+---
+
+# 13. Normalize image embeddings
+
+```python
+image_embeddings = (
+    image_embeddings /
+    image_embeddings.norm(dim=-1, keepdim=True)
+)
+```
+
+This makes the embedding vector have a length of approximately `1`.
+
+Why?
+
+Because we want to compare vectors fairly.
+
+Imagine:
+
+```text
+Image vector
+     ↓
+[0.2, 0.4, 0.7]
+```
+
+We normalize it so that its magnitude becomes `1`.
+
+The important concept is:
+
+> **Normalization puts vectors onto the same scale.**
+
+---
+
+# 14. Normalize text embeddings
+
+```python
+text_embeddings = (
+    text_embeddings /
+    text_embeddings.norm(dim=-1, keepdim=True)
+)
+```
+
+Same thing, but now for the text vectors.
+
+So both image and text embeddings are normalized.
+
+```text
+Image vector → normalized
+
+Text 1 → normalized
+Text 2 → normalized
+Text 3 → normalized
+Text 4 → normalized
+```
+
+---
+
+# 15. Calculate similarity
+
+```python
+similarities = image_embeddings @ text_embeddings.T
+```
+
+This is one of the most important lines.
+
+The `@` operator performs **matrix multiplication**.
+
+Because the embeddings have been normalized, this effectively gives us **cosine similarity** between the image and each caption.
+
+Conceptually:
+
+```text
+                 Similarity
+Image ────────────────┬──────── Caption 1
+                      ├──────── Caption 2
+                      ├──────── Caption 3
+                      └──────── Caption 4
+```
+
+For example, CLIP might produce:
+
+```text
+Dog caption       → 0.91
+Cat caption       → 0.32
+Car caption       → 0.18
+Bicycle caption   → 0.25
+```
+
+Higher = more similar.
+
+---
+
+# 16. Find the highest similarity
+
+```python
+best_index = similarities.argmax().item()
+```
+
+Let's break it down.
+
+### `argmax()`
+
+Finds the position of the largest value.
+
+Suppose:
+
+```python
+similarities = [
+    0.91,
+    0.32,
+    0.18,
+    0.25
+]
+```
+
+The largest value is:
+
+```text
+0.91
+```
+
+It is at index:
+
+```text
+0
+```
+
+Therefore:
+
+```python
+best_index = 0
+```
+
+---
+
+### `.item()`
+
+PyTorch returns a tensor.
+
+For example:
+
+```python
+tensor(0)
+```
+
+`.item()` converts it into a normal Python number:
+
+```python
+0
+```
+
+---
+
+# 17. Print similarity scores
+
+```python
+print("Similarity score: ")
+```
+
+Simply prints:
+
+```text
+Similarity score:
+```
+
+---
+
+# 18. Loop through captions and scores
+
+```python
+for caption, score in zip(captions, similarities[0]):
+```
+
+This combines each caption with its corresponding similarity score.
+
+For example:
+
+```text
+caption                         score
+
+A dog playing in the park      0.91
+A cat sitting on a chair       0.32
+A car driving on a road        0.18
+A person riding a bicycle      0.25
+```
+
+`zip()` pairs them together.
+
+---
+
+# 19. Format the score
+
+```python
+print(f"{caption}: {score.item():.4f}")
+```
+
+The `f` creates an f-string.
+
+And:
+
+```python
+:.4f
+```
+
+means:
+
+> Show the number with 4 digits after the decimal point.
+
+For example:
+
+```text
+0.913847
+```
+
+becomes:
+
+```text
+0.9138
+```
+
+So you might get:
+
+```text
+Similarity score:
+A dog playing in the park: 0.9138
+A cat sitting on a chair: 0.3214
+A car driving on a road: 0.1842
+A person riding a bicycle: 0.2571
+```
+
+---
+
+# 20. Print best caption
+
+```python
+print("\nBest matching caption: ")
+```
+
+`\n` means **new line**.
+
+Then:
+
+```python
+print(captions[best_index])
+```
+
+If:
+
+```python
+best_index = 0
+```
+
+then:
+
+```python
+captions[0]
+```
+
+is:
+
+```text
+A dog playing in the park
+```
+
+So final output:
+
+```text
+Best matching caption:
+A dog playing in the park
+```
+
+---
+
+# Complete Flow
+
+The entire code can be understood as this:
+
+```text
+                 IMAGE
+                   │
+                   ▼
+          ┌─────────────────┐
+          │ CLIP Image      │
+          │ Encoder         │
+          └────────┬────────┘
+                   │
+                   ▼
+          Image Embedding
+                   │
+                   │
+                   │ Compare
+                   │
+                   ▼
+       ┌──────────────────────┐
+       │   CLIP Text Encoder  │
+       └──────────┬───────────┘
+                  │
+       ┌──────────┼───────────┐
+       ▼          ▼           ▼
+    Caption 1  Caption 2   Caption 3 ...
+       │          │           │
+       ▼          ▼           ▼
+    Vector     Vector       Vector
+       │          │           │
+       └──────────┼───────────┘
+                  ▼
+           Similarity Scores
+                  │
+                  ▼
+              argmax()
+                  │
+                  ▼
+          Best Caption
+```
+
+## The key concept to remember
+
+CLIP **doesn't generate a caption** in this code.
+
+It does **caption selection**.
+
+You provide:
+
+```python
+captions = [
+    "A dog playing in the park",
+    "A cat sitting on a chair",
+    "A car driving on a road",
+    "A person riding a bicycle"
+]
+```
+
+CLIP essentially asks:
+
+```text
+Image + Caption 1 → How similar?
+Image + Caption 2 → How similar?
+Image + Caption 3 → How similar?
+Image + Caption 4 → How similar?
+```
+
+Then:
+
+```text
+                Highest score
+                     ↓
+              Best caption
+```
+
+### One-line interview explanation
+
+> **CLIP is a multimodal model that maps images and text into a shared embedding space, allowing us to measure their semantic similarity and identify which text best matches an image.**

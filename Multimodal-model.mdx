@@ -1,0 +1,473 @@
+---
+title: "Multimodal Models (Image + Text)"
+---
+
+## 1. What are Multimodal Models?
+
+Multimodal models can work with **more than one type of data**, such as:
+
+- Text
+- Images
+- Audio
+- Video
+
+For example:
+
+```text
+Image + Text
+     ↓
+Multimodal Model
+     ↓
+Understanding / Prediction
+```
+
+A model can receive an image and text together and understand the relationship between them.
+
+Example:
+
+```text
+Image: 🐶
+
+Text: "A dog playing in the park"
+```
+
+The model can determine whether the image and text are related.
+
+---
+
+# 2. Image + Text Models
+
+Image-text models learn a relationship between **visual information** and **language**.
+
+One popular example is **CLIP**.
+
+CLIP stands for:
+
+**Contrastive Language-Image Pre-training**
+
+It learns to map images and text into a shared vector space.
+
+```text
+Image
+  ↓
+Image Encoder
+  ↓
+Image Embedding
+       \
+        → Similarity
+       /
+Text Encoder
+  ↑
+Text
+```
+
+If the image and text have similar meanings, their embeddings should have a **high similarity score**.
+
+---
+
+# 3. What is an Embedding?
+
+An embedding converts data into numbers called a **vector**.
+
+For example:
+
+```text
+Image
+  ↓
+[0.21, 0.54, -0.12, 0.81, ...]
+```
+
+Text is also converted into a vector:
+
+```text
+"A dog playing"
+  ↓
+[0.19, 0.52, -0.10, 0.79, ...]
+```
+
+The model can then compare these vectors.
+
+---
+
+# 4. Image-Text Similarity
+
+We can use **cosine similarity** to measure how similar the image and text embeddings are.
+
+Formula:
+
+$$Similarity = \frac{A \cdot B}{||A|| ||B||}$$
+
+The value is generally between:
+
+```text
+-1 → Completely different
+ 0 → Not similar
+ 1 → Very similar
+```
+
+For CLIP, a higher similarity means the text is more related to the image.
+
+Example:
+
+```text
+Image:
+🐕 dog
+
+Text 1:
+"A dog playing outside"
+Similarity: 0.82
+
+Text 2:
+"A car on a highway"
+Similarity: 0.15
+```
+
+The model would consider **Text 1** more relevant.
+
+---
+
+# 5. CLIP Architecture
+
+CLIP mainly contains two encoders:
+
+```text
+             CLIP
+              |
+      -----------------
+      |               |
+Image Encoder    Text Encoder
+      |               |
+Image Vector      Text Vector
+      |               |
+      ------ Similarity ------
+```
+
+### Image Encoder
+
+Converts an image into an embedding.
+
+```text
+Image
+  ↓
+Image Encoder
+  ↓
+Image Embedding
+```
+
+### Text Encoder
+
+Converts text into an embedding.
+
+```text
+Text
+  ↓
+Text Encoder
+  ↓
+Text Embedding
+```
+
+Both embeddings are designed to exist in the same representation space.
+
+---
+
+# 6. Why is CLIP Useful?
+
+CLIP can be used for:
+
+- Image-text similarity
+- Zero-shot image classification
+- Image search
+- Text-based image retrieval
+- Image understanding
+- Content matching
+
+For example, given an image and several labels:
+
+```text
+Image
+
+        ↓
+
+"cat"
+"dog"
+"car"
+"bird"
+```
+
+CLIP can compare the image with each text description and select the most similar one.
+
+---
+
+# 7. Simple Image Captioning
+
+Image captioning means generating a **text description of an image**.
+
+Example:
+
+```text
+Image
+  ↓
+Image Captioning Model
+  ↓
+"A dog is playing with a ball."
+```
+
+A typical image captioning system contains:
+
+```text
+Image
+  ↓
+Vision Encoder
+  ↓
+Image Features
+  ↓
+Language Model
+  ↓
+Caption
+```
+
+Example:
+
+```text
+Input:
+[Image of a person riding a bicycle]
+
+Output:
+"A person is riding a bicycle on a road."
+```
+
+---
+
+# 8. CLIP vs Image Captioning
+
+| CLIP | Image Captioning |
+| --- | --- |
+| Compares image and text | Generates text |
+| Produces embeddings | Produces a caption |
+| Measures similarity | Describes an image |
+| Image + text input | Image input |
+| Useful for retrieval/classification | Useful for image descriptions |
+
+Simple difference:
+
+```text
+CLIP:
+
+Image + Text
+     ↓
+Similarity
+
+
+Captioning:
+
+Image
+  ↓
+Description
+```
+
+---
+
+# 9. Code Challenge
+
+Create:
+
+```text
+multimodal_demo.py
+```
+
+The program will:
+
+1. Load a CLIP model.
+2. Load an image.
+3. Create several text descriptions.
+4. Encode the image.
+5. Encode the text.
+6. Calculate image-text similarity.
+7. Find the most similar caption.
+
+---
+
+# 10. Install Required Libraries
+
+```bash
+pip install torch transformers pillow
+```
+
+---
+
+# 11. `multimodal_demo.py`
+
+```python
+import torch
+from PIL import Image
+from transformers import CLIPProcessor, CLIPModel
+
+
+# Load the CLIP model
+model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+
+# Load the CLIP processor
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+
+# Load an image
+image = Image.open("image.jpg")
+
+
+# Define possible captions
+captions = [
+    "A dog playing in the park",
+    "A cat sitting on a chair",
+    "A car driving on a road",
+    "A person riding a bicycle"
+]
+
+
+# Prepare the image and text inputs
+inputs = processor(
+    text=captions,
+    images=image,
+    return_tensors="pt",
+    padding=True
+)
+
+
+# Generate image and text embeddings
+with torch.no_grad():
+
+    outputs = model(**inputs)
+
+    image_embeddings = outputs.image_embeds
+    text_embeddings = outputs.text_embeds
+
+
+# Normalize the embeddings
+image_embeddings = image_embeddings / image_embeddings.norm(
+    dim=-1,
+    keepdim=True
+)
+
+text_embeddings = text_embeddings / text_embeddings.norm(
+    dim=-1,
+    keepdim=True
+)
+
+
+# Calculate image-text similarity
+similarities = image_embeddings @ text_embeddings.T
+
+
+# Get the most similar caption
+best_index = similarities.argmax().item()
+
+
+# Print similarity scores
+print("Similarity scores:")
+
+for caption, score in zip(captions, similarities[0]):
+    print(f"{caption}: {score.item():.4f}")
+
+
+# Print the best matching caption
+print("\nBest matching caption:")
+print(captions[best_index])
+```
+
+---
+
+# 12. Output
+
+`image.jpg` contains a dog playing outside.
+
+You may get:
+
+```text
+Similarity scores:
+A dog playing in the park: 0.8234
+A cat sitting on a chair: 0.2145
+A car driving on a road: 0.1023
+A person riding a bicycle: 0.1876
+
+Best matching caption:
+A dog playing in the park
+```
+
+The exact scores will vary depending on the image.
+
+---
+
+# 13. Important Concept in This Code
+
+The important part is:
+
+```python
+image_embeddings = outputs.image_embeds
+text_embeddings = outputs.text_embeds
+```
+
+These represent the image and text as vectors.
+
+Then:
+
+```python
+similarities = image_embeddings @ text_embeddings.T
+```
+
+calculates how similar the image is to each text description.
+
+Finally:
+
+```python
+best_index = similarities.argmax().item()
+```
+
+selects the caption with the highest similarity.
+
+---
+
+# 14. Learning Flow
+
+```text
+Image
+  ↓
+CLIP Image Encoder
+  ↓
+Image Embedding
+  ↓
+             Similarity
+  ↑
+Text Embeddings
+  ↑
+CLIP Text Encoder
+  ↑
+Candidate Captions
+```
+
+The main learning is:
+
+> **Multimodal models connect different types of data, such as images and text, by representing them in a common feature space.**
+
+---
+
+# 15. What Should Learn
+
+For this topic, 
+
+```text
+Multimodal Models
+        ↓
+Image + Text
+        ↓
+CLIP
+        ↓
+Image Encoder
+Text Encoder
+        ↓
+Embeddings
+        ↓
+Cosine Similarity
+        ↓
+Image-Text Matching
+        ↓
+Image Captioning
+```

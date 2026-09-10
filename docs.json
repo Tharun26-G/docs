@@ -419,6 +419,12 @@
             "pages": [
               "model-compression"
             ]
+          },
+          {
+            "group": "Day 53",
+            "pages": [
+              "Multimodal-model"
+            ]
           }
         ]
       }

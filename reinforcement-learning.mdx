@@ -1,0 +1,587 @@
+---
+title: "Reinforcement Learning (DQN on CartPole)"
+---
+
+## 1. What is Reinforcement Learning?
+
+Reinforcement Learning (RL) is a machine learning approach where an **agent learns by interacting with an environment**.
+
+The agent:
+
+1. Observes the current state.
+2. Selects an action.
+3. Receives a reward.
+4. Learns from the result.
+5. Repeats the process.
+
+```text
+State
+  ↓
+Agent
+  ↓
+Action
+  ↓
+Environment
+  ↓
+Reward + New State
+  ↓
+Learning
+```
+
+---
+
+## 2. CartPole Environment
+
+CartPole is a simple reinforcement learning environment.
+
+The goal is to keep a pole balanced on top of a moving cart.
+
+```text
+       |
+       |
+       |
+-------O-------
+      Cart
+```
+
+The agent can perform two actions:
+
+```text
+0 → Move Left
+1 → Move Right
+```
+
+The longer the pole stays balanced, the higher the total reward.
+
+---
+
+## 3. OpenAI Gym / Gymnasium
+
+Gym provides environments that can be used to test reinforcement learning algorithms.
+
+The modern package is **Gymnasium**.
+
+Install it:
+
+```bash
+pip install gymnasium
+```
+
+Create the CartPole environment:
+
+```python
+import gymnasium as gym
+
+env = gym.make("CartPole-v1")
+```
+
+---
+
+## 4. State
+
+The state describes the current condition of the CartPole environment.
+
+CartPole has **4 state values**:
+
+```text
+Cart position
+Cart velocity
+Pole angle
+Pole angular velocity
+```
+
+The neural network receives these 4 values as input.
+
+```text
+4 state values
+      ↓
+Neural Network
+```
+
+---
+
+## 5. Action
+
+CartPole has two possible actions:
+
+```text
+0 → Left
+1 → Right
+```
+
+The neural network produces two Q-values:
+
+```text
+Q(left)
+Q(right)
+```
+
+The action with the highest Q-value is selected.
+
+---
+
+## 6. Reward
+
+A reward is feedback from the environment.
+
+For CartPole, the agent receives a reward for keeping the pole balanced.
+
+Example:
+
+```text
+Step 1 → Reward 1
+Step 2 → Reward 1
+Step 3 → Reward 1
+Step 4 → Reward 1
+```
+
+Total reward:
+
+```text
+4
+```
+
+A higher reward means the agent kept the pole balanced for longer.
+
+---
+
+# 7. What is DQN?
+
+DQN stands for:
+
+**Deep Q-Network**
+
+DQN combines:
+
+```text
+Q-Learning
++
+Neural Network
+=
+Deep Q-Network
+```
+
+Instead of storing Q-values in a table, a neural network predicts the Q-values.
+
+```text
+State
+  ↓
+DQN
+  ↓
+Q-values
+  ↓
+Best Action
+```
+
+---
+
+# 8. Q-Values
+
+A Q-value represents how useful an action is for the current state.
+
+Example:
+
+```text
+State
+  ↓
+DQN
+  ↓
+Q(left)  = 2.1
+Q(right) = 4.5
+```
+
+Since:
+
+```text
+4.5 > 2.1
+```
+
+the agent selects:
+
+```text
+Right
+```
+
+---
+
+# 9. DQN Architecture
+
+The simple model used in `rl_demo.py` is:
+
+```text
+Input: 4 values
+      ↓
+Linear Layer
+4 → 32
+      ↓
+ReLU
+      ↓
+Linear Layer
+32 → 2
+      ↓
+Q(left), Q(right)
+```
+
+The code:
+
+```python
+model = nn.Sequential(
+    nn.Linear(4, 32),
+    nn.ReLU(),
+    nn.Linear(32, 2)
+)
+```
+
+The final `2` represents the two possible actions.
+
+---
+
+# 10. Choosing an Action
+
+The model predicts Q-values:
+
+```python
+q_values = model(state_tensor)
+```
+
+Example:
+
+```text
+tensor([1.5, 3.2])
+```
+
+The highest value is selected:
+
+```python
+action = q_values.argmax().item()
+```
+
+Therefore:
+
+```text
+Q(left)  = 1.5
+Q(right) = 3.2
+
+Selected action = right
+```
+
+---
+
+# 11. Learning Process
+
+The simplified DQN follows this process:
+
+```text
+Get State
+   ↓
+Predict Q-values
+   ↓
+Select Best Action
+   ↓
+Perform Action
+   ↓
+Receive Reward
+   ↓
+Get Next State
+   ↓
+Calculate Target
+   ↓
+Calculate Loss
+   ↓
+Update Neural Network
+```
+
+This process repeats for many episodes.
+
+---
+
+# 12. Code
+
+### `rl_demo.py`
+
+```python
+import gymnasium as gym
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+
+# Create CartPole environment
+env = gym.make("CartPole-v1")
+
+
+# Create a simple Q-network
+model = nn.Sequential(
+    nn.Linear(4, 32),
+    nn.ReLU(),
+    nn.Linear(32, 2)
+)
+
+
+# Create optimizer
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+
+# Train for multiple episodes
+for episode in range(100):
+
+    state, info = env.reset()
+    total_reward = 0
+
+    for step in range(500):
+
+        # Convert state to tensor
+        state_tensor = torch.tensor(
+            state,
+            dtype=torch.float32
+        )
+
+        # Predict Q-values
+        q_values = model(state_tensor)
+
+        # Choose action with highest Q-value
+        action = q_values.argmax().item()
+
+        # Perform action
+        next_state, reward, terminated, truncated, info = env.step(action)
+
+        # Convert next state to tensor
+        next_state_tensor = torch.tensor(
+            next_state,
+            dtype=torch.float32
+        )
+
+        # Calculate target Q-value
+        with torch.no_grad():
+
+            next_q = model(next_state_tensor).max()
+
+            target = torch.tensor(
+                reward
+            ) + 0.99 * next_q * (
+                1 - int(terminated or truncated)
+            )
+
+        # Get current Q-value
+        current_q = q_values[action]
+
+        # Calculate loss
+        loss = (current_q - target) ** 2
+
+        # Update model
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        # Move to next state
+        state = next_state
+
+        total_reward += reward
+
+        # Stop when episode ends
+        if terminated or truncated:
+            break
+
+    # Print episode reward
+    print(
+        f"Episode {episode + 1}: "
+        f"Reward = {total_reward}"
+    )
+
+
+# Close environment
+env.close()
+```
+
+Output
+
+```text
+Episode 1: Total Reward: 9.0
+Episode 2: Total Reward: 9.0
+Episode 3: Total Reward: 9.0
+Episode 4: Total Reward: 9.0
+Episode 5: Total Reward: 9.0
+Episode 6: Total Reward: 9.0
+Episode 7: Total Reward: 10.0
+Episode 8: Total Reward: 10.0
+Episode 9: Total Reward: 10.0
+Episode 10: Total Reward: 9.0
+Episode 11: Total Reward: 9.0
+Episode 12: Total Reward: 9.0
+.
+.
+.
+Episode 93: Total Reward: 10.0
+Episode 94: Total Reward: 9.0
+Episode 95: Total Reward: 10.0
+Episode 96: Total Reward: 8.0
+Episode 97: Total Reward: 11.0
+Episode 98: Total Reward: 10.0
+Episode 99: Total Reward: 9.0
+Episode 100: Total Reward: 11.0
+```
+
+---
+
+# 13. Install Dependencies
+
+```bash
+pip install torch gymnasium
+```
+
+Run:
+
+```bash
+python rl_demo.py
+```
+
+Example output:
+
+```text
+Episode 1: Reward = 12
+Episode 2: Reward = 15
+Episode 3: Reward = 18
+Episode 4: Reward = 22
+...
+Episode 50: Reward = 45
+...
+```
+
+The exact output can vary because reinforcement learning involves randomness.
+
+---
+
+# 14. Understanding the Important Code
+
+### Create environment
+
+```python
+env = gym.make("CartPole-v1")
+```
+
+Creates the CartPole environment.
+
+### Get state
+
+```python
+state, info = env.reset()
+```
+
+Starts a new episode and returns the initial state.
+
+### Predict Q-values
+
+```python
+q_values = model(state_tensor)
+```
+
+The neural network predicts the value of each action.
+
+### Select action
+
+```python
+action = q_values.argmax().item()
+```
+
+Selects the action with the highest Q-value.
+
+### Perform action
+
+```python
+next_state, reward, terminated, truncated, info = env.step(action)
+```
+
+The environment returns:
+
+```text
+Next state
+Reward
+Episode status
+```
+
+### Calculate loss
+
+```python
+loss = (current_q - target) ** 2
+```
+
+Measures the difference between the predicted Q-value and the target Q-value.
+
+### Update model
+
+```python
+optimizer.zero_grad()
+loss.backward()
+optimizer.step()
+```
+
+Updates the neural network so that future Q-value predictions become better.
+
+---
+
+# 15. Complete Learning Flow
+
+```text
+                 CartPole
+                    ↑
+                    |
+                  Action
+                    ↑
+              Q-Network
+                    ↑
+                  State
+                    |
+                    ↓
+                 Reward
+                    |
+                    ↓
+                 Learning
+```
+
+Or simply:
+
+```text
+State
+ ↓
+Neural Network
+ ↓
+Q-values
+ ↓
+Best Action
+ ↓
+CartPole
+ ↓
+Reward
+ ↓
+Loss
+ ↓
+Update Network
+```
+
+---
+
+# 16. Main Learning
+
+The main concepts covered are:
+
+```text
+Reinforcement Learning
+        ↓
+Environment
+        ↓
+State
+        ↓
+Action
+        ↓
+Reward
+        ↓
+Q-Learning
+        ↓
+Neural Network
+        ↓
+DQN
+```
+
+### Key takeaway
+
+**DQN uses a neural network to estimate Q-values and choose actions that can maximize future rewards.**

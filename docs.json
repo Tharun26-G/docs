@@ -426,6 +426,12 @@
               "Multimodal-model",
               "multimodal-code"
             ]
+          },
+          {
+            "group": "Day 54",
+            "pages": [
+              "reinforcement-learning"
+            ]
           }
         ]
       }

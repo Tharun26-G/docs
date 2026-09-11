@@ -430,7 +430,8 @@
           {
             "group": "Day 54",
             "pages": [
-              "reinforcement-learning"
+              "reinforcement-learning",
+              "rl-code"
             ]
           }
         ]

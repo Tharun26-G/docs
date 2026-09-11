@@ -1,0 +1,1042 @@
+---
+title: "RL Code"
+---
+
+This code is implementing a simple **Q-learning agent using a neural network** to learn how to play the **CartPole** game.
+
+The easiest way to understand it is:
+
+> **State → Neural Network → Q-values → Choose action → Get reward → Update network**
+
+---
+
+# 1. Import Gymnasium
+
+```python
+import gymnasium as gym
+```
+
+`Gymnasium` provides environments for **Reinforcement Learning (RL)**.
+
+Here we use:
+
+```python
+env = gym.make("CartPole-v1")
+```
+
+CartPole is a simple game where the agent tries to keep a pole balanced on a moving cart.
+
+The agent can take only two actions:
+
+```text
+0 → Move cart left
+1 → Move cart right
+```
+
+---
+
+# 2. Import PyTorch
+
+```python
+import torch
+```
+
+PyTorch is used to build and train the neural network.
+
+We need it for:
+
+- Tensors
+- Neural networks
+- Loss calculation
+- Backpropagation
+- Optimization
+
+---
+
+# 3. Import neural network module
+
+```python
+import torch.nn as nn
+```
+
+`torch.nn` contains tools for creating neural networks.
+
+We use:
+
+```python
+nn.Linear()
+nn.ReLU()
+nn.Sequential()
+```
+
+---
+
+# 4. Import optimizer
+
+```python
+import torch.optim as optim
+```
+
+The optimizer updates the neural network's weights.
+
+We'll use:
+
+```python
+optim.Adam()
+```
+
+Adam is a popular optimization algorithm.
+
+---
+
+# 5. Create CartPole environment
+
+```python
+env = gym.make("CartPole-v1")
+```
+
+This creates the game environment.
+
+The environment gives us a **state**.
+
+The CartPole state has **4 values**:
+
+```text
+[cart position,
+ cart velocity,
+ pole angle,
+ pole angular velocity]
+```
+
+For example:
+
+```text
+[0.02, -0.15, 0.03, 0.21]
+```
+
+These four numbers tell the agent what's currently happening.
+
+---
+
+# 6. Create the Q-network
+
+```python
+model = nn.Sequential(
+    nn.Linear(4, 32),
+    nn.ReLU(),
+    nn.Linear(32, 2)
+)
+```
+
+This is the brain of the agent.
+
+Let's break it down.
+
+### First layer
+
+```python
+nn.Linear(4, 32)
+```
+
+Input:
+
+```text
+4 values
+```
+
+Output:
+
+```text
+32 values
+```
+
+So:
+
+```text
+State
+  ↓
+[4 numbers]
+  ↓
+Linear layer
+  ↓
+[32 numbers]
+```
+
+---
+
+# 7. ReLU activation
+
+```python
+nn.ReLU()
+```
+
+ReLU is an activation function.
+
+Conceptually:
+
+```text
+negative number → 0
+positive number → unchanged
+```
+
+For example:
+
+```text
+[-2, 4, -1, 7]
+       ↓ ReLU
+[ 0, 4,  0, 7]
+```
+
+It allows the neural network to learn nonlinear relationships.
+
+---
+
+# 8. Output layer
+
+```python
+nn.Linear(32, 2)
+```
+
+The network produces **2 numbers**.
+
+Why 2?
+
+Because CartPole has two possible actions:
+
+```text
+Action 0 → Left
+Action 1 → Right
+```
+
+The output represents the estimated **Q-value** for each action.
+
+For example:
+
+```text
+Model output:
+
+Action 0 → 4.2
+Action 1 → 7.8
+```
+
+The agent thinks:
+
+```text
+Right is better
+```
+
+because:
+
+```text
+7.8 > 4.2
+```
+
+So the complete network is:
+
+```text
+       STATE
+         │
+         ▼
+    4 numbers
+         │
+         ▼
+   Linear(4 → 32)
+         │
+         ▼
+       ReLU
+         │
+         ▼
+   Linear(32 → 2)
+         │
+         ▼
+    Q-values
+      /    \
+     /      \
+   Left    Right
+```
+
+---
+
+# 9. Create optimizer
+
+```python
+optimizer = optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+```
+
+Adam is responsible for changing the neural network's weights.
+
+### `model.parameters()`
+
+Means:
+
+> Give Adam all the weights and biases of the model.
+
+### `lr=0.001`
+
+`lr` means **learning rate**.
+
+It controls how much the model changes during each update.
+
+---
+
+# 10. Train for 100 episodes
+
+```python
+for episode in range(100):
+```
+
+An **episode** means one complete game attempt.
+
+So the agent plays:
+
+```text
+Episode 1
+Episode 2
+Episode 3
+...
+Episode 100
+```
+
+---
+
+# 11. Reset the environment
+
+```python
+state, info = env.reset()
+```
+
+At the beginning of every episode, we reset CartPole.
+
+The environment gives us the initial state.
+
+For example:
+
+```text
+state =
+[0.01, -0.03, 0.02, 0.01]
+```
+
+---
+
+# 12. Start reward counter
+
+```python
+total_reward = 0
+```
+
+We want to know how well the agent performed during the episode.
+
+So we start at:
+
+```text
+total_reward = 0
+```
+
+Every successful timestep adds reward.
+
+---
+
+# 13. Run up to 500 steps
+
+```python
+for step in range(500):
+```
+
+Each episode can have a maximum of 500 steps.
+
+Think:
+
+```text
+Episode
+ ├── Step 1
+ ├── Step 2
+ ├── Step 3
+ ├── ...
+ └── Step 500
+```
+
+The episode can end before 500 if the pole falls.
+
+---
+
+# 14. Convert state to PyTorch tensor
+
+```python
+state_tensor = torch.tensor(
+    state,
+    dtype=torch.float32
+)
+```
+
+Gymnasium gives us normal numerical data.
+
+PyTorch needs tensors.
+
+So:
+
+```text
+Gym state
+   ↓
+[0.01, -0.03, 0.02, 0.01]
+   ↓
+PyTorch Tensor
+```
+
+`float32` means the numbers are stored as 32-bit floating-point values.
+
+---
+
+# 15. Predict Q-values
+
+```python
+q_values = model(state_tensor)
+```
+
+The current state goes into the neural network.
+
+For example:
+
+```text
+State:
+
+[0.01, -0.03, 0.02, 0.01]
+
+        ↓
+
+     Neural Network
+
+        ↓
+
+Q-values:
+
+[2.4, 3.8]
+```
+
+Meaning:
+
+```text
+Q(left)  = 2.4
+Q(right) = 3.8
+```
+
+---
+
+# 16. Choose the best action
+
+```python
+action = q_values.argmax().item()
+```
+
+`argmax()` finds the position of the largest value.
+
+If:
+
+```text
+q_values = [2.4, 3.8]
+```
+
+then:
+
+```text
+3.8 is largest
+```
+
+Its index is:
+
+```text
+1
+```
+
+Therefore:
+
+```python
+action = 1
+```
+
+The agent chooses:
+
+```text
+Right
+```
+
+So this code is using a **greedy policy**:
+
+> Always choose the action with the highest predicted Q-value.
+
+---
+
+# 17. Perform the action
+
+```python
+next_state, reward, terminated, truncated, info = env.step(action)
+```
+
+This is where the agent interacts with the environment.
+
+It says:
+
+> "CartPole, I'm choosing action 1."
+
+The environment responds with:
+
+### `next_state`
+
+What the game looks like after the action.
+
+### `reward`
+
+How much reward the agent received.
+
+Usually CartPole gives:
+
+```text
++1
+```
+
+for each step the pole remains balanced.
+
+### `terminated`
+
+Whether the episode ended because the task reached a terminal condition.
+
+### `truncated`
+
+Whether the episode ended because of a time/step limit.
+
+### `info`
+
+Additional environment information.
+
+---
+
+# 18. Convert next state to tensor
+
+```python
+next_state_tensor = torch.tensor(
+    next_state,
+    dtype=torch.float32
+)
+```
+
+Same idea as before.
+
+We're converting:
+
+```text
+next_state
+```
+
+into a PyTorch tensor so the neural network can process it.
+
+---
+
+# 19. Don't calculate gradients
+
+```python
+with torch.no_grad():
+```
+
+We're about to calculate the **target Q-value**.
+
+We don't want this calculation itself to affect the neural network through gradients.
+
+So:
+
+```python
+torch.no_grad()
+```
+
+means:
+
+> Calculate this without tracking gradients.
+
+---
+
+# 20. Calculate the next Q-value
+
+```python
+next_q = model(next_state_tensor).max()
+```
+
+The model predicts Q-values for the next state.
+
+For example:
+
+```text
+next state
+    ↓
+model
+    ↓
+[5.2, 6.7]
+```
+
+Then:
+
+```python
+.max()
+```
+
+takes:
+
+```text
+6.7
+```
+
+So:
+
+```python
+next_q = 6.7
+```
+
+This means:
+
+> "According to the current model, what is the best possible future Q-value?"
+
+---
+
+# 21. Calculate target Q-value
+
+```python
+target = torch.tensor(reward) + 0.99 * next_q * (
+    1 - int(terminated or truncated)
+)
+```
+
+This is the **heart of Q-learning**.
+
+The basic Q-learning idea is:
+
+```text
+Target Q =
+Current Reward
++
+Discount × Best Future Q
+```
+
+In mathematical form:
+
+$$
+Q_{target} = r + \gamma \max Q(s',a')
+$$
+
+Here:
+
+```text
+r     = reward
+γ     = 0.99
+next_q = best future Q-value
+```
+
+So if:
+
+```text
+reward = 1
+next_q = 6.7
+```
+
+then approximately:
+
+```text
+target = 1 + 0.99 × 6.7
+       = 7.633
+```
+
+---
+
+# 22. Why `0.99`?
+
+```python
+0.99
+```
+
+is the **discount factor**, usually written as:
+
+$$
+\gamma
+$$
+
+It controls how much we care about future rewards.
+
+```text
+γ = 0
+
+Only care about immediate reward.
+
+γ = 0.99
+
+Care strongly about future rewards.
+```
+
+So the agent learns:
+
+> "Don't just think about what happens now. Think about future rewards too."
+
+---
+
+# 23. Why this part?
+
+```python
+1 - int(terminated or truncated)
+```
+
+Suppose the episode hasn't ended:
+
+```text
+terminated = False
+truncated = False
+```
+
+Then:
+
+```text
+terminated or truncated
+        ↓
+False
+        ↓
+int(False) = 0
+        ↓
+1 - 0 = 1
+```
+
+So future reward is included.
+
+But if the episode ended:
+
+```text
+terminated = True
+```
+
+then:
+
+```text
+1 - 1 = 0
+```
+
+Therefore:
+
+```text
+target = reward
+```
+
+We don't consider future rewards after the episode has ended.
+
+---
+
+# 24. Get current Q-value
+
+```python
+current_q = q_values[action]
+```
+
+Earlier we had:
+
+```text
+q_values = [2.4, 3.8]
+```
+
+and selected:
+
+```text
+action = 1
+```
+
+Therefore:
+
+```python
+current_q = q_values[1]
+```
+
+which is:
+
+```text
+3.8
+```
+
+So:
+
+```text
+current_q
+```
+
+means:
+
+> The model's current prediction for the action it actually took.
+
+---
+
+# 25. Calculate loss
+
+```python
+loss = (current_q - target) ** 2
+```
+
+This measures how wrong the model's prediction was.
+
+Suppose:
+
+```text
+current_q = 3.8
+target    = 7.63
+```
+
+Then:
+
+```text
+loss = (3.8 - 7.63)²
+```
+
+The bigger the difference:
+
+```text
+current prediction
+        vs
+target
+```
+
+the bigger the loss.
+
+The neural network then tries to reduce this error.
+
+This is essentially **mean squared error for one Q-value**.
+
+---
+
+# 26. Clear previous gradients
+
+```python
+optimizer.zero_grad()
+```
+
+Before calculating new gradients, we clear old gradients.
+
+Think:
+
+```text
+Old gradients → remove
+New gradients → calculate
+```
+
+---
+
+# 27. Backpropagation
+
+```python
+loss.backward()
+```
+
+This calculates how each neural-network parameter contributed to the error.
+
+In simple terms:
+
+> "Which weights caused my prediction to be wrong, and in what direction should they change?"
+
+---
+
+# 28. Update the model
+
+```python
+optimizer.step()
+```
+
+Adam now changes the model's weights based on the gradients.
+
+So:
+
+```text
+Prediction
+    ↓
+Calculate error
+    ↓
+loss.backward()
+    ↓
+Calculate gradients
+    ↓
+optimizer.step()
+    ↓
+Update weights
+```
+
+This is how the model learns.
+
+---
+
+# 29. Move to next state
+
+```python
+state = next_state
+```
+
+The current state becomes the next state.
+
+For example:
+
+```text
+Old state
+   ↓
+Take action
+   ↓
+New state
+   ↓
+New state becomes current state
+```
+
+Then the process repeats.
+
+---
+
+# 30. Add reward
+
+```python
+total_reward += reward
+```
+
+If the agent receives:
+
+```text
+reward = 1
+```
+
+we add it to the total.
+
+For example:
+
+```text
+Step 1 → +1
+Step 2 → +1
+Step 3 → +1
+...
+```
+
+If it survives 100 steps:
+
+```text
+total_reward = 100
+```
+
+Higher reward generally means better performance.
+
+---
+
+# 31. Stop if episode is finished
+
+```python
+if terminated or truncated:
+    break
+```
+
+If CartPole has ended, stop the current episode.
+
+For example:
+
+```text
+Pole falls
+   ↓
+terminated = True
+   ↓
+break
+   ↓
+Next episode
+```
+
+---
+
+# 32. Print episode reward
+
+```python
+print(
+    f"Episode {episode + 1}: "
+    f"Total Reward: {total_reward}"
+)
+```
+
+This shows how well the agent performed.
+
+Example:
+
+```text
+Episode 1: Total Reward: 18
+Episode 2: Total Reward: 22
+Episode 3: Total Reward: 31
+...
+Episode 100: Total Reward: 187
+```
+
+If the agent is learning properly, generally hope to see rewards trend upward, although this particular implementation can be unstable.
+
+---
+
+# 33. Close the environment
+
+```python
+env.close()
+```
+
+When training is finished, close the CartPole environment and release its resources.
+
+---
+
+# The Complete Learning Cycle
+
+This is the most important thing to understand:
+
+```text
+             ┌──────────────┐
+             │    STATE     │
+             │ 4 numbers    │
+             └──────┬───────┘
+                    ↓
+             ┌──────────────┐
+             │ Q-NETWORK    │
+             │ 4 → 32 → 2   │
+             └──────┬───────┘
+                    ↓
+             ┌──────────────┐
+             │  Q-VALUES    │
+             │ [Left,Right] │
+             └──────┬───────┘
+                    ↓
+             Choose best action
+                    ↓
+             ┌──────────────┐
+             │  CARTPOLE    │
+             └──────┬───────┘
+                    ↓
+          ┌─────────┴─────────┐
+          ↓                   ↓
+      New State             Reward
+          ↓                   ↓
+          └─────────┬─────────┘
+                    ↓
+              Calculate Target
+                    ↓
+             Calculate Loss
+                    ↓
+              Backpropagation
+                    ↓
+             Update Network
+                    ↓
+                  Repeat
+```
+
+## Note
+
+This is a **simplified demonstration of Deep Q-Learning**, but it is **not a proper DQN implementation**.
+
+A production-quality DQN normally uses things such as:
+
+- **Experience replay**
+- **Target network**
+- **Exploration**, usually ε-greedy
+- Proper handling of terminal states
+- Batched training
+
+current code always does:
+
+```python
+action = q_values.argmax().item()
+```
+
+So it **always chooses the current best action**. There is no exploration.

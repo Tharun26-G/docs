@@ -433,6 +433,12 @@
               "reinforcement-learning",
               "rl-code"
             ]
+          },
+          {
+            "group": "Day 55",
+            "pages": [
+              "scaling-inference"
+            ]
           }
         ]
       }

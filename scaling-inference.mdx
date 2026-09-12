@@ -1,0 +1,496 @@
+---
+title: "Scaling Inference (GPU Cluster & Batching)"
+---
+
+## 1. What is Inference?
+
+Inference means using a **trained model to make predictions** on new data.
+
+```text
+Input Data
+    ↓
+Trained Model
+    ↓
+Prediction
+```
+
+Example:
+
+```text
+Image
+  ↓
+Neural Network
+  ↓
+Class Prediction
+```
+
+When the number of inputs becomes large, processing them one by one can be slow.
+
+---
+
+# 2. What is Batch Inference?
+
+Instead of processing one sample at a time:
+
+```text
+Input 1 → Model
+Input 2 → Model
+Input 3 → Model
+Input 4 → Model
+```
+
+multiple samples are processed together:
+
+```text
+Input 1 ─┐
+Input 2 ─┤
+Input 3 ─┼→ Model → Predictions
+Input 4 ─┘
+```
+
+This is called **batch inference**.
+
+---
+
+# 3. Why Use Batching?
+
+Batching can:
+
+- Improve GPU utilization
+- Reduce inference overhead
+- Process large datasets efficiently
+- Make better use of available hardware
+
+Example:
+
+```text
+Without batching:
+
+1000 samples
+    ↓
+1000 model calls
+
+
+With batch size = 100:
+
+1000 samples
+    ↓
+10 model calls
+```
+
+---
+
+# 4. PyTorch DataLoader
+
+`DataLoader` makes it easy to load data in batches.
+
+```python
+from torch.utils.data import DataLoader
+```
+
+Example:
+
+```python
+loader = DataLoader(
+    dataset,
+    batch_size=32
+)
+```
+
+This means:
+
+```text
+Dataset
+  ↓
+32 samples
+  ↓
+Model
+  ↓
+Predictions
+
+32 samples
+  ↓
+Model
+  ↓
+Predictions
+```
+
+---
+
+# 5. Batch Size
+
+Batch size determines how many samples are processed together.
+
+Example:
+
+```text
+batch_size = 1
+```
+
+Processes one sample at a time.
+
+```text
+batch_size = 32
+```
+
+Processes 32 samples at a time.
+
+```text
+batch_size = 128
+```
+
+Processes 128 samples at a time.
+
+Larger batch sizes can improve throughput, but they require more memory.
+
+---
+
+# 6. GPU Inference
+
+A GPU can perform many mathematical operations in parallel.
+
+```text
+CPU
+Sequential processing
+     ↓
+Slower for large workloads
+
+
+GPU
+Parallel processing
+     ↓
+Faster for large workloads
+```
+
+PyTorch can select the available device:
+
+```python
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+```
+
+Then the model can be moved to the GPU:
+
+```python
+model.to(device)
+```
+
+---
+
+# 7. Multi-GPU Inference
+
+If multiple GPUs are available, inference can be distributed across them.
+
+Example:
+
+```text
+Dataset
+   ↓
+-----------------------
+↓          ↓          ↓
+GPU 0      GPU 1      GPU 2
+↓          ↓          ↓
+Batch      Batch      Batch
+-----------------------
+        ↓
+   Predictions
+```
+
+This can increase inference throughput for large workloads.
+
+For simple learning, `DataParallel` can distribute a batch across multiple GPUs.
+
+---
+
+# 8. Simple Scaling Example
+
+The following example creates a large dataset and performs inference in batches.
+
+### `scale_demo.py`
+
+```python
+import torch
+import torch.nn as nn
+from torch.utils.data import TensorDataset, DataLoader
+
+
+# Select CPU or GPU
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+
+
+# Create a simple model
+model = nn.Sequential(
+    nn.Linear(100, 256),
+    nn.ReLU(),
+    nn.Linear(256, 10)
+)
+
+
+# Move model to the device
+model = model.to(device)
+
+
+# Use multiple GPUs if available
+if torch.cuda.device_count() > 1:
+    model = nn.DataParallel(model)
+
+
+# Create a large dataset
+data = torch.randn(10000, 100)
+
+
+# Create a dataset
+dataset = TensorDataset(data)
+
+
+# Create batches
+loader = DataLoader(
+    dataset,
+    batch_size=64,
+    shuffle=False
+)
+
+
+# Run inference
+model.eval()
+
+predictions = []
+
+with torch.no_grad():
+
+    for batch in loader:
+
+        inputs = batch[0].to(device)
+
+        outputs = model(inputs)
+
+        predictions.append(
+            outputs.cpu()
+        )
+
+
+# Combine predictions
+predictions = torch.cat(predictions)
+
+
+# Print results
+print("Device:", device)
+print("Number of samples:", len(dataset))
+print("Batch size:", 64)
+print("Prediction shape:", predictions.shape)
+```
+
+---
+
+# 9. Install Dependencies
+
+```bash
+pip install torch
+```
+
+Run:
+
+```bash
+python scale_demo.py
+```
+
+output on CPU:
+
+```text
+Device: cpu
+Number of samples: 10000
+Batch size: 64
+Prediction shape: torch.Size([10000, 10])
+```
+
+On a CUDA-enabled system:
+
+```text
+Device: cuda
+Number of samples: 10000
+Batch size: 64
+Prediction shape: torch.Size([10000, 10])
+```
+
+---
+
+# 10. Understanding the Important Parts
+
+### Create dataset
+
+```python
+data = torch.randn(10000, 100)
+```
+
+Creates **10,000 samples**, with **100 features** each.
+
+```text
+10000 samples
+      ↓
+Each sample = 100 values
+```
+
+### Create batches
+
+```python
+loader = DataLoader(
+    dataset,
+    batch_size=64
+)
+```
+
+The dataset is divided into batches of 64.
+
+Approximately:
+
+```text
+10000 / 64 ≈ 157 batches
+```
+
+### Move input to GPU
+
+```python
+inputs = batch[0].to(device)
+```
+
+Moves the batch to CPU or GPU depending on the selected device.
+
+### Disable gradients
+
+```python
+with torch.no_grad():
+```
+
+Gradients are not required during inference, so this reduces memory usage and computation.
+
+### Generate predictions
+
+```python
+outputs = model(inputs)
+```
+
+The model processes an entire batch instead of one sample.
+
+### Store predictions
+
+```python
+predictions.append(
+    outputs.cpu()
+)
+```
+
+The results are moved back to CPU memory and stored.
+
+### Combine results
+
+```python
+predictions = torch.cat(predictions)
+```
+
+Combines all batch predictions into one tensor.
+
+---
+
+# 11. Multi-GPU Part
+
+This section enables simple multi-GPU processing:
+
+```python
+if torch.cuda.device_count() > 1:
+    model = nn.DataParallel(model)
+```
+
+For example, with two GPUs:
+
+```text
+Batch of 64
+     ↓
+DataParallel
+     ↓
+----------------
+↓              ↓
+GPU 0          GPU 1
+32 samples     32 samples
+----------------
+       ↓
+   Predictions
+```
+
+If only one GPU or CPU is available, the code continues normally.
+
+---
+
+# 12. CPU vs GPU
+
+| CPU | GPU |
+| --- | --- |
+| Fewer parallel cores | Many parallel cores |
+| Good for small workloads | Good for large workloads |
+| Usually simpler | Better for deep learning |
+| Lower hardware cost | Higher hardware cost |
+
+For large neural network inference, GPUs can provide much higher throughput.
+
+---
+
+# 13. Scaling Inference Flow
+
+```text
+Large Dataset
+      ↓
+PyTorch DataLoader
+      ↓
+Create Batches
+      ↓
+GPU / GPU Cluster
+      ↓
+Model Inference
+      ↓
+Predictions
+      ↓
+Combine Results
+```
+
+With multiple GPUs:
+
+```text
+                 Large Dataset
+                      ↓
+                  DataLoader
+                      ↓
+                  Batches
+                      ↓
+             ┌────────┼────────┐
+             ↓        ↓        ↓
+           GPU 0    GPU 1    GPU 2
+             ↓        ↓        ↓
+           Batch    Batch    Batch
+             └────────┼────────┘
+                      ↓
+                 Predictions
+```
+
+---
+
+# 14. Main Learning
+
+The key concepts are:
+
+```text
+Batch Inference
+      ↓
+DataLoader
+      ↓
+Batch Size
+      ↓
+GPU Acceleration
+      ↓
+Multi-GPU Inference
+      ↓
+Higher Throughput
+```
+
+**Main takeaway:** Batch inference processes multiple inputs together, while GPU and multi-GPU execution can increase the number of predictions processed per unit of time.

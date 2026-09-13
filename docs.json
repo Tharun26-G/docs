@@ -439,6 +439,12 @@
             "pages": [
               "scaling-inference"
             ]
+          },
+          {
+            "group": "Day 56",
+            "pages": [
+              "code-deployment"
+            ]
           }
         ]
       }

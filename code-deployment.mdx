@@ -1,0 +1,706 @@
+---
+title: "Cloud Deployment"
+---
+
+1. **Without AWS/SageMaker**: run the FastAPI model locally.
+2. **With AWS SageMaker**: understand how the same model is packaged, uploaded, and deployed as a SageMaker endpoint.
+
+# Cloud Deployment (SageMaker)
+
+## 1. What is Cloud Deployment?
+
+Cloud deployment means running a machine learning application on a cloud platform instead of only running it on a local computer.
+
+### Without Cloud
+
+```text
+Client
+  ↓
+FastAPI
+  ↓
+ML Model
+  ↓
+Prediction
+```
+
+### With SageMaker
+
+```text
+Client
+  ↓
+SageMaker Endpoint
+  ↓
+ML Model
+  ↓
+Prediction
+```
+
+---
+
+# 2. Local Deployment Without SageMaker
+
+Before deploying to AWS, the model can be exposed using FastAPI.
+
+The local architecture is:
+
+```text
+Client
+  ↓
+FastAPI
+  ↓
+/predict
+  ↓
+ML Model
+  ↓
+Prediction
+```
+
+This is useful for understanding model serving without requiring an AWS account.
+
+---
+
+# 3. Install Local Dependencies
+
+```bash
+pip install fastapi uvicorn pydantic
+```
+
+---
+
+# 4. Local FastAPI Code
+
+Create:
+
+```text
+llm_api.py
+```
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+
+# Create FastAPI application
+app = FastAPI(
+    title="Local SageMaker Demo",
+    description="Simple ML model deployment simulation"
+)
+
+
+# Create simple prediction function
+def model_predict(value: float) -> str:
+
+    if value >= 50:
+        return "Class A"
+
+    return "Class B"
+
+
+# Define request schema
+class PredictionRequest(BaseModel):
+    value: float
+
+
+# Create root endpoint
+@app.get("/")
+def root():
+
+    return {
+        "message": "Local SageMaker Demo API is running"
+    }
+
+
+# Create health check endpoint
+@app.get("/health")
+def health():
+
+    return {
+        "status": "healthy"
+    }
+
+
+# Create prediction endpoint
+@app.post("/predict")
+def predict(request: PredictionRequest):
+
+    prediction = model_predict(request.value)
+
+    return {
+        "input": request.value,
+        "prediction": prediction,
+        "model": "llm-api-model"
+    }
+```
+
+---
+
+# 5. Run FastAPI Locally
+
+```bash
+uvicorn llm_api:app --reload
+```
+
+The API will run locally.
+
+```text
+http://127.0.0.1:8000
+```
+
+Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# 6. Test the Local API
+
+Send:
+
+```json
+{
+    "value": 75
+}
+```
+
+Response:
+
+```json
+{
+    "input": 75,
+    "prediction": "Class A",
+    "model": "llm-api-model"
+}
+```
+
+For:
+
+```json
+{
+    "value": 25
+}
+```
+
+Response:
+
+```json
+{
+    "input": 25,
+    "prediction": "Class B",
+    "model": "llm-api-model"
+}
+```
+
+---
+
+# 7. Local Deployment Flow
+
+```text
+llm_api.py
+    ↓
+FastAPI
+    ↓
+/predict
+    ↓
+model_predict()
+    ↓
+Prediction
+```
+
+This is the **without SageMaker** implementation.
+
+---
+
+# 8. What Changes with SageMaker?
+
+With SageMaker, the basic model logic remains the same.
+
+The main difference is where the application runs.
+
+### Local
+
+```text
+Computer
+  ↓
+FastAPI
+  ↓
+Model
+```
+
+### AWS
+
+```text
+Docker Container
+      ↓
+Amazon ECR
+      ↓
+SageMaker
+      ↓
+Endpoint
+      ↓
+Model
+```
+
+---
+
+# 9. Docker for SageMaker
+
+The application can be packaged inside a Docker container.
+
+Example structure:
+
+```text
+project/
+│
+├── llm_api.py
+├── Dockerfile
+└── requirements.txt
+```
+
+---
+
+# 10. `requirements.txt`
+
+```text
+fastapi
+uvicorn
+pydantic
+```
+
+---
+
+# 11. Dockerfile
+
+A simple Dockerfile:
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY llm_api.py .
+
+CMD ["uvicorn", "llm_api:app", "--host", "0.0.0.0", "--port", "8080"]
+```
+
+The Docker container contains:
+
+```text
+Python
+  +
+FastAPI
+  +
+Dependencies
+  +
+llm_api.py
+```
+
+---
+
+# 12. Build Docker Image
+
+```bash
+docker build -t llm-api .
+```
+
+Check the image:
+
+```bash
+docker images
+```
+
+---
+
+# 13. Run Docker Locally
+
+```bash
+docker run -p 8080:8080 llm-api
+```
+
+The application can now be tested locally through:
+
+```text
+http://localhost:8080
+```
+
+This is useful because the same container can then be prepared for cloud deployment.
+
+---
+
+# 14. Amazon ECR
+
+Amazon ECR stands for:
+
+**Elastic Container Registry**
+
+ECR stores Docker images in AWS.
+
+The flow is:
+
+```text
+Local Docker Image
+       ↓
+Amazon ECR
+       ↓
+SageMaker
+```
+
+Example ECR image:
+
+```text
+123456789012.dkr.ecr.us-east-1.amazonaws.com/llm-api:latest
+```
+
+---
+
+# 15. Push Docker Image to ECR
+
+First create an ECR repository:
+
+```bash
+aws ecr create-repository --repository-name llm-api
+```
+
+Login Docker to ECR:
+
+```bash
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com
+```
+
+Tag the image:
+
+```bash
+docker tag llm-api:latest 123456789012.dkr.ecr.us-east-1.amazonaws.com/llm-api:latest
+```
+
+Push it:
+
+```bash
+docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/llm-api:latest
+```
+
+Now the Docker image is stored in ECR.
+
+---
+
+# 16. SageMaker Deployment
+
+SageMaker needs three important components:
+
+```text
+SageMaker Model
+       ↓
+Endpoint Configuration
+       ↓
+SageMaker Endpoint
+```
+
+### Model
+
+Defines the container image.
+
+### Endpoint Configuration
+
+Defines how the model should run.
+
+### Endpoint
+
+Creates the actual running inference service.
+
+---
+
+# 17. AWS Python SDK
+
+AWS services can be controlled from Python using `boto3`.
+
+Install:
+
+```bash
+pip install boto3
+```
+
+Create:
+
+```text
+cloud_demo.py
+```
+
+---
+
+# 18. SageMaker Deployment Code
+
+```python
+import boto3
+
+
+# Create SageMaker client
+sagemaker = boto3.client(
+    "sagemaker",
+    region_name="us-east-1"
+)
+
+
+# Define deployment names
+model_name = "llm-api-model"
+endpoint_config_name = "llm-api-config"
+endpoint_name = "llm-api-endpoint"
+
+
+# Define ECR Docker image
+image_uri = (
+    "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+    "llm-api:latest"
+)
+
+
+# Define SageMaker IAM role
+role_arn = (
+    "arn:aws:iam::123456789012:"
+    "role/SageMakerRole"
+)
+
+
+# Create SageMaker model
+sagemaker.create_model(
+    ModelName=model_name,
+    PrimaryContainer={
+        "Image": image_uri
+    },
+    ExecutionRoleArn=role_arn
+)
+
+
+# Create endpoint configuration
+sagemaker.create_endpoint_config(
+    EndpointConfigName=endpoint_config_name,
+    ProductionVariants=[
+        {
+            "VariantName": "AllTraffic",
+            "ModelName": model_name,
+            "InstanceType": "ml.m5.large",
+            "InitialInstanceCount": 1,
+            "InitialVariantWeight": 1.0
+        }
+    ]
+)
+
+
+# Create SageMaker endpoint
+sagemaker.create_endpoint(
+    EndpointName=endpoint_name,
+    EndpointConfigName=endpoint_config_name
+)
+
+
+# Print deployment information
+print("SageMaker endpoint creation started")
+print("Endpoint:", endpoint_name)
+```
+
+---
+
+# 19. Important AWS Values
+
+The following values are examples and must be replaced with actual AWS resources:
+
+```python
+image_uri = "123456789012.dkr.ecr.us-east-1.amazonaws.com/llm-api:latest"
+```
+
+The account ID:
+
+```text
+123456789012
+```
+
+is an example.
+
+The IAM role:
+
+```python
+role_arn = "arn:aws:iam::123456789012:role/SageMakerRole"
+```
+
+also needs to be an actual IAM role with the required SageMaker permissions.
+
+---
+
+# 20. What `cloud_demo.py` Does
+
+The script follows:
+
+```text
+ECR Docker Image
+       ↓
+create_model()
+       ↓
+SageMaker Model
+       ↓
+create_endpoint_config()
+       ↓
+Endpoint Configuration
+       ↓
+create_endpoint()
+       ↓
+SageMaker Endpoint
+```
+
+---
+
+# 21. Local vs SageMaker Code
+
+### Without SageMaker
+
+```python
+app = FastAPI()
+
+@app.post("/predict")
+def predict(request):
+    return model_predict(request.value)
+```
+
+FastAPI directly handles the request.
+
+### With SageMaker
+
+```python
+sagemaker.create_model(
+    ModelName=model_name,
+    PrimaryContainer={
+        "Image": image_uri
+    },
+    ExecutionRoleArn=role_arn
+)
+```
+
+SageMaker uses the Docker container as the deployed model environment.
+
+---
+
+# 22. Complete Architecture
+
+### Without AWS
+
+```text
+                    Local Computer
+
+Client
+  ↓
+FastAPI
+  ↓
+/predict
+  ↓
+model_predict()
+  ↓
+Class A / Class B
+```
+
+### With AWS
+
+```text
+                       AWS
+
+Docker Image
+     ↓
+Amazon ECR
+     ↓
+SageMaker Model
+     ↓
+Endpoint Configuration
+     ↓
+SageMaker Endpoint
+     ↓
+Inference Request
+     ↓
+Model
+     ↓
+Prediction
+```
+
+---
+
+# 23. Complete Learning Flow
+
+```text
+                Model
+                  ↓
+              FastAPI
+                  ↓
+              Docker
+                  ↓
+             Amazon ECR
+                  ↓
+          SageMaker Model
+                  ↓
+       Endpoint Configuration
+                  ↓
+        SageMaker Endpoint
+                  ↓
+              Inference
+```
+
+---
+
+# 24. What Can Be Practiced Without AWS?
+
+Even without an AWS account, the complete **local portion** can be practiced:
+
+```text
+FastAPI
+  ↓
+Docker
+  ↓
+Local Container
+  ↓
+API Testing
+```
+
+The AWS portion can be understood from the deployment code:
+
+```text
+ECR
+ ↓
+SageMaker Model
+ ↓
+Endpoint Configuration
+ ↓
+SageMaker Endpoint
+```
+
+This gives a clear understanding of what would happen when an AWS account is available.
+
+---
+
+# 25. Main Learning
+
+```text
+Without SageMaker:
+
+FastAPI
+  ↓
+Model
+  ↓
+Prediction
+
+
+With SageMaker:
+
+FastAPI / Model
+      ↓
+Docker
+      ↓
+ECR
+      ↓
+SageMaker
+      ↓
+Endpoint
+      ↓
+Prediction
+```
+
+**Key takeaway:** FastAPI demonstrates local model serving, Docker packages the application, ECR stores the container image, and SageMaker uses that container to create a managed cloud inference endpoint.

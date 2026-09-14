@@ -445,6 +445,12 @@
             "pages": [
               "code-deployment"
             ]
+          },
+          {
+            "group": "Day 57",
+            "pages": [
+              "security-privacy"
+            ]
           }
         ]
       }

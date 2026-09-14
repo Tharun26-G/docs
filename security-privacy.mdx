@@ -1,0 +1,614 @@
+---
+title: "Security & Privacy (API Keys & Encryption)"
+---
+
+## 1. What is API Security?
+
+API security protects an API from unauthorized access.
+
+Without authentication:
+
+```text
+Client
+  ↓
+FastAPI
+  ↓
+API Response
+```
+
+Anyone who knows the API URL may be able to access it.
+
+With API key authentication:
+
+```text
+Client
+  ↓
+API Key
+  ↓
+FastAPI
+  ↓
+Authentication
+  ↓
+API Response
+```
+
+---
+
+# 2. What is an API Key?
+
+An API key is a secret value used to identify or authorize an API request.
+
+Example:
+
+```text
+X-API-Key: my-secret-key
+```
+
+The server checks whether the provided key is valid.
+
+```text
+Correct API Key
+      ↓
+   Allow
+
+
+Incorrect API Key
+      ↓
+   Reject
+```
+
+---
+
+# 3. API Key Header
+
+A common approach is to send the API key using an HTTP header.
+
+```text
+X-API-Key: my-secret-key
+```
+
+Example request:
+
+```text
+GET /secret
+X-API-Key: my-secret-key
+```
+
+FastAPI can read the header and validate it.
+
+---
+
+# 4. Why Use API Keys?
+
+API keys can be used to:
+
+- Protect private APIs
+- Identify clients
+- Restrict unauthorized requests
+- Control access to services
+- Provide simple authentication
+
+API keys are useful for simple applications, but production systems may require stronger authentication mechanisms such as OAuth 2.0 or JWT.
+
+---
+
+# 5. Never Hardcode Real API Keys
+
+Avoid storing real secrets directly in Python code.
+
+Bad:
+
+```python
+API_KEY = "my-real-secret-key"
+```
+
+Better:
+
+```text
+Environment Variable
+        ↓
+Application
+```
+
+Example:
+
+```text
+API_KEY=secret-value
+```
+
+The application reads the value from the environment.
+
+---
+
+# 6. What is Encryption?
+
+Encryption converts readable data into an unreadable form.
+
+```text
+Plaintext
+   ↓
+Encryption
+   ↓
+Ciphertext
+```
+
+Example:
+
+```text
+Secret:
+"my password"
+
+       ↓
+
+Encrypted:
+"gAAAAAB..."
+```
+
+Only someone with the correct key can decrypt the encrypted data.
+
+---
+
+# 7. Encryption at Rest
+
+**Encryption at rest** protects data while it is stored.
+
+Examples:
+
+```text
+Database
+Files
+Backups
+Storage
+```
+
+Architecture:
+
+```text
+Application
+     ↓
+Encrypt
+     ↓
+Encrypted Storage
+```
+
+When the data is needed:
+
+```text
+Encrypted Storage
+     ↓
+Decrypt
+     ↓
+Application
+```
+
+---
+
+# 8. Encryption vs Hashing
+
+These concepts are different.
+
+| Encryption | Hashing |
+| --- | --- |
+| Reversible | One-way |
+| Can decrypt data | Cannot normally reverse |
+| Used for secrets/data | Used for passwords/checksums |
+| Requires encryption key | Uses hash algorithm |
+
+For example:
+
+```text
+Encryption:
+
+Secret
+ ↓
+Encrypted Data
+ ↓
+Secret
+```
+
+Hashing:
+
+```text
+Password
+ ↓
+Hash
+```
+
+The original password is not recovered from the hash.
+
+---
+
+# 9. Fernet Encryption
+
+For a simple Python demonstration, `cryptography` provides **Fernet** symmetric encryption.
+
+Install:
+
+```bash
+pip install fastapi uvicorn cryptography
+```
+
+Fernet uses the same secret key for encryption and decryption.
+
+```text
+Encryption Key
+     ↓
+Encrypt ← Data → Decrypt
+     ↓             ↓
+Encrypted       Original
+```
+
+---
+
+# 10. `security_demo.py`
+
+```python
+import os
+
+from cryptography.fernet import Fernet
+from fastapi import FastAPI, Header, HTTPException
+from pydantic import BaseModel
+
+
+# Create FastAPI application
+app = FastAPI(
+    title="Security Demo",
+    description="API key authentication and encryption demo"
+)
+
+
+# Get API key from environment variable
+API_KEY = os.getenv(
+    "API_KEY",
+    "demo-api-key"
+)
+
+
+# Create or load encryption key
+ENCRYPTION_KEY = os.getenv(
+    "ENCRYPTION_KEY"
+)
+
+if ENCRYPTION_KEY is None:
+    ENCRYPTION_KEY = Fernet.generate_key().decode()
+
+
+# Create encryption object
+fernet = Fernet(
+    ENCRYPTION_KEY.encode()
+)
+
+
+# Define request schema
+class SecretRequest(BaseModel):
+    secret: str
+
+
+# Check API key
+def verify_api_key(api_key: str):
+
+    if api_key != API_KEY:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid API key"
+        )
+
+
+# Root endpoint
+@app.get("/")
+def root():
+
+    return {
+        "message": "Security Demo API is running"
+    }
+
+
+# Protected endpoint
+@app.get("/protected")
+def protected(
+    x_api_key: str = Header(...)
+):
+
+    verify_api_key(x_api_key)
+
+    return {
+        "message": "Access granted"
+    }
+
+
+# Encrypt secret data
+@app.post("/encrypt")
+def encrypt_secret(
+    request: SecretRequest,
+    x_api_key: str = Header(...)
+):
+
+    verify_api_key(x_api_key)
+
+    encrypted_secret = fernet.encrypt(
+        request.secret.encode()
+    ).decode()
+
+    return {
+        "encrypted_secret": encrypted_secret
+    }
+```
+
+---
+
+# 11. Run the API
+
+```bash
+uvicorn security_demo:app --reload
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+The Swagger UI can be used to test the API.
+
+---
+
+# 12. Setting the API Key
+
+### Windows PowerShell
+
+```powershell
+$env:API_KEY="my-secret-key"
+```
+
+Then run:
+
+```powershell
+uvicorn security_demo:app --reload
+```
+
+### Windows CMD
+
+```cmd
+set API_KEY=my-secret-key
+```
+
+Then:
+
+```cmd
+uvicorn security_demo:app --reload
+```
+
+---
+
+# 13. Testing API Authentication
+
+The protected endpoint is:
+
+```text
+GET /protected
+```
+
+With the correct header:
+
+```text
+X-API-Key: my-secret-key
+```
+
+Response:
+
+```json
+{
+    "message": "Access granted"
+}
+```
+
+With an incorrect key:
+
+```text
+X-API-Key: wrong-key
+```
+
+Response:
+
+```json
+{
+    "detail": "Invalid API key"
+}
+```
+
+HTTP status:
+
+```text
+401 Unauthorized
+```
+
+---
+
+# 14. Testing Encryption
+
+Send:
+
+```json
+{
+    "secret": "my confidential data"
+}
+```
+
+with the API key.
+
+The API returns something similar to:
+
+```json
+{
+    "encrypted_secret": "gAAAAAB..."
+}
+```
+
+The encrypted value cannot be directly understood as the original text.
+
+---
+
+# 15. Encryption Flow
+
+```text
+"my confidential data"
+          ↓
+       Fernet
+          ↓
+"gAAAAAB..."
+          ↓
+       Storage
+```
+
+When the original data is required:
+
+```text
+"gAAAAAB..."
+          ↓
+       Fernet
+          ↓
+"my confidential data"
+```
+
+---
+
+# 16. Important Security Concepts
+
+### Authentication
+
+Determines **who is allowed to access** the API.
+
+```text
+API Key
+  ↓
+Authentication
+```
+
+### Authorization
+
+Determines **what an authenticated user is allowed to access**.
+
+```text
+Authenticated User
+        ↓
+Authorization
+        ↓
+Allowed Resources
+```
+
+### Encryption
+
+Protects data from being readable if someone gains access to the stored ciphertext.
+
+```text
+Plaintext
+   ↓
+Encryption
+   ↓
+Ciphertext
+```
+
+---
+
+# 17. API Key vs Encryption
+
+These solve different problems.
+
+```text
+API Key
+  ↓
+Protects API access
+
+
+Encryption
+  ↓
+Protects stored data
+```
+
+They can be used together:
+
+```text
+Client
+  ↓
+API Key
+  ↓
+FastAPI
+  ↓
+Authentication
+  ↓
+Encrypted Data
+  ↓
+Storage
+```
+
+---
+
+# 18. Basic Security Best Practices
+
+### Use HTTPS
+
+API keys should not normally be transmitted over plain HTTP in production.
+
+```text
+HTTPS
+  ↓
+Encrypted communication
+```
+
+### Store secrets securely
+
+Use environment variables or a secrets manager instead of putting real keys directly in source code.
+
+### Rotate API keys
+
+Replace keys periodically or when compromise is suspected.
+
+### Validate input
+
+Use Pydantic models to validate API requests.
+
+### Avoid logging secrets
+
+Do not print API keys, passwords, tokens, or decrypted confidential data in application logs.
+
+---
+
+# 19. Local Security Architecture
+
+```text
+Client
+  ↓
+X-API-Key
+  ↓
+FastAPI
+  ↓
+Verify API Key
+  ↓
+Protected Endpoint
+  ↓
+Encrypt Secret
+  ↓
+Encrypted Data
+```
+
+---
+
+# 20. Main Learning
+
+```text
+Security & Privacy
+        ↓
+API Authentication
+        ↓
+API Key
+        ↓
+Request Validation
+        ↓
+Encryption
+        ↓
+Encrypted Data at Rest
+        ↓
+Secure Storage
+```
+
+**Key takeaway:** API key authentication controls access to the FastAPI service, while encryption protects sensitive data when it is stored. For production systems, HTTPS, secure secret management, key rotation, proper authentication, and access controls should also be used.

@@ -451,6 +451,13 @@
             "pages": [
               "security-privacy"
             ]
+          },
+          {
+            "group": "Day 58",
+            "pages": [
+              "profiling",
+              "profiling-code"
+            ]
           }
         ]
       }

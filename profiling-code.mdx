@@ -1,0 +1,774 @@
+---
+title: "Profiling code"
+---
+
+The key new idea is:
+
+> **DQN code = trains the model**<br /> **PyTorch Profiler = measures what takes time during training**
+
+---
+
+# 1. Import Gymnasium
+
+```python
+import gymnasium as gym
+```
+
+Gymnasium provides the CartPole environment.
+
+```python
+env = gym.make("CartPole-v1")
+```
+
+creates the game.
+
+The agent sees a state containing **4 values**:
+
+```text
+[cart position,
+ cart velocity,
+ pole angle,
+ pole angular velocity]
+```
+
+It can choose 2 actions:
+
+```text
+0 → Left
+1 → Right
+```
+
+---
+
+# 2. Import PyTorch
+
+```python
+import torch
+```
+
+PyTorch is used for:
+
+- Tensors
+- Neural networks
+- Calculating loss
+- Backpropagation
+- Updating model parameters
+- Profiling
+
+---
+
+# 3. Import neural network tools
+
+```python
+import torch.nn as nn
+```
+
+`nn` provides neural-network layers.
+
+For example:
+
+```python
+nn.Linear()
+nn.ReLU()
+nn.Sequential()
+```
+
+---
+
+# 4. Import optimizer
+
+```python
+import torch.optim as optim
+```
+
+The optimizer updates the model's weights.
+
+You're using:
+
+```python
+optim.Adam()
+```
+
+---
+
+# 5. Create CartPole
+
+```python
+env = gym.make("CartPole-v1")
+```
+
+This creates the environment.
+
+Think of it as:
+
+```text
+       Pole
+        │
+        │
+   ─────┴─────
+      Cart
+
+← Move      Move →
+```
+
+The goal is to keep the pole balanced for as long as possible.
+
+---
+
+# 6. Create the DQN model
+
+```python
+model = nn.Sequential(
+    nn.Linear(4, 32),
+    nn.ReLU(),
+    nn.Linear(32, 2)
+)
+```
+
+This is the neural network.
+
+Its structure is:
+
+```text
+Input
+  ↓
+4 values
+  ↓
+Linear(4 → 32)
+  ↓
+ReLU
+  ↓
+Linear(32 → 2)
+  ↓
+2 Q-values
+```
+
+For example:
+
+```text
+State
+[0.1, -0.2, 0.03, 0.15]
+
+       ↓
+
+     DQN
+
+       ↓
+
+[4.2, 6.7]
+```
+
+Meaning:
+
+```text
+Q(left)  = 4.2
+Q(right) = 6.7
+```
+
+The agent would choose right.
+
+---
+
+# 7. Create optimizer
+
+```python
+optimizer = optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+```
+
+### `model.parameters()`
+
+Gets all trainable weights from the network.
+
+### `lr=0.001`
+
+Learning rate.
+
+It controls how much the weights change after each training step.
+
+---
+
+# 8. Start the profiler
+
+This is the major new part.
+
+```python
+with torch.profiler.profile(
+    activities=[
+        torch.profiler.ProfilerActivity.CPU
+    ],
+    record_shapes=True
+) as prof:
+```
+
+This tells PyTorch:
+
+> "While the following code is running, monitor and record what the program is doing."
+
+---
+
+## What is a profiler?
+
+A profiler helps answer questions like:
+
+```text
+What is taking the most CPU time?
+
+Which PyTorch operation runs most often?
+
+Which operation is expensive?
+
+What tensor shapes are being processed?
+```
+
+Think of it like a **performance monitoring tool** for your ML code.
+
+---
+
+# 9. CPU profiling
+
+```python
+torch.profiler.ProfilerActivity.CPU
+```
+
+This tells the profiler to monitor CPU operations.
+
+You're currently **not profiling GPU/CUDA operations**.
+
+So:
+
+```text
+Your program
+     │
+     ▼
+PyTorch
+     │
+     ▼
+CPU operations
+     │
+     ▼
+Profiler records them
+```
+
+---
+
+# 10. `record_shapes=True`
+
+```python
+record_shapes=True
+```
+
+This tells the profiler to record the shapes of tensors involved in operations.
+
+For example, it can help you see something like:
+
+```text
+Linear operation
+Input shape: [4]
+Output shape: [32]
+```
+
+This is useful when debugging performance.
+
+---
+
+# 11. Start training
+
+Everything inside:
+
+```python
+with torch.profiler.profile(...) as prof:
+```
+
+gets profiled.
+
+Your training starts here:
+
+```python
+for episode in range(5):
+```
+
+You're running only **5 episodes**.
+
+This is intentionally small because profiling adds overhead.
+
+---
+
+# 12. Reset environment
+
+```python
+state, info = env.reset()
+```
+
+Starts a new CartPole episode.
+
+You get the initial state.
+
+Example:
+
+```text
+state =
+[0.01, -0.02, 0.03, 0.04]
+```
+
+---
+
+# 13. Maximum 100 steps
+
+```python
+for step in range(100):
+```
+
+The agent can take up to 100 actions in each episode.
+
+So potentially:
+
+```text
+5 episodes × 100 steps
+```
+
+up to around 500 environment steps, although an episode can terminate earlier.
+
+---
+
+# 14. Convert state to tensor
+
+```python
+state_tensor = torch.tensor(
+    state,
+    dtype=torch.float32
+)
+```
+
+Gymnasium gives you numerical values.
+
+PyTorch's neural network expects tensors.
+
+So:
+
+```text
+Gym state
+    ↓
+[0.01, -0.02, 0.03, 0.04]
+    ↓
+PyTorch Tensor
+```
+
+---
+
+# 15. Forward pass
+
+```python
+q_values = model(state_tensor)
+```
+
+This is called the **forward pass**.
+
+The state goes through the neural network:
+
+```text
+State
+  ↓
+Linear
+  ↓
+ReLU
+  ↓
+Linear
+  ↓
+Q-values
+```
+
+Example:
+
+```text
+[0.01, -0.02, 0.03, 0.04]
+                ↓
+          Neural Network
+                ↓
+           [2.4, 3.7]
+```
+
+---
+
+# 16. Select action
+
+```python
+action = q_values.argmax().item()
+```
+
+`argmax()` finds the largest Q-value.
+
+If:
+
+```text
+q_values = [2.4, 3.7]
+```
+
+then:
+
+```text
+3.7 → index 1
+```
+
+So:
+
+```python
+action = 1
+```
+
+means:
+
+```text
+Move right
+```
+
+---
+
+# 17. Take the action
+
+```python
+next_state, reward, terminated, truncated, info = env.step(
+    action
+)
+```
+
+The agent sends the action to CartPole.
+
+The environment returns:
+
+```text
+next_state
+reward
+terminated
+truncated
+info
+```
+
+For example:
+
+```text
+Action → Right
+
+       ↓
+
+CartPole
+
+       ↓
+
+New state
+Reward = 1
+```
+
+---
+
+# 18. Calculate target
+
+```python
+target = torch.tensor(
+    reward,
+    dtype=torch.float32
+)
+```
+
+Here you're using the immediate reward as the target.
+
+If:
+
+```text
+reward = 1
+```
+
+then:
+
+```text
+target = 1
+```
+
+### Important
+
+This is **not a complete DQN target calculation**.
+
+A proper DQN would normally use something like:
+
+$$
+target = r + \gamma \max Q(s',a')
+$$
+
+when the episode hasn't ended.
+
+Your earlier code actually included the future Q-value. This simplified version does not.
+
+---
+
+# 19. Calculate loss
+
+```python
+loss = (q_values[action] - target) ** 2
+```
+
+Suppose:
+
+```text
+q_values[action] = 2.5
+target = 1
+```
+
+Then:
+
+```text
+loss = (2.5 - 1)²
+     = 2.25
+```
+
+The model is trying to make:
+
+```text
+Predicted Q-value
+        ↓
+closer to
+        ↓
+Target
+```
+
+---
+
+# 20. Clear old gradients
+
+```python
+optimizer.zero_grad()
+```
+
+PyTorch accumulates gradients by default.
+
+So before calculating new gradients, we clear the previous ones.
+
+```text
+Old gradients → remove
+New gradients → calculate
+```
+
+---
+
+# 21. Backward pass
+
+```python
+loss.backward()
+```
+
+This performs **backpropagation**.
+
+It calculates gradients showing how the model's parameters contributed to the loss.
+
+Conceptually:
+
+```text
+Loss
+ ↓
+Backward propagation
+ ↓
+Gradients
+ ↓
+Which weights should change?
+```
+
+---
+
+# 22. Update model
+
+```python
+optimizer.step()
+```
+
+Adam uses the calculated gradients to update the neural network's parameters.
+
+So:
+
+```text
+Forward pass
+     ↓
+Q-value
+     ↓
+Loss
+     ↓
+Backward pass
+     ↓
+Gradients
+     ↓
+Adam
+     ↓
+Updated weights
+```
+
+That's the actual learning process.
+
+---
+
+# 23. Update state
+
+```python
+state = next_state
+```
+
+The next state becomes the current state.
+
+```text
+State A
+   ↓
+Action
+   ↓
+State B
+   ↓
+State B becomes current state
+```
+
+Then the process repeats.
+
+---
+
+# 24. Stop if episode ends
+
+```python
+if terminated or truncated:
+    break
+```
+
+If the pole falls or the environment reaches its limit, stop that episode.
+
+Then the next episode starts.
+
+---
+
+# 25. Print profiler results
+
+After training finishes:
+
+```python
+print(
+    prof.key_averages().table(
+        sort_by="cpu_time_total",
+        row_limit=10
+    )
+)
+```
+
+This is where you see the profiling information.
+
+---
+
+## `prof.key_averages()`
+
+Groups similar operations together.
+
+Instead of showing every single call separately, it summarizes operations.
+
+For example:
+
+```text
+aten::linear
+aten::relu
+aten::add
+aten::mul
+aten::pow
+```
+
+---
+
+## `.table()`
+
+Formats the results as a table.
+
+---
+
+## `sort_by="cpu_time_total"`
+
+Sorts operations according to their total CPU execution time.
+
+So the most expensive operations appear near the top.
+
+---
+
+## `row_limit=10`
+
+Only show the top 10 operations.
+
+You may see output conceptually similar to:
+
+```text
+---------------------------------------------------------------
+Name              CPU total    CPU time avg    Calls
+---------------------------------------------------------------
+aten::linear      ...          ...              ...
+aten::addmm       ...          ...              ...
+aten::relu        ...          ...              ...
+aten::pow         ...          ...              ...
+aten::sub         ...          ...              ...
+---------------------------------------------------------------
+```
+
+The exact numbers depend on your computer and run.
+
+---
+
+# 26. Close environment
+
+```python
+env.close()
+```
+
+This releases resources used by the CartPole environment.
+
+---
+
+# The Important Difference From Your Previous Code
+
+Your previous code was mainly about:
+
+```text
+How does DQN learn?
+```
+
+This code adds:
+
+```text
+How expensive is each operation?
+```
+
+So you now have two concepts:
+
+### DQN
+
+```text
+State
+ ↓
+Neural Network
+ ↓
+Q-values
+ ↓
+Action
+ ↓
+Reward
+ ↓
+Loss
+ ↓
+Backpropagation
+ ↓
+Update model
+```
+
+### Profiler
+
+```text
+Training code
+      ↓
+PyTorch Profiler
+      ↓
+Record operations
+      ↓
+Measure CPU time
+      ↓
+Print performance table
+```
+
+---

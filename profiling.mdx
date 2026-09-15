@@ -1,0 +1,546 @@
+---
+title: "Performance Profiling (PyTorch Profiler)"
+---
+
+## 1. What is Performance Profiling?
+
+Performance profiling means analyzing how much time and resources a program spends during execution.
+
+For a PyTorch model, profiling can help identify:
+
+- Slow operations
+- CPU usage
+- GPU usage
+- Memory usage
+- Training bottlenecks
+- Inference bottlenecks
+
+```text
+Model
+  ↓
+Profiler
+  ↓
+Performance Information
+  ↓
+Find Bottleneck
+  ↓
+Optimize
+```
+
+---
+
+## 2. What is a Bottleneck?
+
+A bottleneck is a part of the program that takes significantly more time or resources than other parts.
+
+Example:
+
+```text
+Training Loop
+
+Data Loading      → 5 ms
+Forward Pass      → 10 ms
+Loss Calculation  → 2 ms
+Backward Pass     → 40 ms
+Optimizer Step    → 8 ms
+```
+
+The backward pass is the main bottleneck.
+
+```text
+Backward Pass
+     ↓
+   40 ms
+     ↓
+Bottleneck
+```
+
+---
+
+# 3. PyTorch Profiler
+
+PyTorch provides `torch.profiler` for analyzing model performance.
+
+Import:
+
+```python
+import torch
+```
+
+The profiler can record operations using:
+
+```python
+torch.profiler.profile()
+```
+
+It can measure CPU and CUDA operations.
+
+---
+
+# 4. Profiling Training
+
+A typical training loop is:
+
+```text
+Input
+  ↓
+Forward Pass
+  ↓
+Loss
+  ↓
+Backward Pass
+  ↓
+Optimizer
+```
+
+The profiler can measure each part.
+
+```text
+Training Loop
+     ↓
+PyTorch Profiler
+     ↓
+Operation Times
+```
+
+---
+
+# 5. Profiling Inference
+
+Inference does not require gradient calculation.
+
+```python
+with torch.no_grad():
+    output = model(x)
+```
+
+The profiler can identify which model operations consume the most time.
+
+```text
+Input
+  ↓
+Model
+  ↓
+Profiler
+  ↓
+Prediction
+```
+
+---
+
+# 6. Basic Profiler Example
+
+```python
+with torch.profiler.profile() as prof:
+
+    output = model(x)
+
+    loss = output.mean()
+
+    loss.backward()
+```
+
+After profiling:
+
+```python
+print(prof.key_averages().table())
+```
+
+This displays performance statistics.
+
+---
+
+# 7. Important Profiler Metrics
+
+### CPU Time
+
+Time spent executing an operation on the CPU.
+
+```text
+CPU time
+```
+
+### CUDA Time
+
+Time spent executing an operation on a CUDA GPU.
+
+```text
+CUDA time
+```
+
+### Self CPU Time
+
+Time spent directly inside an operation without including child operations.
+
+### Calls
+
+Number of times an operation was executed.
+
+Example:
+
+```text
+aten::linear
+Calls: 100
+```
+
+---
+
+# 8. DQN Training Loop
+
+The DQN example from the previous topic contains:
+
+```text
+CartPole
+   ↓
+State
+   ↓
+DQN
+   ↓
+Action
+   ↓
+Reward
+   ↓
+Next State
+   ↓
+Loss
+   ↓
+Backpropagation
+   ↓
+Optimizer
+```
+
+Profiling helps determine which operations consume the most execution time.
+
+---
+
+# 9. `profile_demo.py`
+
+This is a small profiling example based on the DQN training concept:
+
+```python
+import gymnasium as gym
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+
+# Create CartPole environment
+env = gym.make("CartPole-v1")
+
+
+# Create DQN model
+model = nn.Sequential(
+    nn.Linear(4, 32),
+    nn.ReLU(),
+    nn.Linear(32, 2)
+)
+
+
+# Create optimizer
+optimizer = optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+
+
+# Start profiler
+with torch.profiler.profile(
+    activities=[
+        torch.profiler.ProfilerActivity.CPU
+    ],
+    record_shapes=True
+) as prof:
+
+    # Run DQN training loop
+    for episode in range(5):
+
+        state, info = env.reset()
+
+        for step in range(100):
+
+            # Convert state to tensor
+            state_tensor = torch.tensor(
+                state,
+                dtype=torch.float32
+            )
+
+            # Forward pass
+            q_values = model(state_tensor)
+
+            # Select action
+            action = q_values.argmax().item()
+
+            # Take action
+            next_state, reward, terminated, truncated, info = env.step(
+                action
+            )
+
+            # Calculate loss
+            target = torch.tensor(
+                reward,
+                dtype=torch.float32
+            )
+
+            loss = (q_values[action] - target) ** 2
+
+            # Backward pass
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            state = next_state
+
+            # Stop episode
+            if terminated or truncated:
+                break
+
+
+# Print profiling results
+print(
+    prof.key_averages().table(
+        sort_by="cpu_time_total",
+        row_limit=10
+    )
+)
+
+
+# Close environment
+env.close()
+```
+
+**Output:**
+
+```text
+USDT:2026-09-15 19:18:03 13024:14088 C:\actions-runner\_work\pytorch\pytorch\third_party\kineto\libkineto\src\SyncActivityProfilerHandler.cpp:52] profiler_start
+USDT:2026-09-15 19:18:04 13024:14088 C:\actions-runner\_work\pytorch\pytorch\third_party\kineto\libkineto\src\SyncActivityProfilerHandler.cpp:59] profiler_stop
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                               Optimizer.step#Adam.step        16.78%      26.996ms        39.83%      64.086ms       1.364ms            47  
+                                           aten::linear         2.32%       3.736ms        15.09%      24.289ms     258.394us            94  
+                                               aten::to         2.84%       4.575ms        13.00%      20.925ms      21.115us           991  
+                                         aten::_to_copy         5.83%       9.373ms        10.16%      16.350ms      19.326us           846  
+    autograd::engine::evaluate_function: AddmmBackward0         1.42%       2.282ms         9.33%      15.017ms     159.752us            94  
+                                             aten::add_         2.82%       4.546ms         7.10%      11.431ms      30.402us           376  
+                                            aten::addmm         6.20%       9.984ms         6.98%      11.236ms     119.529us            94  
+                                         AddmmBackward0         1.91%       3.070ms         6.00%       9.658ms     102.744us            94  
+                                                aten::t         3.41%       5.489ms         5.74%       9.239ms      21.841us           423  
+      autograd::engine::evaluate_function: PowBackward0         0.54%     862.500us         5.10%       8.206ms     174.587us            47  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 160.916ms
+```
+
+---
+
+# 10. Install Dependencies
+
+```bash
+pip install torch gymnasium
+```
+
+Run:
+
+```bash
+python profile_demo.py
+```
+
+The profiler will produce a table similar to:
+
+```text
+------------------------------------------------------------
+Name                    CPU total    Calls
+------------------------------------------------------------
+aten::linear             ...
+aten::addmm              ...
+aten::backward           ...
+aten::relu               ...
+Optimizer.step           ...
+------------------------------------------------------------
+```
+
+The exact values depend on the computer and PyTorch version.
+
+---
+
+# 11. Understanding the Profiler Code
+
+### Start profiler
+
+```python
+with torch.profiler.profile(
+    activities=[
+        torch.profiler.ProfilerActivity.CPU
+    ]
+) as prof:
+```
+
+Starts collecting performance information.
+
+### Record tensor shapes
+
+```python
+record_shapes=True
+```
+
+Records the shapes of tensors used by operations.
+
+This can help identify operations working with unexpectedly large tensors.
+
+### Get profiling results
+
+```python
+prof.key_averages()
+```
+
+Groups operations with the same name.
+
+### Sort by execution time
+
+```python
+sort_by="cpu_time_total"
+```
+
+Places operations with the highest CPU execution time first.
+
+### Limit results
+
+```python
+row_limit=10
+```
+
+Displays the top 10 operations.
+
+---
+
+# 12. Finding the Bottleneck
+
+Suppose the profiler shows:
+
+```text
+Operation          CPU Time
+----------------------------
+aten::linear       10 ms
+aten::relu          2 ms
+aten::backward     25 ms
+optimizer.step      8 ms
+```
+
+The biggest operation is:
+
+```text
+aten::backward
+```
+
+Therefore:
+
+```text
+Backward Pass
+     ↓
+25 ms
+     ↓
+Potential Bottleneck
+```
+
+This helps determine where optimization should be focused.
+
+---
+
+# 13. Profiling Workflow
+
+```text
+Run Model
+    ↓
+Collect Profiling Data
+    ↓
+View Operations
+    ↓
+Sort by Execution Time
+    ↓
+Find Bottleneck
+    ↓
+Optimize
+    ↓
+Profile Again
+```
+
+Profiling should be repeated after optimization to verify that performance actually improved.
+
+---
+
+# 14. CPU vs GPU Profiling
+
+For CPU-only profiling:
+
+```python
+activities=[
+    torch.profiler.ProfilerActivity.CPU
+]
+```
+
+For a CUDA system:
+
+```python
+activities=[
+    torch.profiler.ProfilerActivity.CPU,
+    torch.profiler.ProfilerActivity.CUDA
+]
+```
+
+This allows CPU and GPU operations to be analyzed together.
+
+---
+
+# 15. Profiling Training vs Inference
+
+### Training
+
+```text
+Forward
+  ↓
+Loss
+  ↓
+Backward
+  ↓
+Optimizer
+```
+
+Training usually requires more computation because gradients must be calculated.
+
+### Inference
+
+```text
+Input
+  ↓
+Forward
+  ↓
+Prediction
+```
+
+Inference normally does not require backpropagation.
+
+```python
+with torch.no_grad():
+    output = model(x)
+```
+
+---
+
+# 16. Main Learning
+
+```text
+PyTorch Profiler
+       ↓
+Measure Operations
+       ↓
+CPU / GPU Time
+       ↓
+Find Slow Operations
+       ↓
+Identify Bottleneck
+       ↓
+Optimize Model
+```
+
+### Key takeaway
+
+**PyTorch Profiler helps identify which operations consume the most time and resources, making it easier to optimize training and inference performance.**

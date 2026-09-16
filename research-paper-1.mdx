@@ -1,0 +1,1153 @@
+---
+title: "Research Paper"
+---
+
+# Retrieval-Augmented Generation Evaluation in the Era of Large Language Models
+
+**Paper:** _Retrieval Augmented Generation Evaluation in the Era of Large Language Models: A Comprehensive Survey_ **Authors:** Aoran Gan et al. **arXiv:** 2504.14891, submitted April 21, 2025. ([arXiv][1])
+
+[Read the original paper on arXiv](https://arxiv.org/html/2504.14891v1?utm_source=chatgpt.com)
+
+---
+
+## 1. What is this paper about?
+
+The paper is **not mainly proposing a new RAG algorithm**.
+
+Instead, it asks:
+
+> **How do we properly evaluate whether a RAG system is actually good?**
+
+A RAG system has multiple stages:
+
+```text
+User Query
+    ↓
+Query Understanding
+    ↓
+Retrieval
+    ↓
+Reranking
+    ↓
+Relevant Documents
+    ↓
+LLM
+    ↓
+Generated Answer
+```
+
+Therefore, simply checking whether the final answer looks good is not enough.
+
+The paper divides RAG evaluation into:
+
+```text
+                 RAG Evaluation
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+    Internal Evaluation       External Evaluation
+          │                         │
+     ┌────┴────┐               ┌────┴────┐
+     │         │               │         │
+ Retrieval Generation       Safety   Efficiency
+```
+
+This **internal vs. external evaluation** structure is one of the most important ideas in the paper. ([arXiv][1])
+
+---
+
+# 2. Why is RAG evaluation difficult?
+
+A traditional LLM can be evaluated mainly by looking at its generated response.
+
+RAG is different because the final answer depends on several components:
+
+```text
+Document quality
+      ↓
+Chunking
+      ↓
+Embedding
+      ↓
+Retriever
+      ↓
+Reranker
+      ↓
+Context
+      ↓
+LLM
+      ↓
+Answer
+```
+
+A bad answer could therefore come from:
+
+- Bad document
+- Bad chunking
+- Bad embedding
+- Bad retrieval
+- Bad ranking
+- Missing context
+- LLM hallucination
+- Incorrect reasoning
+- Poor prompt
+- Safety problem
+
+The paper emphasizes that RAG performance depends not only on individual components but also on **their interactions**. ([arXiv][1])
+
+---
+
+# 3. What exactly should we evaluate?
+
+The paper identifies two fundamental problems:
+
+### Retrieval
+
+> Did we retrieve the right information?
+
+### Generation
+
+> Did the LLM use that information correctly?
+
+This gives us six major concepts:
+
+| Component | Evaluation |
+| --- | --- |
+| Retrieval | Relevance |
+| Retrieval | Comprehensiveness |
+| Retrieval | Correctness |
+| Generation | Relevance |
+| Generation | Faithfulness |
+| Generation | Correctness |
+
+([arXiv][1])
+
+---
+
+# 4. Retrieval Evaluation
+
+Suppose the user asks:
+
+> "What is the refund policy for product X?"
+
+The retriever returns:
+
+```text
+Document 1 → Refund policy
+Document 2 → Product pricing
+Document 3 → Shipping policy
+Document 4 → Refund exceptions
+```
+
+We need to determine whether these documents are useful.
+
+---
+
+## 4.1 Retrieval Relevance
+
+**Question:**
+
+> Are the retrieved documents relevant to the user's query?
+
+Example:
+
+```text
+Query:
+"What is the refund policy?"
+
+Retrieved:
+"Refunds are available within 30 days."
+```
+
+High relevance.
+
+But:
+
+```text
+Retrieved:
+"Shipping usually takes 5 business days."
+```
+
+Low relevance.
+
+The paper describes retrieval relevance as measuring how well retrieved documents match the information needed by the query. ([arXiv][1])
+
+---
+
+# 5. Recall@K
+
+Recall asks:
+
+> **How many of the relevant documents did we retrieve?**
+
+Formula:
+
+$$
+Recall@K =
+\frac{\text{Relevant documents retrieved in top K}}
+{\text{Total relevant documents}}
+$$
+
+Example:
+
+There are 10 relevant documents.
+
+Your top-5 retrieval contains 8 relevant documents:
+
+$$
+Recall@5 = \frac{8}{10}=0.8
+$$
+
+So:
+
+**Recall@5 = 80%**
+
+The paper includes Recall@K as a conventional retrieval metric. ([arXiv][1])
+
+---
+
+# 6. Precision@K
+
+Precision asks:
+
+> **How many of the retrieved documents are actually relevant?**
+
+Suppose we retrieve 5 documents:
+
+```text
+Relevant       Relevant
+Relevant       Irrelevant
+Irrelevant
+```
+
+3 are relevant.
+
+$$
+Precision@5 = \frac{3}{5}=60\%
+$$
+
+So:
+
+```text
+Recall → Did I find enough relevant information?
+
+Precision → Did I avoid irrelevant information?
+```
+
+---
+
+# 7. F1 Score
+
+F1 combines:
+
+```text
+Precision
++
+Recall
+```
+
+Formula:
+
+$$
+F1 =
+\frac{2 \times Precision \times Recall}
+{Precision + Recall}
+$$
+
+It is useful when you want a balance between retrieving **enough information** and avoiding **irrelevant information**. ([arXiv][1])
+
+---
+
+# 8. Ranking Metrics
+
+Retrieval is not only about _what_ we retrieve.
+
+It is also about **where we place it**.
+
+Imagine:
+
+```text
+Top 1 → irrelevant
+Top 2 → irrelevant
+Top 3 → relevant
+Top 4 → relevant
+```
+
+versus:
+
+```text
+Top 1 → relevant
+Top 2 → relevant
+Top 3 → irrelevant
+Top 4 → irrelevant
+```
+
+The second retrieval is generally more useful because the important information appears earlier.
+
+The paper discusses rank-based metrics such as:
+
+- **MRR**
+- **MAP**
+- **nDCG**
+- **Hit@K**
+
+These appear across the surveyed RAG benchmarks and frameworks. ([arXiv][1])
+
+---
+
+# 9. Comprehensiveness / Coverage
+
+This is an important concept.
+
+Imagine a question requires three pieces of information:
+
+```text
+A + B + C
+```
+
+The retriever returns:
+
+```text
+A + B
+```
+
+The retrieved information is relevant, but incomplete.
+
+So we need to measure **coverage**.
+
+The paper defines coverage in terms of how much of the relevant information is actually retrieved. ([arXiv][1])
+
+Think:
+
+```text
+Relevance:
+"Are my documents useful?"
+
+Coverage:
+"Did I retrieve all the useful information?"
+```
+
+---
+
+# 10. Retrieval Diversity
+
+Suppose your top-5 results are:
+
+```text
+Document 1 → same information
+Document 2 → same information
+Document 3 → same information
+Document 4 → same information
+Document 5 → same information
+```
+
+They may all be relevant, but they don't provide much additional information.
+
+Therefore, RAG evaluation can also consider **diversity** among retrieved documents using approaches such as embedding/cosine similarity. ([arXiv][1])
+
+---
+
+# 11. Generation Evaluation
+
+Once we have retrieved documents, the LLM generates the answer.
+
+Now we need to evaluate three important things:
+
+```text
+Answer
+ ├── Relevance
+ ├── Faithfulness
+ └── Correctness
+```
+
+---
+
+# 12. Answer Relevance
+
+Question:
+
+> **Does the generated answer actually answer the user's question?**
+
+Example:
+
+```text
+Question:
+"What is the refund period?"
+
+Answer:
+"Refunds are available within 30 days."
+```
+
+Good relevance.
+
+But:
+
+```text
+"Shipping usually takes 5 days."
+```
+
+is not relevant.
+
+The paper defines response-query relevance as alignment between the answer and the intent/content of the original query. ([arXiv][1])
+
+---
+
+# 13. Faithfulness
+
+This is one of the **most important RAG metrics**.
+
+Faithfulness asks:
+
+> **Is the generated answer supported by the retrieved documents?**
+
+Suppose the retrieved document says:
+
+```text
+"Customers can request a refund within 30 days."
+```
+
+LLM says:
+
+```text
+"Customers can request a refund within 30 days."
+```
+
+Good faithfulness.
+
+But if the LLM says:
+
+```text
+"Customers can request a refund within 90 days."
+```
+
+then the answer is not faithful to the retrieved context.
+
+So:
+
+```text
+Retrieved Context
+       ↓
+Does answer follow it?
+       ↓
+Faithfulness
+```
+
+The paper explicitly defines faithfulness as consistency between the generated response and relevant source documents. ([arXiv][1])
+
+---
+
+# 14. Correctness
+
+Correctness asks:
+
+> **Is the generated answer actually correct compared with a ground-truth answer?**
+
+Example:
+
+```text
+Ground truth:
+"Refunds are available for 30 days."
+
+Generated:
+"Refunds are available for 30 days."
+
+→ Correct
+```
+
+This is different from faithfulness.
+
+---
+
+## Faithfulness vs Correctness
+
+This distinction is extremely important for interviews.
+
+### Case 1
+
+Retrieved document:
+
+```text
+"Refunds are available for 30 days."
+```
+
+Generated:
+
+```text
+"Refunds are available for 30 days."
+```
+
+Correct:
+
+**Yes**
+
+Faithful:
+
+**Yes**
+
+---
+
+### Case 2
+
+Retrieved document contains an incorrect statement:
+
+```text
+"Refunds are available for 60 days."
+```
+
+Ground truth:
+
+```text
+"Refunds are available for 30 days."
+```
+
+Generated answer:
+
+```text
+"Refunds are available for 60 days."
+```
+
+Faithful to retrieved context:
+
+**Yes**
+
+Actually correct:
+
+**No**
+
+Therefore:
+
+```text
+Faithfulness ≠ Correctness
+```
+
+This is why evaluating only the final answer isn't enough.
+
+---
+
+# 15. Traditional Generation Metrics
+
+The survey discusses traditional NLG metrics such as:
+
+### Exact Match
+
+```text
+Generated = Ground Truth
+```
+
+Very strict.
+
+### ROUGE
+
+Measures overlap between generated text and reference text.
+
+### BLEU
+
+Uses n-gram overlap, historically common in machine translation.
+
+### METEOR
+
+Considers things such as stemming and synonym matching.
+
+### BERTScore
+
+Uses contextual embeddings to measure semantic similarity rather than relying only on exact word overlap. ([arXiv][1])
+
+---
+
+# 16. Why traditional metrics aren't enough
+
+Consider:
+
+**Reference:**
+
+> "The refund period is 30 days."
+
+**Generated:**
+
+> "Customers can get their money back within thirty days."
+
+Word overlap might be low.
+
+But semantically, the answer is correct.
+
+This is why modern RAG evaluation increasingly uses:
+
+```text
+Semantic similarity
++
+LLM-based evaluation
++
+Human evaluation
+```
+
+rather than relying only on lexical overlap.
+
+---
+
+# 17. LLM-as-a-Judge
+
+One of the biggest developments discussed in the paper is using another LLM to evaluate the RAG output.
+
+For example:
+
+```text
+Question
+   ↓
+RAG system
+   ↓
+Answer
+   ↓
+Evaluator LLM
+   ↓
+Score
+```
+
+The evaluator could be prompted:
+
+```text
+Given the question, retrieved context,
+and generated answer:
+
+Rate whether the answer is supported
+by the retrieved context.
+```
+
+The survey identifies systems such as **RAGAS** and **Databricks Eval** that use LLM-driven evaluation approaches. ([arXiv][1])
+
+---
+
+# 18. Why use an LLM as an evaluator?
+
+Traditional metrics can struggle with:
+
+```text
+Paraphrasing
+Semantic equivalence
+Complex reasoning
+Long answers
+Contextual correctness
+```
+
+An LLM judge can potentially evaluate these more flexibly.
+
+For example:
+
+```text
+Reference:
+"India's capital is New Delhi."
+
+Answer:
+"New Delhi serves as the capital city of India."
+```
+
+A lexical metric might see differences.
+
+An LLM can recognize the semantic equivalence.
+
+---
+
+# 19. But LLM-as-a-Judge has problems
+
+This is an important part of the paper.
+
+LLM-based evaluation can itself be:
+
+- Expensive
+- Prompt-sensitive
+- Model-dependent
+- Difficult to reproduce
+- Potentially biased
+- Affected by the evaluator's own errors
+
+The paper specifically notes concerns around the **black-box nature, stability, security, and cost** of LLM-based evaluation. ([arXiv][1])
+
+So:
+
+```text
+LLM evaluates RAG
+       ↓
+But who evaluates the evaluator?
+```
+
+This is an important research problem.
+
+---
+
+# 20. Upstream Evaluation
+
+A very useful section of the paper is that evaluation shouldn't start only at retrieval.
+
+You should also evaluate:
+
+```text
+Documents
+   ↓
+Chunking
+   ↓
+Embedding
+   ↓
+Retrieval
+   ↓
+Generation
+```
+
+---
+
+## Chunking Evaluation
+
+Bad chunking can cause bad retrieval.
+
+Example:
+
+```text
+Document
+
+Paragraph 1
+Paragraph 2
+Paragraph 3
+Paragraph 4
+```
+
+Bad chunks:
+
+```text
+Chunk 1 → half of Paragraph 1
+Chunk 2 → middle of Paragraph 1
+Chunk 3 → unrelated pieces
+```
+
+Good chunks preserve useful context.
+
+The paper discusses evaluating chunking both intrinsically and by measuring its downstream effect on retrieval and response quality. ([arXiv][1])
+
+---
+
+# 21. Embedding Evaluation
+
+The embedding model determines how text is represented in vector space.
+
+For example:
+
+```text
+"refund policy"
+       ↓
+[0.21, -0.42, 0.83, ...]
+```
+
+A good embedding model should place semantically related text close together.
+
+The paper points to benchmarks such as:
+
+- **MTEB**
+- **MMTEB**
+
+for evaluating embedding models. ([arXiv][1])
+
+---
+
+# 22. External Evaluation
+
+Internal evaluation asks:
+
+> "Are the RAG components working?"
+
+External evaluation asks:
+
+> "Is the whole system suitable for real-world use?"
+
+The paper focuses particularly on:
+
+```text
+Safety
+Efficiency
+```
+
+([arXiv][1])
+
+---
+
+# 23. Safety Evaluation
+
+A RAG system can have security and safety problems.
+
+For example:
+
+```text
+Private document
+       ↓
+Retriever
+       ↓
+LLM
+       ↓
+Sensitive information leaked
+```
+
+The survey discusses areas including:
+
+### Privacy
+
+- PII leakage
+- Information extraction attacks
+- Membership inference
+
+### Fairness
+
+- Bias
+- Stereotypes
+- Unequal performance
+
+### Transparency
+
+- Citation accuracy
+- Traceability
+- Explanation quality
+
+([arXiv][1])
+
+---
+
+# 24. Efficiency Evaluation
+
+A RAG system must also be fast and affordable.
+
+Important metrics include:
+
+### TTFT
+
+**Time To First Token**
+
+How long the user waits before seeing the first generated token.
+
+```text
+User query
+    ↓
+Retrieval
+    ↓
+LLM
+    ↓
+First token
+```
+
+### Total latency
+
+Time from:
+
+```text
+Query
+ ↓
+Retrieval
+ ↓
+Processing
+ ↓
+Generation
+ ↓
+Complete answer
+```
+
+The paper specifically identifies TTFT and total response latency as important efficiency measures. ([arXiv][1])
+
+---
+
+# 25. Important RAG Evaluation Frameworks
+
+The survey covers many frameworks and benchmarks.
+
+Some important ones to know:
+
+| Framework | Main focus |
+| --- | --- |
+| **RAGAS** | Context relevance, answer relevance, faithfulness |
+| **ARES** | Context relevance, answer faithfulness/relevance |
+| **RAGBench** | Multi-dimensional RAG evaluation |
+| **FreshLLMs** | Fresh/fast-changing information |
+| **MultiHop-RAG** | Multi-hop retrieval |
+| **MedRAG** | Medical RAG |
+| **LegalBench-RAG** | Legal retrieval |
+| **CRAG** | Complex/dynamic factual QA |
+| **U-NIAH** | Long-context / needle retrieval |
+
+The survey's framework table shows that different benchmarks target different aspects rather than using one universal metric. ([arXiv][1])
+
+---
+
+# 26. The paper's major observation
+
+The authors analyzed **582 papers** from high-level NLP/AI venues to study RAG evaluation practices. ([arXiv][1])
+
+One important finding was:
+
+```text
+Retrieval + Generation
+        ↑
+   Most research
+```
+
+while:
+
+```text
+Safety + Efficiency
+        ↑
+   Less attention
+```
+
+So research has historically focused more on whether RAG can **retrieve and generate correctly** than on whether it is **safe and efficient in real-world deployment**. ([arXiv][1])
+
+---
+
+# 27. Traditional metrics vs LLM-based metrics
+
+The paper highlights an interesting trend.
+
+### Traditional metrics
+
+Examples:
+
+```text
+Precision
+Recall
+F1
+MRR
+MAP
+nDCG
+EM
+BLEU
+ROUGE
+```
+
+Advantages:
+
+- Simple
+- Relatively reproducible
+- Cheap
+- Easy to compare
+
+### LLM-based metrics
+
+Examples:
+
+```text
+LLM-as-a-Judge
+RAGAS-style evaluation
+GPTScore
+LLM-based relevance
+LLM-based faithfulness
+```
+
+Advantages:
+
+- Better suited to semantic evaluation
+- Can handle more complex outputs
+- More flexible
+
+Disadvantages:
+
+- More expensive
+- Prompt-dependent
+- Model-dependent
+- Less reproducible
+
+The survey reports that traditional metrics still dominate usage, although LLM-based evaluation has been increasing. ([arXiv][1])
+
+---
+
+# 28. Main challenges identified by the paper
+
+## Challenge 1 - LLM evaluator reliability
+
+An LLM judge can make mistakes.
+
+```text
+RAG → Answer
+       ↓
+   LLM Judge
+       ↓
+     Score
+```
+
+The judge itself isn't guaranteed to be correct.
+
+---
+
+## Challenge 2 - Evaluation cost
+
+Large-scale RAG evaluation can become expensive because you're evaluating:
+
+```text
+Thousands of queries
+        ×
+Multiple retrieval strategies
+        ×
+Multiple LLM evaluations
+```
+
+The paper identifies evaluation cost as an important open problem. ([arXiv][1])
+
+---
+
+## Challenge 3 - Dynamic knowledge
+
+RAG often uses changing information.
+
+For example:
+
+```text
+Today → Document A
+Next month → Updated Document A
+```
+
+A benchmark using static documents may not properly test real-world freshness.
+
+This motivates benchmarks using live or rapidly changing sources. ([arXiv][1])
+
+---
+
+## Challenge 4 - Multilingual evaluation
+
+Many existing frameworks focus heavily on languages such as:
+
+```text
+English
+Chinese
+```
+
+The authors highlight the need for more linguistically diverse evaluation frameworks. ([arXiv][1])
+
+---
+
+## Challenge 5 - End-to-end evaluation isn't enough
+
+A final score might tell you:
+
+```text
+RAG quality = 72%
+```
+
+But it doesn't necessarily tell you **why**.
+
+Was the problem:
+
+```text
+Chunking?
+Embedding?
+Retriever?
+Reranker?
+Context?
+LLM?
+Prompt?
+```
+
+The paper calls for more fine-grained functional decomposition and deeper evaluation. ([arXiv][1])
+
+---
+
+# 29. The most important mental model
+
+Remember RAG evaluation as:
+
+```text
+                    RAG
+                     │
+       ┌─────────────┴─────────────┐
+       │                           │
+   RETRIEVAL                   GENERATION
+       │                           │
+       ├─ Relevance               ├─ Relevance
+       ├─ Precision               ├─ Faithfulness
+       ├─ Recall                  ├─ Correctness
+       ├─ Ranking                 └─ Hallucination
+       ├─ Coverage
+       └─ Diversity
+       
+       ┌───────────────────────────────┐
+       │                               │
+     SAFETY                        EFFICIENCY
+       │                               │
+       ├─ Privacy                     ├─ TTFT
+       ├─ PII leakage                 ├─ Latency
+       ├─ Fairness                   ├─ Cost
+       └─ Transparency               └─ Throughput
+```
+
+---
+
+# 30. Practical RAG evaluation pipeline
+
+If **you build a RAG application**, don't evaluate only the final answer.
+
+Use this:
+
+```text
+                RAG Evaluation
+                     │
+                     ▼
+              1. Dataset
+                     │
+                     ▼
+             User Questions
+                     │
+                     ▼
+              2. Retrieval
+                     │
+          ┌──────────┼──────────┐
+          ▼          ▼          ▼
+      Recall@K   Precision@K   MRR
+          │
+          ▼
+        Context
+          │
+          ▼
+       3. LLM
+          │
+          ▼
+       Answer
+          │
+     ┌────┼─────┐
+     ▼    ▼     ▼
+Faithful Relevant Correct
+     │    │     │
+     └────┼─────┘
+          ▼
+      4. Safety
+          │
+          ▼
+      5. Latency
+          │
+          ▼
+      6. Cost
+```
+
+---
+
+# 31. What you should remember for AI Engineer interviews
+
+If an interviewer asks:
+
+### "How do you evaluate a RAG system?"
+
+A strong concise answer is:
+
+> **I evaluate RAG at both the retrieval and generation levels. For retrieval, I use metrics such as Recall@K, Precision@K, MRR or nDCG to measure whether relevant documents are retrieved and ranked properly. For generation, I evaluate answer relevance, faithfulness to the retrieved context, and correctness against a ground-truth answer. For production systems, I also measure latency, cost, safety, citation accuracy, and robustness. LLM-as-a-judge methods such as RAGAS can complement traditional metrics, but they should be validated because the evaluator itself can introduce bias or errors.**
+
+---
+
+# 32. The biggest takeaway from the paper
+
+The paper's central message can be simplified to:
+
+> **A RAG system should not be judged only by whether its final answer looks correct. We need to evaluate the entire pipeline—from chunking and embeddings to retrieval, generation, safety, and efficiency.**
+
+The paper essentially moves the question from:
+
+```text
+"Is the answer good?"
+```
+
+to:
+
+```text
+"Why is the answer good or bad?"
+```
+
+That is the key idea behind **RAG evaluation**. ([arXiv][1])
+
+[1]: https://arxiv.org/html/2504.14891v1 "Retrieval Augmented Generation Evaluation in the Era of Large Language Models: A Comprehensive Survey"

@@ -464,6 +464,12 @@
             "pages": [
               "research-paper-1"
             ]
+          },
+          {
+            "group": "Day 60",
+            "pages": [
+              "rag-and-llms"
+            ]
           }
         ]
       }

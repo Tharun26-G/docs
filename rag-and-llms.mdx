@@ -1,0 +1,594 @@
+---
+title: "RAG and LLMs"
+---
+
+## 1. What is RAG?
+
+**RAG (Retrieval-Augmented Generation)** is a technique that combines an **LLM** with an external knowledge source.
+
+Instead of depending only on information learned during model training, the LLM retrieves relevant information and uses it to generate an answer.
+
+```text
+User Query
+    ↓
+Retriever
+    ↓
+Relevant Documents
+    ↓
+LLM
+    ↓
+Generated Answer
+```
+
+---
+
+# 2. Why RAG is Needed
+
+LLMs can have limitations such as:
+
+- Outdated knowledge
+- Hallucinations
+- Lack of private or domain-specific information
+- Limited access to external databases
+- Knowledge cutoff limitations
+
+RAG addresses these problems by retrieving information from an external knowledge source.
+
+```text
+Without RAG
+
+Question
+   ↓
+LLM
+   ↓
+Answer
+```
+
+```text
+With RAG
+
+Question
+   ↓
+Retrieve Information
+   ↓
+Relevant Context
+   ↓
+LLM
+   ↓
+Answer
+```
+
+---
+
+# 3. RAG + LLM Architecture
+
+A typical RAG system contains:
+
+```text
+              RAG System
+                  ↓
+        ┌─────────┴─────────┐
+        ↓                   ↓
+   Knowledge Base        LLM
+        ↓                   ↑
+    Embeddings              │
+        ↓                   │
+   Vector Database          │
+        ↑                   │
+        └── Retriever ──────┘
+                 ↑
+              Query
+```
+
+---
+
+# 4. RAG Pipeline
+
+## Step 1: Collect Documents
+
+Documents can come from:
+
+- PDFs
+- Websites
+- Databases
+- Text files
+- Company documents
+- Documentation
+- Knowledge bases
+
+```text
+Documents
+    ↓
+Knowledge Base
+```
+
+---
+
+## Step 2: Document Chunking
+
+Large documents are divided into smaller pieces called **chunks**.
+
+```text
+Large Document
+      ↓
+ ┌────┼────┐
+ ↓    ↓    ↓
+Chunk 1
+Chunk 2
+Chunk 3
+```
+
+Chunking makes retrieval more efficient.
+
+---
+
+## Step 3: Create Embeddings
+
+Each chunk is converted into a numerical vector.
+
+```text
+Text
+ ↓
+Embedding Model
+ ↓
+Vector
+```
+
+For example:
+
+```text
+"RAG combines retrieval and generation"
+             ↓
+[0.21, -0.14, 0.72, ...]
+```
+
+Similar meanings should produce vectors that are close together.
+
+---
+
+# 5. Vector Database
+
+The embeddings are stored in a vector database.
+
+Examples include:
+
+- FAISS
+- Chroma
+- Pinecone
+- Weaviate
+- Milvus
+
+```text
+Document
+   ↓
+Chunk
+   ↓
+Embedding
+   ↓
+Vector Database
+```
+
+The vector database allows relevant information to be retrieved efficiently.
+
+---
+
+# 6. Retrieval
+
+When a user asks a question, the question is also converted into an embedding.
+
+```text
+User Query
+    ↓
+Query Embedding
+    ↓
+Vector Database
+    ↓
+Similarity Search
+    ↓
+Top-K Relevant Chunks
+```
+
+For example:
+
+```text
+Query:
+"What is RAG?"
+
+Retrieved:
+
+1. RAG combines retrieval with generation
+2. RAG uses external knowledge
+3. RAG can reduce hallucinations
+```
+
+---
+
+# 7. Augmentation
+
+The retrieved documents are added to the user's question as context.
+
+```text
+Question
+   +
+Retrieved Documents
+   ↓
+Context
+```
+
+Example:
+
+```text
+Question:
+"What is RAG?"
+
+Context:
+"RAG combines information retrieval
+with language generation."
+
+        ↓
+
+Prompt
+        ↓
+
+LLM
+```
+
+---
+
+# 8. Generation
+
+The LLM receives the question and retrieved context.
+
+```text
+Query
+  +
+Context
+  ↓
+LLM
+  ↓
+Answer
+```
+
+Example:
+
+```text
+Question:
+"What is RAG?"
+
+Context:
+"RAG retrieves external information
+before generating a response."
+
+Answer:
+"RAG is a technique that retrieves
+external information and provides it
+to an LLM to generate an answer."
+```
+
+---
+
+# 9. RAG vs Traditional LLM
+
+| Traditional LLM | RAG + LLM |
+| --- | --- |
+| Uses learned model knowledge | Uses model + external knowledge |
+| Knowledge can become outdated | Can retrieve updated information |
+| Difficult to access private data | Can connect to private knowledge bases |
+| Higher risk of unsupported answers | Retrieved context can ground answers |
+| No retrieval step | Includes retrieval |
+| Simpler architecture | More complex architecture |
+
+---
+
+# 10. RAG vs Fine-Tuning
+
+RAG and fine-tuning solve different problems.
+
+### RAG
+
+Used when external knowledge needs to be retrieved.
+
+```text
+Knowledge
+   ↓
+Database
+   ↓
+Retriever
+   ↓
+LLM
+```
+
+### Fine-Tuning
+
+Used to modify model behavior or specialize its responses.
+
+```text
+Training Dataset
+      ↓
+Fine-Tuning
+      ↓
+Specialized Model
+```
+
+A system can also use both:
+
+```text
+Fine-Tuned LLM
+      +
+    RAG
+      ↓
+Specialized RAG System
+```
+
+---
+
+# 11. Types of RAG
+
+## Basic RAG
+
+```text
+Query
+ ↓
+Retriever
+ ↓
+Documents
+ ↓
+LLM
+```
+
+## Hybrid RAG
+
+Combines different retrieval methods.
+
+```text
+        Query
+          ↓
+   ┌──────┴──────┐
+   ↓             ↓
+Keyword       Vector
+Search        Search
+   ↓             ↓
+   └──────┬──────┘
+          ↓
+      Retrieved
+      Documents
+```
+
+## Graph RAG
+
+Uses a knowledge graph to represent relationships between entities.
+
+```text
+Documents
+    ↓
+Knowledge Graph
+    ↓
+Related Entities
+    ↓
+LLM
+```
+
+## Multimodal RAG
+
+Retrieves information from multiple data types.
+
+```text
+Text
+Images
+Tables
+PDFs
+  ↓
+Multimodal Retrieval
+  ↓
+Multimodal LLM
+```
+
+---
+
+# 12. RAG and Hallucination
+
+A hallucination occurs when an LLM generates information that is unsupported or incorrect.
+
+RAG can help ground an answer using retrieved information.
+
+```text
+Question
+   ↓
+Relevant Context
+   ↓
+LLM
+   ↓
+Grounded Answer
+```
+
+However, RAG **does not automatically eliminate hallucinations**.
+
+Problems can still occur if:
+
+```text
+Bad Retrieval
+     ↓
+Wrong Context
+     ↓
+Wrong Answer
+```
+
+Therefore, both retrieval and generation need to be evaluated.
+
+---
+
+# 13. RAG Evaluation
+
+Important evaluation areas include:
+
+### Retrieval
+
+```text
+Recall@K
+Precision@K
+MRR
+NDCG
+```
+
+### Generation
+
+```text
+Correctness
+Relevance
+Faithfulness
+```
+
+### System
+
+```text
+Latency
+Cost
+Token Usage
+Safety
+```
+
+Overall:
+
+```text
+             RAG Evaluation
+                   ↓
+       ┌───────────┼───────────┐
+       ↓           ↓           ↓
+   Retrieval   Generation    System
+       ↓           ↓           ↓
+    Recall     Faithfulness  Latency
+   Precision    Relevance      Cost
+      MRR       Correctness   Safety
+```
+
+---
+
+# 14. RAG Applications
+
+RAG is commonly used for:
+
+- Document question answering
+- Customer support
+- Enterprise search
+- Research assistants
+- Code documentation
+- Legal document search
+- Medical knowledge systems
+- Educational assistants
+- Internal company knowledge bases
+
+Example:
+
+```text
+Company Documents
+       ↓
+Vector Database
+       ↓
+RAG
+       ↓
+Company Assistant
+```
+
+---
+
+# 15. RAG With Your Previous FAISS Learning
+
+A simple RAG system can use the same components studied earlier:
+
+```text
+Documents
+    ↓
+Sentence Transformer
+    ↓
+Embeddings
+    ↓
+FAISS
+    ↓
+Similarity Search
+    ↓
+Relevant Documents
+    ↓
+LLM
+    ↓
+Answer
+```
+
+For example:
+
+```text
+all-MiniLM-L6-v2
+        ↓
+   Embeddings
+        ↓
+      FAISS
+        ↓
+Top relevant chunks
+        ↓
+Hugging Face LLM
+        ↓
+Generated response
+```
+
+---
+
+# 16. Complete RAG Flow
+
+```text
+                Documents
+                    ↓
+                 Chunking
+                    ↓
+                Embeddings
+                    ↓
+              Vector Database
+                    ↓
+User Query → Query Embedding
+                    ↓
+                 Retrieval
+                    ↓
+             Relevant Context
+                    ↓
+             Prompt + Context
+                    ↓
+                   LLM
+                    ↓
+               Final Answer
+```
+
+---
+
+# 17. Important RAG Components
+
+| Component | Purpose |
+| --- | --- |
+| Documents | Source of knowledge |
+| Chunking | Split documents |
+| Embeddings | Convert text into vectors |
+| Vector Database | Store and search vectors |
+| Retriever | Find relevant information |
+| Reranker | Improve retrieved results |
+| Prompt | Combine query and context |
+| LLM | Generate final answer |
+| Evaluator | Measure system quality |
+
+---
+
+# 18. Key Takeaway
+
+The relationship can be remembered as:
+
+```text
+RAG = Retrieval + LLM Generation
+```
+
+The LLM provides the **language understanding and generation**, while RAG provides access to **external knowledge**.
+
+```text
+External Knowledge
+       +
+   Retrieval
+       +
+      LLM
+       ↓
+  RAG System
+```

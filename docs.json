@@ -80,7 +80,8 @@
               "ml"
             ]
           }
-        ]
+        ],
+        "hidden": true
       },
       {
         "tab": "Learnings",
